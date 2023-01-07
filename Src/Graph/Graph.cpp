@@ -1,5 +1,6 @@
 #include "Graph/Graph.hpp"
 #include "Utils.hpp"
+#include <stdexcept>
 
 Graph::Graph(std::vector<Vertex> vertices, std::vector<Edge> edges){
     for (int i=0; i<edges.size(); ++i){
@@ -19,7 +20,7 @@ Graph::Graph(std::vector<Vertex> vertices, std::vector<Edge> edges){
             }
         }
         if (!(startc==1 && endc==1)){
-            //crash
+            throw std::invalid_argument("Edges and Vertices don't match");
         }
     }
 
@@ -37,7 +38,10 @@ void Graph::addDemands(std::vector<Demand> demands){
 }
 
 void Graph::addDemand(Demand d){
-    vertices[closest(vertices,d.getPos())].addDemand(d);
+    int closestID = closest(vertices,d.getPos());
+    d.setVertex(vertices[closestID]);
+    vertices[closestID].addDemand(d);
+    demands.push_back(d);
 }
 
 const std::vector<Vertex>& Graph::getVertices(){
