@@ -39,7 +39,6 @@ void Graph::addDemands(std::vector<Demand> demands){
 
 void Graph::addDemand(Demand d){
     int closestID = closest(vertices,d.getPos());
-    d.setVertex(vertices[closestID]);
     vertices[closestID].addDemand(d);
     demands.push_back(d);
 }
@@ -52,24 +51,8 @@ const Vertex& Graph::getVertice(int GraphID){
     return vertices[GraphID];
 }
 
-const Vertex& Graph::getVertice(int ID){
-    for (Vertex v : vertices){
-        if (v.getID()==ID){
-            return v;
-        }
-    }
-}
-
 const std::vector<Demand>& Graph::getDemands(){
     return demands;
-}
-
-const Demand& Graph::getDemand(int ID){
-    for (Demand d : demands){
-        if (d.getID()==ID){
-            return d;
-        }
-    }
 }
 
 const Demand& Graph::getDemand(int GraphID){
@@ -82,12 +65,4 @@ const std::vector<Edge>& Graph::getEdges(){
 
 const Edge& Graph::getEdge(int GraphID){
     return edges[GraphID];
-}
-
-const Edge& Graph::getEdge(int ID){
-    for (Edge e : edges){
-        if (e.getID()==ID){
-            return e;
-        }
-    }
 }

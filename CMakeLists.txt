@@ -5,7 +5,8 @@ project (VRP-Drone)
 set(CMAKE_BUILD_TYPE Debug)
 
 include_directories(include)
-file(GLOB_RECURSE SRCS src/*.cpp)
+
+file(GLOB_RECURSE SRCS src/*.cpp src/Graph/*.cpp)
 
 message(STATUS "SRCS : ${SRCS}")
 

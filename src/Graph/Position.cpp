@@ -1,7 +1,7 @@
 #include "Graph/Position.hpp"
 
 Position::Position(){}
-Position::Position(int longitude, int latitude){
+Position::Position(int latitude, int longitude){
     this->longitude = longitude;
     this->latitude = latitude;
 }

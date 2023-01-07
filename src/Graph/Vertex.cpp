@@ -1,8 +1,8 @@
-#include "Vertex.hpp"
+#include "Graph/Vertex.hpp"
 
 Vertex::Vertex(){}
 
-Vertex::Vertex(Position pos, std::vector<Demand> demands=std::vector<Demand>(), int ID=-1){
+Vertex::Vertex(Position pos, std::vector<Demand> demands, int ID){
     this->pos = pos;
     this->demands = demands;
     for (Demand d : demands){
@@ -45,14 +45,7 @@ Demand Vertex::getDemand(int ID){
             return d;
         }
     }
-}
-
-Demand Vertex::getDemand(int GraphID){
-    for (Demand d : demands){
-        if (d.getGraphID()==GraphID){
-            return d;
-        }
-    }
+    return Demand();
 }
 
 int Vertex::getTDA(){

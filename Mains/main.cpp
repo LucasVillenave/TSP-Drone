@@ -3,4 +3,49 @@
 
 int main(){
     std::cout << "Hello World" << std::endl;
+
+    Position p1(1,2);
+    Position p2(10,20);
+    Position p3(50,100);
+    Position p4(5,5);
+
+    Position p5(11,25);
+    Position p6(15,35);
+
+    Demand d1(p4,5);
+    Demand d2(p5,1);
+    Demand d3(p6,1);
+
+    Vertex v1(p1 ,std::vector<Demand>(), 12);
+    Vertex v2(p2 ,std::vector<Demand>(), 18);
+    Vertex v3(p3 ,std::vector<Demand>(), 21);
+    Vertex v4(p4 ,std::vector<Demand>(), 2);
+
+    Edge e1(v1,v2,50,6);
+    Edge e2(v2,v4,20,3);
+
+    std::vector<Vertex> vertices;
+    vertices.push_back(v1);
+    vertices.push_back(v2);
+    vertices.push_back(v3);
+    vertices.push_back(v4);
+
+    std::vector<Edge> edges;
+    edges.push_back(e1);
+    edges.push_back(e2);
+
+    std::vector<Demand> demands;
+    demands.push_back(d1);
+    demands.push_back(d2);
+    demands.push_back(d3);
+
+    Graph g(vertices,edges);
+    g.addDemands(demands);
+
+    std::cout << g << std::endl;
+    for (Vertex v : g.getVertices()){
+        std::cout << v << std::endl;
+    }
+
+
 }

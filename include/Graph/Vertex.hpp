@@ -26,7 +26,6 @@ class Vertex{
 
         std::vector<Demand> getDemands();
         Demand getDemand(int ID);
-        Demand getDemand(int GraphID);
         void addDemand(Demand d);
 
         int getTDA();

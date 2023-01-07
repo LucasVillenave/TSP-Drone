@@ -25,17 +25,19 @@ class Graph{
 
         const std::vector<Vertex>& getVertices();
         const Vertex& getVertice(int GraphID);
-        const Vertex& getVertice(int ID);
 
         const std::vector<Demand>& getDemands();
-        const Demand& getDemand(int ID);
         const Demand& getDemand(int GraphID);
 
         const std::vector<Edge>& getEdges();
         const Edge& getEdge(int GraphID);
-        const Edge& getEdge(int ID);
-
 
 };
+
+inline std::ostream &operator<<(std::ostream &os, Graph g)
+{
+    os << "Graph of size " << g.getVertices().size() << " vertices " << g.getEdges().size() << " edges and " << g.getDemands().size() << " demands" << std::endl;
+    return os;
+}
 
 #endif

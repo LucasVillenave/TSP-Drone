@@ -1,21 +1,11 @@
 #include "Graph/Demand.hpp"
-#include "Vertex.hpp"
 
 Demand::Demand(){}
 
-Demand::Demand(Position pos, int amount, Vertex v=Vertex(), int ID=-1){
+Demand::Demand(Position pos, int amount,int ID){
     this->pos = pos;
     this->amount = amount;
-    this->v = v;
     this->ID = ID;
-}
-
-Vertex Demand::getVertex(){
-    return v;
-}
-
-void Demand::setVertex(Vertex v){
-    this->v = v;
 }
 
 int Demand::getAmount(){

@@ -10,7 +10,7 @@ class Position{
 
     public :
         Position();
-        Position(int longitude, int latitude);
+        Position(int latitude, int longitude);
 
         int getLatitude();
         int getLongitude();

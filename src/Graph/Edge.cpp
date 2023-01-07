@@ -2,7 +2,7 @@
 
 Edge::Edge(){}
 
-Edge::Edge(Vertex start, Vertex end, int roadSpeed, int ID=-1){
+Edge::Edge(Vertex start, Vertex end, int roadSpeed, int ID){
     this->start = start;
     this->end = end;
     this->roadSpeed = roadSpeed;
