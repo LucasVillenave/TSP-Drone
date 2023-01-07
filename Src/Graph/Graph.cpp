@@ -1,0 +1,89 @@
+#include "Graph/Graph.hpp"
+#include "Utils.hpp"
+
+Graph::Graph(std::vector<Vertex> vertices, std::vector<Edge> edges){
+    for (int i=0; i<edges.size(); ++i){
+        edges[i].setGraphID(i);
+
+        // test if vertices of the edge exists
+        int startc = 0;
+        int endc = 0;
+        Vertex start = edges[i].getStart();
+        Vertex end = edges[i].getEnd();
+        for (Vertex v : vertices){
+            if (v==start){
+                ++startc;
+            }
+            if (v==end){
+                ++endc;
+            }
+        }
+        if (!(startc==1 && endc==1)){
+            //crash
+        }
+    }
+
+    for (int i=0; i<vertices.size(); ++i){
+        vertices[i].setGraphID(i);
+    }
+    this->vertices = vertices;
+    this->edges = edges;
+}
+
+void Graph::addDemands(std::vector<Demand> demands){
+    for (Demand d : demands){
+        this->addDemand(d);
+    }
+}
+
+void Graph::addDemand(Demand d){
+    vertices[closest(vertices,d.getPos())].addDemand(d);
+}
+
+const std::vector<Vertex>& Graph::getVertices(){
+    return vertices;
+}
+
+const Vertex& Graph::getVertice(int GraphID){
+    return vertices[GraphID];
+}
+
+const Vertex& Graph::getVertice(int ID){
+    for (Vertex v : vertices){
+        if (v.getID()==ID){
+            return v;
+        }
+    }
+}
+
+const std::vector<Demand>& Graph::getDemands(){
+    return demands;
+}
+
+const Demand& Graph::getDemand(int ID){
+    for (Demand d : demands){
+        if (d.getID()==ID){
+            return d;
+        }
+    }
+}
+
+const Demand& Graph::getDemand(int GraphID){
+    return demands[GraphID];
+}
+
+const std::vector<Edge>& Graph::getEdges(){
+    return edges;
+}
+
+const Edge& Graph::getEdge(int GraphID){
+    return edges[GraphID];
+}
+
+const Edge& Graph::getEdge(int ID){
+    for (Edge e : edges){
+        if (e.getID()==ID){
+            return e;
+        }
+    }
+}
