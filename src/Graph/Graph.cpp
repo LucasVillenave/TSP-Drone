@@ -2,6 +2,8 @@
 #include "Utils.hpp"
 #include <stdexcept>
 
+Graph::Graph(){}
+
 Graph::Graph(std::vector<Vertex> vertices, std::vector<Edge> edges){
     for (int i=0; i<edges.size(); ++i){
         edges[i].setGraphID(i);

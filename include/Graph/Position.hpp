@@ -5,23 +5,23 @@
 
 class Position{
     private :
-        int longitude = -1;
-        int latitude = -1;
+        double longitude = -1;
+        double latitude = -1;
 
     public :
         Position();
-        Position(int latitude, int longitude);
+        Position(double latitude, double longitude);
 
-        int getLatitude();
-        int getLongitude();
+        double getLatitude();
+        double getLongitude();
 
-        void setLongitude(int longitude);
-        void setLatitude(int latitude);
+        void setLongitude(double longitude);
+        void setLatitude(double latitude);
 };
 
 inline std::ostream &operator<<(std::ostream &os, Position p)
 {
-    os << "(" << p.getLatitude() << ";" << p.getLongitude() << ")";
+    os << "(LAT : " << p.getLatitude() << " ;LON : " << p.getLongitude() << ")";
     return os;
 }
 

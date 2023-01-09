@@ -4,21 +4,23 @@
 #include <vector>
 #include <string>
 
-#include "Demand.hpp"
-#include "Graph.hpp"
+#include "Graph/Graph.hpp"
 
 class Instance{
 
     private :
-        std::string instanceName
-        std::vector<Demand> demands;
-        std::vector<Graph> graph;
-
+        std::string instanceName;
+        Graph graph;
 
     public :
+        Instance();
+        Instance(Graph g, std::string instanceName);
+        Instance(std::vector<Vertex> vertices, std::vector<Edge> edges, std::string instanceName);
 
+        void addDemands(std::vector<Demand> demands);
+        void addDemand(Demand d);
 
-
+        const Graph& getGraph();
 };
 
 #endif

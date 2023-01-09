@@ -16,8 +16,9 @@ class Graph{
         std::vector<Demand> demands;
 
     public :
-        // I made it so you can't create an empty graph because the graph validity is checked in it's creation.
+        // I made it so you can't modify the structure of the graph because the graph validity is checked in it's creation.
         // You must first create the graph with the vertices and edges and then add the demands
+        Graph();
         Graph(std::vector<Vertex> vertices, std::vector<Edge> edges);
 
         void addDemands(std::vector<Demand> demands);

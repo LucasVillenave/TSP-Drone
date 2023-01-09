@@ -1,5 +1,5 @@
 #include <iostream>
-#include "Graph/Graph.hpp"
+#include "Solution.hpp"
 
 int main(){
     std::cout << "Hello World" << std::endl;
@@ -46,6 +46,19 @@ int main(){
     for (Vertex v : g.getVertices()){
         std::cout << v << std::endl;
     }
+
+    Instance i(g,"test");
+
+    std::vector<Event> events;
+    events.push_back(Event(p6,3,0));
+    events.push_back(Event(p5,5,1));
+    events.push_back(Event(p4,10,2,Position(),-1,1));
+    events.push_back(Event(p4,10,3,Position(),-1,0));
+    events.push_back(Event(p1,15,4,Position(),15,-1));
+    events.push_back(Event(p2,155,5,Position(),160,1));
+
+    Solution s(i,events);
+    std::cout << s << std::endl;
 
 
 }

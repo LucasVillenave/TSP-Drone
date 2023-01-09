@@ -1,23 +1,23 @@
 #include "Graph/Position.hpp"
 
 Position::Position(){}
-Position::Position(int latitude, int longitude){
+Position::Position(double latitude, double longitude){
     this->longitude = longitude;
     this->latitude = latitude;
 }
 
-int Position::getLatitude(){
+double Position::getLatitude(){
     return latitude;
 }
 
-int Position::getLongitude(){
+double Position::getLongitude(){
     return longitude;
 }
 
-void Position::setLongitude(int longitude){
+void Position::setLongitude(double longitude){
     this->longitude = longitude;
 }
 
-void Position::setLatitude(int latitude){
+void Position::setLatitude(double latitude){
     this->latitude = latitude;
 }
