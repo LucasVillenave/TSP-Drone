@@ -1,17 +1,18 @@
 #include "Event.hpp"
+#include <iostream>
 
 Event::Event(){}
 Event::Event(Position pos1, int time, int eventType, Position pos2, int demandID, int droneID){
     if (time<0 || eventType<0 || eventType>5){
-        std::invalid_argument("wrong argument in event creation");
+        throw std::invalid_argument("wrong argument in event creation");
     }
-    if ( ((eventType == 2) || (eventType == 3) || (eventType == 5)) && (droneID<0 || droneID>1) ){
-        std::invalid_argument("event related to drones should have valid droneID");
+    if ( (((eventType == 2) || (eventType == 3) || (eventType == 5)) && (droneID<0 || droneID>1)) ){
+        throw std::invalid_argument("event related to drones should have valid droneID");
     }
     if ( (eventType>3) && (demandID<0) ){
-        std::invalid_argument("event related to demands should have valid demandID");
+        throw std::invalid_argument("event related to demands should have valid demandID");
     }
-    
+
     this->pos1 = pos1;
     this->pos2 = pos2;
     this->time = time;

@@ -3,6 +3,14 @@
 #include <iostream>
 
 Solution::Solution(Instance instance, std::vector<Event> eventList){
+    int time = 0;
+    for (Event e : eventList){
+        if (time>e.getTime()){
+            throw std::invalid_argument("event list given in solution creation isn't timely ordered");
+        }
+        time = e.getTime();
+    }
+    
     this->instance = instance;
     this->eventList = eventList;
 }
