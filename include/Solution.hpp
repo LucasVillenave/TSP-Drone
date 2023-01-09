@@ -8,12 +8,12 @@ class Solution{
     private :
         Instance instance;
         std::vector<Event> eventList;
-        std::vector<int> isValid = std::vector<int>(4,0);
+        std::vector<int> isValid = std::vector<int>(4,-1);
 
     public :
         Solution(Instance instance, std::vector<Event> eventList);
 
-        std::vector<Event> getEvents();
+        const std::vector<Event>& getEvents();
 
         int check(int scenario);
 

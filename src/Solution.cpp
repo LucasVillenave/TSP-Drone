@@ -20,10 +20,12 @@ int Solution::check(int scenario){
         std::cout << "scenario should be between 0 and 3, " << scenario << " was given" << std::endl;;
         throw std::invalid_argument("");
     }
-    //Todo
+    if (isValid[scenario]==-1){
+        //Todo
+    }
     return isValid[scenario];
 }
 
-std::vector<Event> Solution::getEvents(){
+const std::vector<Event>& Solution::getEvents(){
     return eventList;
 }
