@@ -5,20 +5,18 @@
 
 class Edge{
     private :
-        Vertex start;
-        Vertex end;
+        int startID;
+        int endID;
         int roadSpeed = -1;
         int ID;
         int GraphID = -1;
 
     public :
         Edge();
-        Edge(Vertex start, Vertex end, int roadSpeed, int ID=-1);
+        Edge(int startID, int endID, int roadSpeed, int ID=-1);
 
-        Vertex getStart();
-        Vertex getEnd();
-        void setEnd(Vertex end);
-        void setStart(Vertex start);
+        int getStartID();
+        int getEndID();
 
         int getID();
         int getGraphID();
@@ -31,15 +29,15 @@ class Edge{
 
 inline std::ostream &operator<<(std::ostream &os, Edge e)
 {
-    os << "edge " << e.getGraphID() << "(" << e.getID() << ") between :" << std::endl << "--- " << e.getStart() << std::endl << "--- " << e.getEnd();
+    os << "edge " << e.getGraphID() << "(" << e.getID() << ") between " << e.getStartID()  << " and " << e.getEndID();
     return os;
 }
 
 inline bool operator==(Edge e1, Edge e2)
 {
     return (
-        e1.getStart() == e2.getStart() &&
-        e1.getEnd() == e2.getEnd() &&
+        e1.getStartID() == e2.getStartID() &&
+        e1.getEndID() == e2.getEndID() &&
         e1.getRoadSpeed() == e2.getRoadSpeed() &&
         e1.getID() == e2.getID()
         );

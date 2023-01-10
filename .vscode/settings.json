@@ -46,6 +46,8 @@
         "typeinfo": "cpp",
         "complex": "cpp",
         "sstream": "cpp",
-        "ctime": "cpp"
+        "ctime": "cpp",
+        "fstream": "cpp",
+        "iomanip": "cpp"
     }
 }

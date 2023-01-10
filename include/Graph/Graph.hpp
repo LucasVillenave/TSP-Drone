@@ -37,7 +37,23 @@ class Graph{
 
 inline std::ostream &operator<<(std::ostream &os, Graph g)
 {
-    os << "Graph of size " << g.getVertices().size() << " vertices " << g.getEdges().size() << " edges and " << g.getDemands().size() << " demands" << std::endl;
+    os << "Graph of size " << g.getVertices().size() << " vertices " << g.getEdges().size() << " edges and " << g.getDemands().size() << " demands" << std::endl << std::endl;
+
+    os << "Vertices : " << std::endl;
+    for (Vertex v : g.getVertices()){
+        os << v << std::endl;
+    }
+
+    os << std::endl << "Edges : " << std::endl;
+    for (Edge e : g.getEdges()){
+        os << e << std::endl;
+    }
+
+    os << std::endl << "Demands : " << std::endl;
+    for (Demand d : g.getDemands()){
+        os << d << std::endl;
+    }
+
     return os;
 }
 

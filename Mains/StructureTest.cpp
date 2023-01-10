@@ -21,8 +21,8 @@ int main(){
     Vertex v3(p3 ,std::vector<Demand>(), 21);
     Vertex v4(p4 ,std::vector<Demand>(), 2);
 
-    Edge e1(v1,v2,50,6);
-    Edge e2(v2,v4,20,3);
+    Edge e1(0,1,50,6);
+    Edge e2(1,3,20,3);
 
     std::vector<Vertex> vertices;
     vertices.push_back(v1);

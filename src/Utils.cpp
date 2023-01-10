@@ -1,6 +1,7 @@
 #include "Utils.hpp"
 #include <tgmath.h>
 #include <climits>
+#include <iostream>
 
 int closest(std::vector<Vertex> vertices, Position pos){
     int min = INT_MAX;
@@ -16,9 +17,12 @@ int closest(std::vector<Vertex> vertices, Position pos){
     return returnID;
 }
 
-int euclidianDistance(Position p1,Position p2){
+double euclidianDistance(Position p1,Position p2){
+    double deltaLon = (p1.getLongitude()-p2.getLongitude())*100000;
+    deltaLon = deltaLon*deltaLon;
+    double deltaLat = (p1.getLatitude()-p2.getLatitude())*100000;
+    deltaLat = deltaLat*deltaLat;
     return std::sqrt(
-           (p1.getLongitude()-p2.getLongitude())*(p1.getLongitude()-p2.getLongitude())+
-           (p1.getLatitude()-p2.getLatitude())*(p1.getLatitude()-p2.getLatitude())
+           deltaLat+deltaLon
            );
 }

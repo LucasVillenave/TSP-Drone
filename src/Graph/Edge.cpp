@@ -2,27 +2,19 @@
 
 Edge::Edge(){}
 
-Edge::Edge(Vertex start, Vertex end, int roadSpeed, int ID){
-    this->start = start;
-    this->end = end;
+Edge::Edge(int startID, int endID, int roadSpeed, int ID){
+    this->startID = startID;
+    this->endID = endID;
     this->roadSpeed = roadSpeed;
     this->ID = ID;
 }
 
-Vertex Edge::getStart(){
-    return start;
+int Edge::getStartID(){
+    return startID;
 }
 
-Vertex Edge::getEnd(){
-    return end;
-}
-
-void Edge::setEnd(Vertex end){
-    this->end = end;
-}
-
-void Edge::setStart(Vertex start){
-    this->start = start;
+int Edge::getEndID(){
+    return endID;
 }
 
 int Edge::getID(){

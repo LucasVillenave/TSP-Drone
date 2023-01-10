@@ -6,6 +6,6 @@
 //return the id of the vertex of the given position
 int closest(std::vector<Vertex> vertices, Position pos);
 
-int euclidianDistance(Position p1,Position p2);
+double euclidianDistance(Position p1,Position p2);
 
 #endif

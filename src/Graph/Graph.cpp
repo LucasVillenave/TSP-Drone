@@ -6,30 +6,20 @@
 Graph::Graph(){}
 
 Graph::Graph(std::vector<Vertex> vertices, std::vector<Edge> edges){
-    for (int i=0; i<edges.size(); ++i){
-        edges[i].setGraphID(i);
-
-        // test if vertices of the edge exists
-        int startc = 0;
-        int endc = 0;
-        Vertex start = edges[i].getStart();
-        Vertex end = edges[i].getEnd();
-        for (Vertex v : vertices){
-            if (v==start){
-                ++startc;
-            }
-            if (v==end){
-                ++endc;
-            }
-        }
-        if (!(startc==1 && endc==1)){
-            throw std::invalid_argument("Edges and Vertices don't match");
-        }
-    }
 
     for (int i=0; i<vertices.size(); ++i){
         vertices[i].setGraphID(i);
     }
+
+    for (int i=0; i<edges.size(); ++i){
+        edges[i].setGraphID(i);
+
+        if ((edges[i].getStartID()<0 || edges[i].getStartID()>=vertices.size() ||
+             edges[i].getEndID()<0 || edges[i].getEndID()>=vertices.size())){
+            throw std::invalid_argument("Bad vertices index on edges");
+        }
+    }
+
     this->vertices = vertices;
     this->edges = edges;
 }
@@ -43,6 +33,7 @@ void Graph::addDemands(std::vector<Demand> demands){
 void Graph::addDemand(Demand d){
     int closestID = closest(vertices,d.getPos());
     vertices[closestID].addDemand(d);
+    d.setGraphID(demands.size());
     demands.push_back(d);
 }
 
