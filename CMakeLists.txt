@@ -10,6 +10,6 @@ file(GLOB_RECURSE SRCS src/*.cpp src/Graph/*.cpp)
 
 message(STATUS "SRCS : ${SRCS}")
 
-add_executable(StructureTest.exe Mains/StructureTest.cpp ${SRCS})
+add_executable(StructureTest.exe Mains/structureTest.cpp ${SRCS})
 
 add_executable(main.exe Mains/main.cpp ${SRCS})

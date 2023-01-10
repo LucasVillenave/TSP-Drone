@@ -1,5 +1,5 @@
 #include "Graph/Graph.hpp"
-#include "Utils.hpp"
+#include "utils.hpp"
 #include <stdexcept>
 #include <iostream>
 

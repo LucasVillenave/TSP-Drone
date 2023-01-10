@@ -1,5 +1,5 @@
 #include "Solution.hpp"
-#include "Parser.hpp"
+#include "parser.hpp"
 #include <iostream>
 
 int main(){

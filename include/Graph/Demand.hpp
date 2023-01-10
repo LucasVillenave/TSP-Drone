@@ -33,7 +33,7 @@ class Demand{
 
 inline std::ostream &operator<<(std::ostream &os, Demand d)
 {
-    os << "demand " << d.getGraphID() << "(" << d.getID() << ") of pos :" << d.getPos() << " and amount " << d.getAmount();
+    os << "demand " << d.getGraphID() << "(" << d.getID() << ") of pos : " << d.getPos() << " and amount " << d.getAmount();
     return os;
 }
 

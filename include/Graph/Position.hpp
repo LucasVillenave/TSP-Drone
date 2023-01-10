@@ -22,7 +22,7 @@ class Position{
 
 inline std::ostream &operator<<(std::ostream &os, Position p)
 {
-    os << std::setprecision(10) << "(LAT : " << p.getLatitude() << " ;LON : " << p.getLongitude() << ")";
+    os << std::setprecision(10) << "(LAT : " << p.getLatitude() << " ; LON : " << p.getLongitude() << ")";
     return os;
 }
 
