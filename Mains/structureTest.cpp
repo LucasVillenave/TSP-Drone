@@ -1,8 +1,11 @@
 #include <iostream>
 #include "Solution.hpp"
+#include "gurobi_c++.h"
 
 int main(){
     std::cout << "Hello World" << std::endl;
+
+    GRBEnv env(true);
 
     Position p1(1,2);
     Position p2(10,20);
