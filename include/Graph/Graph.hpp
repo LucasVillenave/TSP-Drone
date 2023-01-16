@@ -15,6 +15,15 @@ class Graph{
         std::vector<Edge> edges;
         std::vector<Demand> demands;
 
+        std::vector<std::vector<Edge>> adjacencyMatrix;
+
+        std::vector<std::vector<int>> TSPKernelDist;
+        std::vector<std::vector<std::vector<int>>> TSPKernelPath;
+
+        int isKernelized=0;
+
+        void kernelize();
+
     public :
         // I made it so you can't modify the structure of the graph because the graph validity is checked in it's creation.
         // You must first create the graph with the vertices and edges and then add the demands
@@ -33,6 +42,11 @@ class Graph{
         const std::vector<Edge>& getEdges() const;
         const Edge& getEdge(int GraphID);
 
+        const std::vector<std::vector<int>>& getTSPKernelDist();
+        const std::vector<std::vector<std::vector<int>>>& getTSPKernelPath();
+
+        int getTSPKernelDist(int i, int j);
+        const std::vector<int>& getTSPKernelPath(int i, int j);
 };
 
 inline std::ostream &operator<<(std::ostream &os, Graph g)

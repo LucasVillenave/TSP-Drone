@@ -7,24 +7,28 @@ class Edge{
     private :
         int startID;
         int endID;
-        int roadSpeed = -1;
+        double length;
+        std::string roadType;
+        int TruckTime;
         int ID;
         int GraphID = -1;
 
     public :
         Edge();
-        Edge(int startID, int endID, int roadSpeed, int ID=-1);
+        Edge(int startID, int endID, int lenght, std::string roadType, int ID=-1);
 
         int getStartID() const;
         int getEndID() const;
+
+        double getLength();
 
         int getID();
         int getGraphID();
         void setID(int ID);
         void setGraphID(int GraphID);
 
-        int getRoadSpeed();
-        void setRoadSpeed(int roadSpeed);
+        std::string getRoadType();
+        void setRoadType(std::string roadType);
 };
 
 inline std::ostream &operator<<(std::ostream &os, Edge e)
@@ -38,7 +42,7 @@ inline bool operator==(Edge e1, Edge e2)
     return (
         e1.getStartID() == e2.getStartID() &&
         e1.getEndID() == e2.getEndID() &&
-        e1.getRoadSpeed() == e2.getRoadSpeed() &&
+        e1.getRoadType() == e2.getRoadType() &&
         e1.getID() == e2.getID()
         );
 }

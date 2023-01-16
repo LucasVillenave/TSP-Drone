@@ -48,6 +48,25 @@
         "sstream": "cpp",
         "ctime": "cpp",
         "fstream": "cpp",
-        "iomanip": "cpp"
+        "iomanip": "cpp",
+        "cstring": "cpp",
+        "strstream": "cpp",
+        "bitset": "cpp",
+        "chrono": "cpp",
+        "codecvt": "cpp",
+        "condition_variable": "cpp",
+        "list": "cpp",
+        "map": "cpp",
+        "set": "cpp",
+        "optional": "cpp",
+        "ratio": "cpp",
+        "mutex": "cpp",
+        "semaphore": "cpp",
+        "stop_token": "cpp",
+        "thread": "cpp",
+        "cfenv": "cpp",
+        "cinttypes": "cpp",
+        "typeindex": "cpp",
+        "variant": "cpp"
     }
 }

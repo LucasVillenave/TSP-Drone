@@ -3,7 +3,6 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>
-//#include <algorithm>
 
 using namespace std;
 
@@ -63,8 +62,9 @@ Graph loadGraph(string instancePath, string instanceName){
 
         int minIndex=-1;
         int maxIndex=-1;
+        double length=-1;
         int ID = -1;
-        int roadSpeed = -1;
+        std::string roadType;
 
         parameterNames.push_back(split(parameters[0],'"')[0]);
         for (int i=1; i<(parameters.size()-1); ++i){
@@ -86,6 +86,9 @@ Graph loadGraph(string instancePath, string instanceName){
                         Position pos(stod(value[i]),stod(value[j]));
                         int actualSize = positions.size();
                         maxIndex = addPosition(pos,positions);
+                        if ((positions[maxIndex]==pos)!=1){
+                            std::cout << "héhéhé" << std::endl;
+                        }
                         if (positions.size()!=actualSize){
                             vertices.push_back(Vertex(positions[maxIndex]));
                         }
@@ -108,15 +111,11 @@ Graph loadGraph(string instancePath, string instanceName){
             }
 
             if (parameterName == "type"){
-                if (value[i]=="primary"){
-                    roadSpeed = 60;
-                }else{
-                    if (value[i]=="secondary"){
-                        roadSpeed = 45;
-                    }else{
-                        roadSpeed = 30;
-                    }
-                }
+                roadType = value[i];
+            }
+
+            if (parameterName == "length"){
+                length = stod(value[i]);
             }
         }
 
@@ -124,7 +123,7 @@ Graph loadGraph(string instancePath, string instanceName){
             vertices[i].setID(i);
         }
 
-        edges.push_back(Edge(minIndex,maxIndex,roadSpeed,ID));
+        edges.push_back(Edge(minIndex,maxIndex,length,roadType,ID));
 
         for (int i=0; i<edges.size();++i){
             edges[i].setID(i);
