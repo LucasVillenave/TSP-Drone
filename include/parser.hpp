@@ -1,7 +1,7 @@
 #ifndef PARSER
 #define PARSER
 
-#include "Solution.hpp"
+#include "Solution/Solution.hpp"
 
 Instance load(std::string instancePath, std::string instanceName);
 

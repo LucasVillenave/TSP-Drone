@@ -10,7 +10,7 @@
 // -- GraphID works best as long as the lists inside the graph aren't shuffled
 
 class Graph{
-    private :  
+    private :
         std::vector<Vertex> vertices;
         std::vector<Edge> edges;
         std::vector<Demand> demands;
@@ -24,13 +24,13 @@ class Graph{
         void addDemands(std::vector<Demand> demands);
         void addDemand(Demand d);
 
-        const std::vector<Vertex>& getVertices();
-        const Vertex& getVertice(int GraphID);
+        const std::vector<Vertex>& getVertices() const;
+        const Vertex& getVertices(int GraphID);
 
-        const std::vector<Demand>& getDemands();
+        const std::vector<Demand>& getDemands() const;
         const Demand& getDemand(int GraphID);
 
-        const std::vector<Edge>& getEdges();
+        const std::vector<Edge>& getEdges() const;
         const Edge& getEdge(int GraphID);
 
 };

@@ -15,8 +15,8 @@ class Edge{
         Edge();
         Edge(int startID, int endID, int roadSpeed, int ID=-1);
 
-        int getStartID();
-        int getEndID();
+        int getStartID() const;
+        int getEndID() const;
 
         int getID();
         int getGraphID();

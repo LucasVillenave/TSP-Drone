@@ -15,7 +15,7 @@ message(STATUS "GUROBI_LIBRARIES : ${GUROBI_LIBRARIES}")
 
 include_directories(${GUROBI_INCLUDE_DIR} include)
 
-file(GLOB_RECURSE SRCS src/*.cpp src/Graph/*.cpp)
+file(GLOB_RECURSE SRCS src/*.cpp src/Graph/*.cpp src/Solution/*.cpp)
 
 message(STATUS "SRCS : ${SRCS}")
 

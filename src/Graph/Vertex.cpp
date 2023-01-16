@@ -11,11 +11,11 @@ Vertex::Vertex(Position pos, std::vector<Demand> demands, int ID){
     this->ID = ID;
 }
 
-int Vertex::getLatitude(){
+double Vertex::getLatitude() const{
     return pos.getLatitude();
 }
 
-int Vertex::getLongitude(){
+double Vertex::getLongitude() const{
     return pos.getLongitude();
 }
 
@@ -27,7 +27,7 @@ void Vertex::setLatitude(int latitude){
     pos.setLatitude(latitude);
 }
 
-Position Vertex::getPos(){
+Position Vertex::getPos() const{
     return pos;
 }
 
@@ -61,7 +61,7 @@ int Vertex::getID(){
     return ID;
 }
 
-int Vertex::getGraphID(){
+int Vertex::getGraphID() const{
     return GraphID;
 }
 

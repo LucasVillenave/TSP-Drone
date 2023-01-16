@@ -12,6 +12,7 @@ class Instance{
         std::string instanceName;
         Graph graph;
 
+
     public :
         Instance();
         Instance(Graph g, std::string instanceName);
@@ -20,7 +21,7 @@ class Instance{
         void addDemands(std::vector<Demand> demands);
         void addDemand(Demand d);
 
-        const Graph& getGraph();
+        const Graph & getGraph() const;
 };
 
 #endif

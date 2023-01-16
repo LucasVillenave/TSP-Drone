@@ -9,11 +9,11 @@ Edge::Edge(int startID, int endID, int roadSpeed, int ID){
     this->ID = ID;
 }
 
-int Edge::getStartID(){
+int Edge::getStartID() const{
     return startID;
 }
 
-int Edge::getEndID(){
+int Edge::getEndID() const{
     return endID;
 }
 

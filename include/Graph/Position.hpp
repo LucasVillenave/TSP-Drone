@@ -13,8 +13,8 @@ class Position{
         Position();
         Position(double latitude, double longitude);
 
-        double getLatitude();
-        double getLongitude();
+        double getLatitude() const;
+        double getLongitude() const;
 
         void setLongitude(double longitude);
         void setLatitude(double latitude);

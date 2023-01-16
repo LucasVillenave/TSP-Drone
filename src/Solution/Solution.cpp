@@ -1,4 +1,4 @@
-#include "Solution.hpp"
+#include "Solution/Solution.hpp"
 #include <stdexcept>
 #include <iostream>
 
@@ -26,6 +26,18 @@ int Solution::check(int scenario){
     return isValid[scenario];
 }
 
-const std::vector<Event>& Solution::getEvents(){
+const std::vector<Event>& Solution::getEvents()
+{
     return eventList;
+}
+
+
+const std::vector<Vertex>& Solution::getVertices() const
+{
+    return instance.getGraph().getVertices();
+}
+
+const std::vector<Edge>& Solution::getEdges() const
+{
+    return instance.getGraph().getEdges();
 }

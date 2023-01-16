@@ -19,6 +19,6 @@ void Instance::addDemand(Demand d){
     this->graph.addDemand(d);
 }
 
-const Graph& Instance::getGraph(){
+const Graph & Instance::getGraph() const {
     return this->graph;
 }

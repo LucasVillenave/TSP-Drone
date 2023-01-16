@@ -6,11 +6,11 @@ Position::Position(double latitude, double longitude){
     this->latitude = latitude;
 }
 
-double Position::getLatitude(){
+double Position::getLatitude() const{
     return latitude;
 }
 
-double Position::getLongitude(){
+double Position::getLongitude() const{
     return longitude;
 }
 

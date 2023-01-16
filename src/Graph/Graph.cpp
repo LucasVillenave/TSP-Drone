@@ -37,15 +37,15 @@ void Graph::addDemand(Demand d){
     demands.push_back(d);
 }
 
-const std::vector<Vertex>& Graph::getVertices(){
+const std::vector<Vertex>& Graph::getVertices() const{
     return vertices;
 }
 
-const Vertex& Graph::getVertice(int GraphID){
+const Vertex& Graph::getVertices(int GraphID){
     return vertices[GraphID];
 }
 
-const std::vector<Demand>& Graph::getDemands(){
+const std::vector<Demand>& Graph::getDemands() const{
     return demands;
 }
 
@@ -53,7 +53,7 @@ const Demand& Graph::getDemand(int GraphID){
     return demands[GraphID];
 }
 
-const std::vector<Edge>& Graph::getEdges(){
+const std::vector<Edge>& Graph::getEdges() const{
     return edges;
 }
 

@@ -16,12 +16,12 @@ class Vertex{
         Vertex();
         Vertex(Position pos, std::vector<Demand> demands=std::vector<Demand>(), int ID=-1);
 
-        int getLatitude();
-        int getLongitude();
+        double getLatitude() const;
+        double getLongitude() const;
         void setLongitude(int longitude);
         void setLatitude(int latitude);
 
-        Position getPos();
+        Position getPos() const;
         void setPos(Position pos);
 
         std::vector<Demand> getDemands();
@@ -31,7 +31,7 @@ class Vertex{
         int getTDA();
 
         int getID();
-        int getGraphID();
+        int getGraphID() const;
         void setID(int ID);
         void setGraphID(int GraphID);
 

@@ -14,6 +14,8 @@ class Solution{
         Solution(Instance instance, std::vector<Event> eventList);
 
         const std::vector<Event>& getEvents();
+        const std::vector<Vertex>& getVertices() const;
+        const std::vector<Edge>& getEdges() const;
 
         int check(int scenario);
 
