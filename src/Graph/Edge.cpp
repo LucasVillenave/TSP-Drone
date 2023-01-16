@@ -2,11 +2,12 @@
 
 Edge::Edge(){}
 
-Edge::Edge(int startID, int endID, int roadSpeed, int ID){
+Edge::Edge(int startID, int endID, int length, std::string roadType, int ID){
     this->startID = startID;
     this->endID = endID;
-    this->roadSpeed = roadSpeed;
+    this->roadType = roadType;
     this->ID = ID;
+    this->length = length;
 }
 
 int Edge::getStartID(){
@@ -15,6 +16,10 @@ int Edge::getStartID(){
 
 int Edge::getEndID(){
     return endID;
+}
+
+double Edge::getLength(){
+    return length;
 }
 
 int Edge::getID(){
@@ -33,10 +38,10 @@ void Edge::setGraphID(int GraphID){
     this->GraphID = GraphID;
 }
 
-int Edge::getRoadSpeed(){
-    return roadSpeed;
+std::string Edge::getRoadType(){
+    return roadType;
 }
 
-void Edge::setRoadSpeed(int roadSpeed){
-    this->roadSpeed = roadSpeed;
+void Edge::setRoadType(std::string roadType){
+    this->roadType = roadType;
 }
