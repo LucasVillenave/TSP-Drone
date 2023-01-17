@@ -11,7 +11,7 @@ Graph::Graph(std::vector<Vertex> vertices, std::vector<Edge> edges){
         vertices[i].setGraphID(i);
         adjacencyList.push_back(std::vector<Edge>());
         adjacencyMatrix.push_back(std::vector<int>(vertices.size(),0));
-        TSPKernelDist.push_back(std::vector<int>(vertices.size(),-1));
+        TSPKernelDist.push_back(std::vector<double>(vertices.size(),-1));
     }
 
     for (int i=0; i<edges.size(); ++i){
@@ -80,7 +80,7 @@ void Graph::kernelize(){
     TSPKernelPath = updateDistMatrix(TSPKernelDist,adjacencyList,TMPvertices);
 }
 
-const std::vector<std::vector<int>>& Graph::getTSPKernelDist(){
+const std::vector<std::vector<double>>& Graph::getTSPKernelDist(){
     if (isKernelized==0){
         isKernelized=1;
         kernelize();
@@ -96,7 +96,7 @@ const std::vector<std::vector<std::vector<int>>>& Graph::getTSPKernelPath(){
     return TSPKernelPath;
 }
 
-int Graph::getTSPKernelDist(int i, int j){
+double Graph::getTSPKernelDist(int i, int j){
     if (isKernelized==0){
         isKernelized=1;
         kernelize();
