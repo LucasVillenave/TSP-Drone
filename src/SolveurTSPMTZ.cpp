@@ -1,11 +1,11 @@
 #include "SolveurTSPMTZ.hpp"
+
+#include <utility>
 #include "gurobi_c++.h"
 
 SolveurTSPMTZ::SolveurTSPMTZ(){}
 
-SolveurTSPMTZ::SolveurTSPMTZ(Instance inst){
-    this->inst = inst;
-}
+SolveurTSPMTZ::SolveurTSPMTZ(Instance t_inst) : inst(std::move(t_inst)) {}
 
 void SolveurTSPMTZ::solve(){
     try{

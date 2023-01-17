@@ -13,8 +13,8 @@ class Vertex{
         int TDA = 0; //total demand amount
 
     public :
-        Vertex();
-        Vertex(Position pos, std::vector<Demand> demands=std::vector<Demand>(), int ID=-1);
+        Vertex()=default;
+        Vertex(Position t_pos, const std::vector<Demand>& t_demands=std::vector<Demand>(), int t_ID=-1);
 
         double getLatitude() const;
         double getLongitude() const;
@@ -22,28 +22,28 @@ class Vertex{
         void setLatitude(double latitude);
 
         Position getPos() const;
-        void setPos(Position pos);
+        void setPos(Position t_pos);
 
-        std::vector<Demand> getDemands();
-        Demand getDemand(int ID);
+        const std::vector<Demand>& getDemands() const;
+        Demand getDemand(int t_ID) const;
         void addDemand(Demand d);
 
-        int getTDA();
+        int getTDA() const;
 
-        int getID();
+        int getID() const;
         int getGraphID() const;
-        void setID(int ID);
-        void setGraphID(int GraphID);
+        void setID(int t_ID);
+        void setGraphID(int t_GraphID);
 
 };
 
-inline std::ostream &operator<<(std::ostream &os, Vertex v)
+inline std::ostream &operator<<(std::ostream &os, const Vertex& v)
 {
     os << "vertex " << v.getGraphID() << "(" << v.getID() << ") of pos : " << v.getPos() << " and TDA : " << v.getTDA();
     return os;
 }
 
-inline bool operator==(Vertex v1, Vertex v2)
+inline bool operator==(const Vertex& v1, const Vertex& v2)
 {
     int sameDemands = 0;
     if (v1.getDemands().size()==v2.getDemands().size()){

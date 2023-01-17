@@ -1,14 +1,11 @@
 #include "Graph/Vertex.hpp"
 
-Vertex::Vertex(){}
-
-Vertex::Vertex(Position pos, std::vector<Demand> demands, int ID){
-    this->pos = pos;
-    this->demands = demands;
-    for (Demand d : demands){
+Vertex::Vertex(Position t_pos, const std::vector<Demand>& t_demands, int t_ID)
+    : pos(t_pos), demands(t_demands), ID(t_ID)
+{
+    for (Demand d : t_demands){
         TDA += d.getAmount();
     }
-    this->ID = ID;
 }
 
 double Vertex::getLatitude() const{
@@ -20,44 +17,45 @@ double Vertex::getLongitude() const{
 }
 
 void Vertex::setLongitude(double longitude){
-    pos.setLongitude(longitude);
+    pos.setX(longitude);
 }
 
 void Vertex::setLatitude(double latitude){
-    pos.setLatitude(latitude);
+    pos.setY(latitude);
 }
 
 Position Vertex::getPos() const{
     return pos;
 }
 
-void Vertex::setPos(Position pos){
-    this->pos = pos;
+void Vertex::setPos(Position t_pos){
+    pos.setX(t_pos.getX());
+    pos.setY(t_pos.getY());
 }
 
-std::vector<Demand> Vertex::getDemands(){
+const std::vector<Demand>& Vertex::getDemands() const{
     return demands;
 }
 
-Demand Vertex::getDemand(int ID){
+Demand Vertex::getDemand(int t_ID) const{
     for (Demand d : demands){
-        if (d.getID()==ID){
+        if (d.getID() == t_ID){
             return d;
         }
     }
-    return Demand();
+    return {};
 }
 
-int Vertex::getTDA(){
+int Vertex::getTDA() const{
     return TDA;
 }
 
 void Vertex::addDemand(Demand d){
-    this->TDA += d.getAmount();
+    TDA += d.getAmount();
     demands.push_back(d);
 }
 
-int Vertex::getID(){
+int Vertex::getID() const{
     return ID;
 }
 
@@ -65,10 +63,10 @@ int Vertex::getGraphID() const{
     return GraphID;
 }
 
-void Vertex::setID(int ID){
-    this->ID = ID;
+void Vertex::setID(int t_ID){
+    ID = t_ID;
 }
 
-void Vertex::setGraphID(int GraphID){
-    this->GraphID = GraphID;
+void Vertex::setGraphID(int t_GraphID){
+    GraphID = t_GraphID;
 }

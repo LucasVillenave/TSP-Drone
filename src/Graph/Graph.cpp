@@ -3,41 +3,40 @@
 #include <stdexcept>
 #include <iostream>
 
-Graph::Graph(){}
+Graph::Graph(std::vector<Vertex> t_vertices, std::vector<Edge> t_edges)
+    : vertices(t_vertices)
+{
 
-Graph::Graph(std::vector<Vertex> vertices, std::vector<Edge> edges){
-
-    for (int i=0; i<vertices.size(); ++i){
-        vertices[i].setGraphID(i);
-        adjacencyList.push_back(std::vector<Edge>());
-        adjacencyMatrix.push_back(std::vector<int>(vertices.size(),0));
-        TSPKernelDist.push_back(std::vector<double>(vertices.size(),-1));
+    for (int i=0; i < t_vertices.size(); ++i){
+        t_vertices[i].setGraphID(i);
+        adjacencyList.emplace_back();
+        adjacencyMatrix.emplace_back(t_vertices.size(), 0);
+        TSPKernelDist.emplace_back(t_vertices.size(), -1);
     }
 
-    for (int i=0; i<edges.size(); ++i){
-        edges[i].setGraphID(i);
+    for (int i=0; i < t_edges.size(); ++i){
+        t_edges[i].setGraphID(i);
 
-        if (adjacencyMatrix[edges[i].getStartID()][edges[i].getEndID()] == 0){
-            adjacencyMatrix[edges[i].getStartID()][edges[i].getEndID()] = 1;
+        if (adjacencyMatrix[t_edges[i].getStartID()][t_edges[i].getEndID()] == 0){
+            adjacencyMatrix[t_edges[i].getStartID()][t_edges[i].getEndID()] = 1;
 
-            adjacencyList[edges[i].getStartID()].push_back(edges[i]);
-            adjacencyList[edges[i].getEndID()].push_back(edges[i]);
+            adjacencyList[t_edges[i].getStartID()].push_back(t_edges[i]);
+            adjacencyList[t_edges[i].getEndID()].push_back(t_edges[i]);
 
-            this->edges.push_back(edges[i]);
+            edges.push_back(t_edges[i]);
         }
 
-        if ((edges[i].getStartID()<0 || edges[i].getStartID()>=vertices.size() ||
-             edges[i].getEndID()<0 || edges[i].getEndID()>=vertices.size())){
-            throw std::invalid_argument("Bad vertices index on edges");
+        if ((t_edges[i].getStartID() < 0 || t_edges[i].getStartID() >= t_vertices.size() ||
+             t_edges[i].getEndID() < 0 || t_edges[i].getEndID() >= t_vertices.size())){
+            throw std::invalid_argument("Bad t_vertices index on t_edges");
         }
     }
 
-    this->vertices = vertices;
 }
 
-void Graph::addDemands(std::vector<Demand> demands){
-    for (Demand d : demands){
-        this->addDemand(d);
+void Graph::addDemands(const std::vector<Demand>& t_demands){
+    for (const Demand& d : t_demands){
+        addDemand(d);
     }
 }
 
