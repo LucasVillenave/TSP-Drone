@@ -18,7 +18,7 @@ class Graph{
         std::vector<std::vector<Edge>> adjacencyList;
         std::vector<std::vector<int>> adjacencyMatrix;
 
-        std::vector<std::vector<int>> TSPKernelDist;
+        std::vector<std::vector<double>> TSPKernelDist;
         std::vector<std::vector<std::vector<int>>> TSPKernelPath;
 
         int isKernelized=0;
@@ -49,10 +49,10 @@ class Graph{
         const std::vector<Edge>& getEdges() const;
         const Edge& getEdge(int GraphID) const;
 
-        const std::vector<std::vector<int>>& getTSPKernelDist();
+        const std::vector<std::vector<double>>& getTSPKernelDist();
         const std::vector<std::vector<std::vector<int>>>& getTSPKernelPath();
 
-        int getTSPKernelDist(int i, int j);
+        double getTSPKernelDist(int i, int j);
         const std::vector<int>& getTSPKernelPath(int i, int j);
 };
 
