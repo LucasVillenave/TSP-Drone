@@ -19,11 +19,11 @@ double Vertex::getLongitude() const{
     return pos.getLongitude();
 }
 
-void Vertex::setLongitude(int longitude){
+void Vertex::setLongitude(double longitude){
     pos.setLongitude(longitude);
 }
 
-void Vertex::setLatitude(int latitude){
+void Vertex::setLatitude(double latitude){
     pos.setLatitude(latitude);
 }
 

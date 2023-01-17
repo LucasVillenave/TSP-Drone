@@ -16,19 +16,19 @@ void Demand::setAmount(int amount){
     this->amount = amount;
 }
 
-int Demand::getLatitude(){
+double Demand::getLatitude(){
     return pos.getLatitude();
 }
 
-int Demand::getLongitude(){
+double Demand::getLongitude(){
     return pos.getLongitude();
 }
 
-void Demand::setLongitude(int longitude){
+void Demand::setLongitude(double longitude){
     pos.setLongitude(longitude);
 }
 
-void Demand::setLatitude(int latitude){
+void Demand::setLatitude(double latitude){
     pos.setLatitude(latitude);
 }
 

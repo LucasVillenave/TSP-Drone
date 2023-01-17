@@ -18,6 +18,38 @@ vector<string> split(string s, char delim) {
     return words;
 }
 
+double getLatMin(std::vector<Position> & positions){
+    double lat_min = 91;
+
+    for (Position p : positions){
+        if (p.getLatitude()<lat_min){
+            lat_min = p.getLatitude();
+        }
+    }
+
+    return lat_min;
+}
+
+double getLonMin(std::vector<Position> & positions){
+    double lon_min = 91;
+
+    for (Position p : positions){
+        if (p.getLongitude()<lon_min){
+            lon_min = p.getLongitude();
+        }
+    }
+
+    return lon_min;
+}
+
+void updatePos(std::vector<Position> & positions, double lat_min, double lon_min){
+    for (int i=0; i<positions.size(); ++i){
+        Position& p = positions[i];
+        p.setLatitude((p.getLatitude()-lat_min)*10000);
+        p.setLongitude((p.getLongitude()-lon_min)*10000);
+    }
+}
+
 //add without copying elements, return the index of added element in the list
 int addPosition(Position pos, vector<Position>& positions){
     int trigger = -1;
@@ -43,6 +75,8 @@ Graph loadGraph(string instancePath, string instanceName){
     vector<Position> positions;
     vector<Vertex> vertices;
 
+    int isFirst = 1;
+
     cout << "trying to load : " << instancePath << instanceName << "/Graph.txt" << endl;
     f.open(instancePath + instanceName + "/Graph.txt");
     if (!f){
@@ -51,83 +85,82 @@ Graph loadGraph(string instancePath, string instanceName){
         cout<<"\nsuccessful load\n"<<endl;
     }
 
-    getline(f,line);
-    arcs = split(line,'{');
+    while(getline(f,line)){
+        arcs = split(line,'{');
+        std::cout << "nb arcs : " << arcs.size() << std::endl;
+        for (int k=isFirst; k<arcs.size(); ++k){
+            isFirst=0;
+            string arc = arcs[k];
+            vector<string> parameters = split(arc,':');
+            vector<string> parameterNames;
+            vector<string> value;
 
-    for (int k=1; k<arcs.size(); ++k){
-        string arc = arcs[k];
-        vector<string> parameters = split(arc,':');
-        vector<string> parameterNames;
-        vector<string> value;
+            int minIndex=-1;
+            int maxIndex=-1;
+            double length=-1;
+            int ID = -1;
+            std::string roadType;
 
-        int minIndex=-1;
-        int maxIndex=-1;
-        double length=-1;
-        int ID = -1;
-        std::string roadType;
-
-        parameterNames.push_back(split(parameters[0],'"')[0]);
-        for (int i=1; i<(parameters.size()-1); ++i){
-            parameterNames.push_back(split(parameters[i],'"')[1]);
-        }
-
-        for (int i=1; i<(parameters.size()-1); ++i){
-            value.push_back(split(parameters[i],',')[0]);
-        }
-        value.push_back(split(parameters[parameters.size()-1],'}')[0]);
-
-        for (int i=0; i<parameterNames.size(); ++i){
-            string parameterName = parameterNames[i];
-
-            if (parameterName == "lat_max"){
-                for (int j=0; j<parameterNames.size(); ++j){
-                    string ndParameterName = parameterNames[j];
-                    if (ndParameterName == "lon_max"){
-                        Position pos(stod(value[i]),stod(value[j]));
-                        int actualSize = positions.size();
-                        maxIndex = addPosition(pos,positions);
-                        if ((positions[maxIndex]==pos)!=1){
-                            std::cout << "héhéhé" << std::endl;
-                        }
-                        if (positions.size()!=actualSize){
-                            vertices.push_back(Vertex(positions[maxIndex]));
-                        }
-                    }
-                }
+            parameterNames.push_back(split(parameters[0],'"')[0]);
+            for (int i=1; i<(parameters.size()-1); ++i){
+                parameterNames.push_back(split(parameters[i],'"')[1]);
             }
 
-            if (parameterName == "lat_min"){
-                for (int j=0; j<parameterNames.size(); ++j){
-                    string ndParameterName = parameterNames[j];
-                    if (ndParameterName == "lon_min"){
-                        Position pos(stod(value[i]),stod(value[j]));
-                        int actualSize = positions.size();
-                        minIndex = addPosition(pos,positions);
-                        if (positions.size()!=actualSize){
-                            vertices.push_back(Vertex(positions[minIndex]));
+            for (int i=1; i<(parameters.size()-1); ++i){
+                value.push_back(split(parameters[i],',')[0]);
+            }
+            value.push_back(split(parameters[parameters.size()-1],'}')[0]);
+
+            for (int i=0; i<parameterNames.size(); ++i){
+                string parameterName = parameterNames[i];
+
+                if (parameterName == "lat_max"){
+                    for (int j=0; j<parameterNames.size(); ++j){
+                        string ndParameterName = parameterNames[j];
+                        if (ndParameterName == "lon_max"){
+                            Position pos(stod(value[i]),stod(value[j]));
+                            int actualSize = positions.size();
+                            maxIndex = addPosition(pos,positions);
+                            if ((positions[maxIndex]==pos)!=1){
+                                std::cout << "héhéhé" << std::endl;
+                            }
                         }
                     }
                 }
+
+                if (parameterName == "lat_min"){
+                    for (int j=0; j<parameterNames.size(); ++j){
+                        string ndParameterName = parameterNames[j];
+                        if (ndParameterName == "lon_min"){
+                            Position pos(stod(value[i]),stod(value[j]));
+                            int actualSize = positions.size();
+                            minIndex = addPosition(pos,positions);
+                            if ((positions[minIndex]==pos)!=1){
+                                std::cout << "héhéhé" << std::endl;
+                            }
+                        }
+                    }
+                }
+
+                if (parameterName == "type"){
+                    roadType = value[i];
+                }
+
+                if (parameterName == "length"){
+                    length = stod(value[i]);
+                }
             }
 
-            if (parameterName == "type"){
-                roadType = value[i];
-            }
-
-            if (parameterName == "length"){
-                length = stod(value[i]);
-            }
+            edges.push_back(Edge(minIndex,maxIndex,length,roadType,ID));
         }
+    }
 
-        for (int i=0; i<vertices.size();++i){
-            vertices[i].setID(i);
-        }
+    for (int i=0; i<edges.size();++i){
+        edges[i].setID(i);
+    }
 
-        edges.push_back(Edge(minIndex,maxIndex,length,roadType,ID));
-
-        for (int i=0; i<edges.size();++i){
-            edges[i].setID(i);
-        }
+    for (int i=0; i<positions.size();++i){
+        vertices.push_back(Vertex(positions[i],std::vector<Demand>(),i));
     }
 
     return Graph(vertices,edges);
@@ -193,7 +226,41 @@ Instance load(string instancePath, string instanceName){
     
     Graph g = loadGraph(instancePath, instanceName);
     vector<Demand> demands = loadDemands(instancePath, instanceName);
+    
+    std::vector<Position> verticesPos;
+    std::vector<Position> demandPos;
+
+    for (Vertex v : g.getVertices()){
+        verticesPos.push_back(v.getPos());
+    }
+
+    for (Demand d : demands){
+        demandPos.push_back(d.getPos());
+    }
+
+    updatePos(demandPos,getLatMin(verticesPos),getLonMin(verticesPos));
+
+    updatePos(verticesPos,getLatMin(verticesPos),getLonMin(verticesPos));
+
+    for (int i=0; i<demands.size();++i){
+        Demand& d = demands[i];
+        d.setLatitude(demandPos[i].getLatitude());
+        d.setLongitude(demandPos[i].getLongitude());
+    }
+
+    std::vector<Vertex> vertices;
+    for (int i=0; i<g.getVertices().size();++i){
+        vertices.push_back(
+            Vertex(
+                Position(verticesPos[i].getLatitude(), verticesPos[i].getLongitude()),
+                std::vector<Demand>(),i
+                )
+            );
+    }
+
+    g = Graph(vertices,g.getEdges());
     g.addDemands(demands);
+
     return Instance(g,instanceName);
 }
 
