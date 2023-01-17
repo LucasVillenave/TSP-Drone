@@ -17,10 +17,10 @@ class Demand{
         int getAmount();
         void setAmount(int amount);
 
-        int getLatitude();
-        int getLongitude();
-        void setLongitude(int longitude);
-        void setLatitude(int latitude);
+        double getLatitude();
+        double getLongitude();
+        void setLongitude(double longitude);
+        void setLatitude(double latitude);
 
         Position getPos();
         void setPos(Position pos);

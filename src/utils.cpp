@@ -18,9 +18,9 @@ int closest(std::vector<Vertex> vertices, Position pos){
 }
 
 double euclidianDistance(Position p1,Position p2){
-    double deltaLon = (p1.getLongitude()-p2.getLongitude())*100000;
+    double deltaLon = (p1.getLongitude()-p2.getLongitude());
     deltaLon = deltaLon*deltaLon;
-    double deltaLat = (p1.getLatitude()-p2.getLatitude())*100000;
+    double deltaLat = (p1.getLatitude()-p2.getLatitude());
     deltaLat = deltaLat*deltaLat;
     return std::sqrt(
            deltaLat+deltaLon

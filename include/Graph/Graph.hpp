@@ -15,7 +15,8 @@ class Graph{
         std::vector<Edge> edges;
         std::vector<Demand> demands;
 
-        std::vector<std::vector<Edge>> adjacencyMatrix;
+        std::vector<std::vector<Edge>> adjacencyList;
+        std::vector<std::vector<int>> adjacencyMatrix;
 
         std::vector<std::vector<int>> TSPKernelDist;
         std::vector<std::vector<std::vector<int>>> TSPKernelPath;
@@ -33,14 +34,20 @@ class Graph{
         void addDemands(std::vector<Demand> demands);
         void addDemand(Demand d);
 
+        const std::vector<std::vector<Edge>>& getAdjacencyList() const;
+        const std::vector<Edge>& getAdjacencyList(int vertexID) const;
+
+        const std::vector<std::vector<int>>& getAdjacencyMatrix() const;
+        const std::vector<int>& getAdjacencyMatrix(int vertexID) const;
+
         const std::vector<Vertex>& getVertices() const;
-        const Vertex& getVertices(int GraphID);
+        const Vertex& getVertices(int GraphID) const;
 
         const std::vector<Demand>& getDemands() const;
-        const Demand& getDemand(int GraphID);
+        const Demand& getDemand(int GraphID) const;
 
         const std::vector<Edge>& getEdges() const;
-        const Edge& getEdge(int GraphID);
+        const Edge& getEdge(int GraphID) const;
 
         const std::vector<std::vector<int>>& getTSPKernelDist();
         const std::vector<std::vector<std::vector<int>>>& getTSPKernelPath();
