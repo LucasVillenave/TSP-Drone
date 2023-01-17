@@ -11,7 +11,7 @@ class SolveurTSPMTZ{
     public :
     SolveurTSPMTZ();
     SolveurTSPMTZ(Instance instance);
-    Solution solve();
+    void solve();
 
 };
 
