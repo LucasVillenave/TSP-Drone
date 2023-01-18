@@ -7,7 +7,7 @@ double Preview::degree_to_meters(double x)
     return 60*1852*x;
 }
 
-double Preview::set_minimum(const std::vector<Vertex> &t_vertices)
+void Preview::set_minimum(const std::vector<Vertex> &t_vertices)
 {
     double min_lat = 90.0, min_lon = 180.0;
     for(auto& v : t_vertices)
@@ -21,7 +21,6 @@ double Preview::set_minimum(const std::vector<Vertex> &t_vertices)
     min_lon = floor(min_lon*100)/100;
     m_latitude_init = min_lat;
     m_longitude_init = min_lon;
-
 }
 
 double Preview::getY(double y) const

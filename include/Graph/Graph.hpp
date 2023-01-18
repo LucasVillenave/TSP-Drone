@@ -49,11 +49,11 @@ class Graph{
         const std::vector<Edge>& getEdges() const;
         const Edge& getEdge(int GraphID) const;
 
-        const std::vector<std::vector<double>>& getTSPKernelDist();
-        const std::vector<std::vector<std::vector<int>>>& getTSPKernelPath();
+        const std::vector<std::vector<double>>& getTSPKernelDist() const;
+        const std::vector<std::vector<std::vector<int>>>& getTSPKernelPath() const;
 
-        double getTSPKernelDist(int i, int j);
-        const std::vector<int>& getTSPKernelPath(int i, int j);
+        double getTSPKernelDist(int i, int j) const;
+        const std::vector<int>& getTSPKernelPath(int i, int j) const;
 };
 
 inline std::ostream &operator<<(std::ostream &os, const Graph& g)

@@ -87,7 +87,6 @@ Graph loadGraph(string instancePath, string instanceName){
 
     while(getline(f,line)){
         arcs = split(line,'{');
-        std::cout << "nb arcs : " << arcs.size() << std::endl;
         for (int k=isFirst; k<arcs.size(); ++k){
             isFirst=0;
             string arc = arcs[k];
@@ -121,9 +120,6 @@ Graph loadGraph(string instancePath, string instanceName){
                             Position pos(stod(value[i]),stod(value[j]));
                             int actualSize = positions.size();
                             maxIndex = addPosition(pos,positions);
-                            if ((positions[maxIndex]==pos)!=1){
-                                std::cout << "héhéhé" << std::endl;
-                            }
                         }
                     }
                 }
@@ -135,9 +131,6 @@ Graph loadGraph(string instancePath, string instanceName){
                             Position pos(stod(value[i]),stod(value[j]));
                             int actualSize = positions.size();
                             minIndex = addPosition(pos,positions);
-                            if ((positions[minIndex]==pos)!=1){
-                                std::cout << "héhéhé" << std::endl;
-                            }
                         }
                     }
                 }
@@ -252,7 +245,7 @@ Instance load(const string& instancePath, const string& instanceName){
     for (int i=0; i<g.getVertices().size();++i){
         vertices.push_back(
             Vertex(
-                Position(verticesPos[i].getLatitude(), verticesPos[i].getLongitude()),
+                verticesPos[i],
                 std::vector<Demand>(),i
                 )
             );
