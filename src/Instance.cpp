@@ -1,24 +1,19 @@
 #include "Instance.hpp"
 
-Instance::Instance(){}
-Instance::Instance(Graph g, std::string instanceName){
-    this->instanceName = instanceName;
-    this->graph = g;
-}
+Instance::Instance(Graph t_graph, std::string t_instanceName)
+    : graph(std::move(t_graph)), instanceName(std::move(t_instanceName)) {}
 
-Instance::Instance(std::vector<Vertex> vertices, std::vector<Edge> edges, std::string instanceName){
-    this->instanceName = instanceName;
-    this->graph = Graph(vertices,edges);
-}
+Instance::Instance(std::vector<Vertex> t_vertices, std::vector<Edge> t_edges, std::string t_instanceName)
+    : graph(Graph(std::move(t_vertices), std::move(t_edges))), instanceName(std::move(t_instanceName)) {}
 
-void Instance::addDemands(std::vector<Demand> demands){
-    this->graph.addDemands(demands);
+void Instance::addDemands(const std::vector<Demand>& demands){
+    graph.addDemands(demands);
 }
 
 void Instance::addDemand(Demand d){
-    this->graph.addDemand(d);
+    graph.addDemand(d);
 }
 
 const Graph & Instance::getGraph() const {
-    return this->graph;
+    return graph;
 }

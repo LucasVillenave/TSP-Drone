@@ -28,10 +28,10 @@ class Graph{
     public :
         // I made it so you can't modify the structure of the graph because the graph validity is checked in it's creation.
         // You must first create the graph with the vertices and edges and then add the demands
-        Graph();
-        Graph(std::vector<Vertex> vertices, std::vector<Edge> edges);
+        Graph()=default;
+        Graph(std::vector<Vertex> t_vertices, std::vector<Edge> t_edges);
 
-        void addDemands(std::vector<Demand> demands);
+        void addDemands(const std::vector<Demand>& t_demands);
         void addDemand(Demand d);
 
         const std::vector<std::vector<Edge>>& getAdjacencyList() const;
@@ -56,22 +56,22 @@ class Graph{
         const std::vector<int>& getTSPKernelPath(int i, int j);
 };
 
-inline std::ostream &operator<<(std::ostream &os, Graph g)
+inline std::ostream &operator<<(std::ostream &os, const Graph& g)
 {
     os << "Graph of size " << g.getVertices().size() << " vertices " << g.getEdges().size() << " edges and " << g.getDemands().size() << " demands" << std::endl << std::endl;
 
     os << "Vertices : " << std::endl;
-    for (Vertex v : g.getVertices()){
+    for (const Vertex& v : g.getVertices()){
         os << v << std::endl;
     }
 
     os << std::endl << "Edges : " << std::endl;
-    for (Edge e : g.getEdges()){
+    for (const Edge& e : g.getEdges()){
         os << e << std::endl;
     }
 
     os << std::endl << "Demands : " << std::endl;
-    for (Demand d : g.getDemands()){
+    for (const Demand& d : g.getDemands()){
         os << d << std::endl;
     }
 

@@ -20,15 +20,15 @@ class Event{
         int eventType = -1;
 
     public : 
-        Event();
-        Event(Position pos1, int time, int eventType, Position pos2 = Position(), int demandID = -1, int droneID = -1);
+        Event()=default;
+        Event(Position t_pos1, int t_time, int t_eventType, Position t_pos2 = Position(), int t_demandID = -1, int t_droneID = -1);
 
-        int getTime();
-        int getEventType();
-        int getDemandID();
-        int getDroneID();
-        Position getPos1();
-        Position getPos2();
+        int getTime() const;
+        int getEventType() const;
+        int getDemandID() const;
+        int getDroneID() const;
+        Position getPos1() const;
+        Position getPos2() const;
 };
 
 inline std::ostream &operator<<(std::ostream &os, Event e)

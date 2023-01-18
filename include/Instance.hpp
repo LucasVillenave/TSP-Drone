@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <utility>
 
 #include "Graph/Graph.hpp"
 
@@ -14,11 +15,11 @@ class Instance{
 
 
     public :
-        Instance();
-        Instance(Graph g, std::string instanceName);
-        Instance(std::vector<Vertex> vertices, std::vector<Edge> edges, std::string instanceName);
+        Instance()=default;
+        Instance(Graph t_graph, std::string t_instanceName);
+        Instance(std::vector<Vertex> t_vertices, std::vector<Edge> t_edges, std::string t_instanceName);
 
-        void addDemands(std::vector<Demand> demands);
+        void addDemands(const std::vector<Demand>& demands);
         void addDemand(Demand d);
 
         const Graph & getGraph() const;

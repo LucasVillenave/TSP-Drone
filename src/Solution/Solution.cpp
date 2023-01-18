@@ -1,23 +1,20 @@
 #include "Solution/Solution.hpp"
-#include <stdexcept>
-#include <iostream>
 
-Solution::Solution(Instance instance, std::vector<Event> eventList){
+Solution::Solution(Instance t_instance, const std::vector<Event>& t_eventList)
+    : instance(std::move(t_instance)), eventList(t_eventList)
+{
     int time = 0;
-    for (Event e : eventList){
+    for (Event e : t_eventList){
         if (time>e.getTime()){
             throw std::invalid_argument("event list given in solution creation isn't timely ordered");
         }
         time = e.getTime();
     }
-    
-    this->instance = instance;
-    this->eventList = eventList;
 }
 
 int Solution::check(int scenario){
     if (scenario>3 || scenario<0){
-        std::cout << "scenario should be between 0 and 3, " << scenario << " was given" << std::endl;;
+        std::cout << "scenario should be between 0 and 3, " << scenario << " was given" << std::endl;
         throw std::invalid_argument("");
     }
     if (isValid[scenario]==-1){
@@ -26,7 +23,7 @@ int Solution::check(int scenario){
     return isValid[scenario];
 }
 
-const std::vector<Event>& Solution::getEvents()
+const std::vector<Event>& Solution::getEvents() const
 {
     return eventList;
 }

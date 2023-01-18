@@ -4,6 +4,7 @@
 #include <iostream>
 
 int closest(std::vector<Vertex> vertices, Position pos){
+    /*
     int min = INT_MAX;
     int returnID = -1;
     for (int i = 0; i<vertices.size(); ++i){
@@ -15,6 +16,12 @@ int closest(std::vector<Vertex> vertices, Position pos){
         }
     }
     return returnID;
+     */
+    for(unsigned int v=0, n=vertices.size(); v<n; ++v)
+    {
+        if(vertices[v].getPos()==pos)
+            return v;
+    }
 }
 
 double euclidianDistance(Position p1,Position p2){

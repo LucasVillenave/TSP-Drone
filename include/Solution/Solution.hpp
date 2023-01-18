@@ -1,6 +1,9 @@
 #ifndef SOLUTION
 #define SOLUTION
 
+#include <stdexcept>
+#include <iostream>
+#include <utility>
 #include "Instance.hpp"
 #include "Event.hpp"
 
@@ -11,9 +14,9 @@ class Solution{
         std::vector<int> isValid = std::vector<int>(4,-1);
 
     public :
-        Solution(Instance instance, std::vector<Event> eventList);
+        Solution(Instance t_instance, const std::vector<Event>& t_eventList);
 
-        const std::vector<Event>& getEvents();
+        const std::vector<Event>& getEvents() const;
         const std::vector<Vertex>& getVertices() const;
         const std::vector<Edge>& getEdges() const;
 

@@ -3,7 +3,7 @@
 
 #include "Solution/Solution.hpp"
 
-Instance load(std::string instancePath, std::string instanceName);
+Instance load(const std::string& instancePath, const std::string& instanceName);
 
 void write(Solution sol);
 

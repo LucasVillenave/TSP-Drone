@@ -1,11 +1,15 @@
 #include "SolveurTSPMTZ.hpp"
+<<<<<<< HEAD
 #include "gurobi_c++.h" 
+=======
+
+#include <utility>
+#include "gurobi_c++.h"
+>>>>>>> 859a09ebd73b8f1538ea93b2c042c69bc9e611e9
 
 SolveurTSPMTZ::SolveurTSPMTZ(){}
 
-SolveurTSPMTZ::SolveurTSPMTZ(Instance inst){
-    this->inst = inst;
-}
+SolveurTSPMTZ::SolveurTSPMTZ(Instance t_inst) : inst(std::move(t_inst)) {}
 
 void SolveurTSPMTZ::solve(){
     //Get shortest distances between clients

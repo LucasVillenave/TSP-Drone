@@ -45,8 +45,8 @@ double getLonMin(std::vector<Position> & positions){
 void updatePos(std::vector<Position> & positions, double lat_min, double lon_min){
     for (int i=0; i<positions.size(); ++i){
         Position& p = positions[i];
-        p.setLatitude((p.getLatitude()-lat_min)*10000);
-        p.setLongitude((p.getLongitude()-lon_min)*10000);
+        p.setY((p.getLatitude() - lat_min) * 10000);
+        p.setX((p.getLongitude() - lon_min) * 10000);
     }
 }
 
@@ -160,13 +160,13 @@ Graph loadGraph(string instancePath, string instanceName){
     }
 
     for (int i=0; i<positions.size();++i){
-        vertices.push_back(Vertex(positions[i],std::vector<Demand>(),i));
+        vertices.emplace_back(positions[i],std::vector<Demand>(),i);
     }
 
-    return Graph(vertices,edges);
+    return {vertices,edges};
 }
 
-vector<Demand> loadDemands(string instancePath, string instanceName){
+vector<Demand> loadDemands(const string& instancePath, const string& instanceName){
     string line;
     fstream f;
     vector<Demand> demands;
@@ -222,7 +222,7 @@ vector<Demand> loadDemands(string instancePath, string instanceName){
     return demands;
 }
 
-Instance load(string instancePath, string instanceName){
+Instance load(const string& instancePath, const string& instanceName){
     
     Graph g = loadGraph(instancePath, instanceName);
     vector<Demand> demands = loadDemands(instancePath, instanceName);
@@ -244,8 +244,8 @@ Instance load(string instancePath, string instanceName){
 
     for (int i=0; i<demands.size();++i){
         Demand& d = demands[i];
-        d.setLatitude(demandPos[i].getLatitude());
-        d.setLongitude(demandPos[i].getLongitude());
+        d.setY(demandPos[i].getY());
+        d.setX(demandPos[i].getX());
     }
 
     std::vector<Vertex> vertices;
