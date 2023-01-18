@@ -16,7 +16,7 @@ protected :
     double m_longitude_init = 0;
 
     static double degree_to_meters(double x);
-    double set_minimum(const std::vector<Vertex>& t_vertices);
+    void set_minimum(const std::vector<Vertex>& t_vertices);
     double getX(double x) const;
     double getY(double y) const;
 

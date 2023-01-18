@@ -3,12 +3,11 @@
 #include <stdexcept>
 #include <iostream>
 
-Graph::Graph(std::vector<Vertex> t_vertices, std::vector<Edge> t_edges)
-    : vertices(t_vertices)
+Graph::Graph(std::vector<Vertex> t_vertices, std::vector<Edge> t_edges) : vertices(t_vertices)
 {
 
     for (int i=0; i < t_vertices.size(); ++i){
-        t_vertices[i].setGraphID(i);
+        vertices[i].setGraphID(i);
         adjacencyList.emplace_back();
         adjacencyMatrix.emplace_back(t_vertices.size(), 0);
         TSPKernelDist.emplace_back(t_vertices.size(), -1);
@@ -31,7 +30,7 @@ Graph::Graph(std::vector<Vertex> t_vertices, std::vector<Edge> t_edges)
             throw std::invalid_argument("Bad t_vertices index on t_edges");
         }
     }
-
+    kernelize();
 }
 
 void Graph::addDemands(const std::vector<Demand>& t_demands){
@@ -79,35 +78,19 @@ void Graph::kernelize(){
     TSPKernelPath = updateDistMatrix(TSPKernelDist,adjacencyList,TMPvertices);
 }
 
-const std::vector<std::vector<double>>& Graph::getTSPKernelDist(){
-    if (isKernelized==0){
-        isKernelized=1;
-        kernelize();
-    }
+const std::vector<std::vector<double>>& Graph::getTSPKernelDist() const{
     return TSPKernelDist;
 }
 
-const std::vector<std::vector<std::vector<int>>>& Graph::getTSPKernelPath(){
-    if (isKernelized==0){
-        isKernelized=1;
-        kernelize();
-    }
+const std::vector<std::vector<std::vector<int>>>& Graph::getTSPKernelPath() const{
     return TSPKernelPath;
 }
 
-double Graph::getTSPKernelDist(int i, int j){
-    if (isKernelized==0){
-        isKernelized=1;
-        kernelize();
-    }
+double Graph::getTSPKernelDist(int i, int j) const{
     return TSPKernelDist[i][j];
 }
 
-const std::vector<int>& Graph::getTSPKernelPath(int i, int j){
-    if (isKernelized==0){
-        isKernelized=1;
-        kernelize();
-    }
+const std::vector<int>& Graph::getTSPKernelPath(int i, int j) const{
     return TSPKernelPath[i][j];
 }
 

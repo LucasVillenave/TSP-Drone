@@ -4,30 +4,24 @@
 #include <iostream>
 
 int closest(std::vector<Vertex> vertices, Position pos){
-    /*
     int min = INT_MAX;
     int returnID = -1;
     for (int i = 0; i<vertices.size(); ++i){
         Vertex v = vertices[i];
-        int dist = euclidianDistance(v.getPos(), pos);
+        double dist = euclidianDistance(v.getPos(), pos);
+        std::cout << dist << std::endl;
         if (dist < min){
             min = dist;
             returnID = i;
         }
     }
     return returnID;
-     */
-    for(unsigned int v=0, n=vertices.size(); v<n; ++v)
-    {
-        if(vertices[v].getPos()==pos)
-            return v;
-    }
 }
 
 double euclidianDistance(Position p1,Position p2){
-    double deltaLon = (p1.getLongitude()-p2.getLongitude());
+    double deltaLon = (p1.getX()-p2.getX());
     deltaLon = deltaLon*deltaLon;
-    double deltaLat = (p1.getLatitude()-p2.getLatitude());
+    double deltaLat = (p1.getY()-p2.getY());
     deltaLat = deltaLat*deltaLat;
     return std::sqrt(
            deltaLat+deltaLon
