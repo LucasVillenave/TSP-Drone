@@ -7,6 +7,9 @@
 //     Solution returnSol;
 
 //     try{
+//         int CardT = Instance.Graph.edges.size()*2;
+
+
 //         std::cout << "--> Creating the Gurobi environment" << std::endl;
 //         GRBEnv env(true);
 //         env.start();
@@ -19,13 +22,16 @@
 //         std::stringstream name;
 
 
+//         GRBVar * Omega = new GRBVar[CardT];
+//         GRBVar *** X = new GRBVar**[CardT];
+//         GRBVar ** Y = new GRBVar*[CardT];
+//         GRBVar **** Z = new GRBVar***[CardT];
+//         GRBVar **** Psi = new GRBVar***[CardT];
+//         for (int t=0; t<CardT; ++t){
+//             Omega[t] = model.addVar(0.0, GRB_INFINITY, 0.0, GRB_CONTINUOUS, name.str());
 
 
 
-
-//         GRBVar ** Y = new GRBVar*[instance.nbPeriode];
-//         GRBVar *** X = new GRBVar**[instance.nbPeriode];
-//         for (int t=0; t<instance.nbPeriode; ++t){
 //             Y[t] = new GRBVar[instance.nbDepotPotentiel];
 //             X[t] = new GRBVar*[instance.nbDepotPotentiel];
 //             for (int i=0; i<instance.nbDepotPotentiel; ++i){
