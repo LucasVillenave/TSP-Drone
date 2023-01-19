@@ -16,6 +16,8 @@ class Graph{
         std::vector<Demand> demands;
 
         std::vector<std::vector<Edge>> adjacencyList;
+
+        //warning, the adjacency matrix keep -1 if vertices aren't adjacent and the length of it's edge otherwise
         std::vector<std::vector<int>> adjacencyMatrix;
 
         std::vector<std::vector<double>> TSPKernelDist;
@@ -41,7 +43,7 @@ class Graph{
         const std::vector<int>& getAdjacencyMatrix(int vertexID) const;
 
         const std::vector<Vertex>& getVertices() const;
-        const Vertex& getVertices(int GraphID) const;
+        const Vertex& getVertice(int GraphID) const;
 
         const std::vector<Demand>& getDemands() const;
         const Demand& getDemand(int GraphID) const;

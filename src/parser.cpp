@@ -254,7 +254,16 @@ Instance load(const string& instancePath, const string& instanceName){
     g = Graph(vertices,g.getEdges());
     g.addDemands(demands);
 
-    return Instance(g,instanceName);
+    std::vector<std::string> roadTypes;
+    roadTypes.push_back("Primary");
+    roadTypes.push_back("Secondary");
+
+    std::vector<double> roadSpeed;
+    roadSpeed.push_back(60);
+    roadSpeed.push_back(45);
+    roadSpeed.push_back(30);
+
+    return Instance(g,instanceName,roadTypes,roadSpeed);
 }
 
 

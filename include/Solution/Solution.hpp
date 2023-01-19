@@ -11,7 +11,7 @@ class Solution{
     private :
         Instance instance;
         std::vector<Event> eventList;
-        std::vector<int> isValid = std::vector<int>(4,-1);
+        std::vector<int> isValid = std::vector<int>(4,0);
 
     public :
         Solution(Instance t_instance, const std::vector<Event>& t_eventList);
@@ -20,7 +20,11 @@ class Solution{
         const std::vector<Vertex>& getVertices() const;
         const std::vector<Edge>& getEdges() const;
 
-        int check(int scenario);
+        void check();
+        int checkTruck();
+        int checkDronesTimes();
+        int checkDemandSatisfaction();
+        void checkScenarsSpecifics();
 
 };
 

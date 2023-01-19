@@ -5,19 +5,19 @@
 
 Graph::Graph(std::vector<Vertex> t_vertices, std::vector<Edge> t_edges) : vertices(t_vertices)
 {
+    adjacencyList = std::vector<std::vector<Edge>>(t_vertices.size(),std::vector<Edge>());
+    adjacencyMatrix = std::vector<std::vector<int>>(t_vertices.size(),std::vector<int>(t_vertices.size(),-1));
+    TSPKernelDist = std::vector<std::vector<double>>(t_vertices.size(),std::vector<double>(t_vertices.size(),-1));
 
     for (int i=0; i < t_vertices.size(); ++i){
         vertices[i].setGraphID(i);
-        adjacencyList.emplace_back();
-        adjacencyMatrix.emplace_back(t_vertices.size(), 0);
-        TSPKernelDist.emplace_back(t_vertices.size(), -1);
     }
 
     for (int i=0; i < t_edges.size(); ++i){
         t_edges[i].setGraphID(i);
 
-        if (adjacencyMatrix[t_edges[i].getStartID()][t_edges[i].getEndID()] == 0){
-            adjacencyMatrix[t_edges[i].getStartID()][t_edges[i].getEndID()] = 1;
+        if (adjacencyMatrix[t_edges[i].getStartID()][t_edges[i].getEndID()] == -1){
+            adjacencyMatrix[t_edges[i].getStartID()][t_edges[i].getEndID()] = t_edges[i].getLength();
 
             adjacencyList[t_edges[i].getStartID()].push_back(t_edges[i]);
             adjacencyList[t_edges[i].getEndID()].push_back(t_edges[i]);
@@ -50,7 +50,7 @@ const std::vector<Vertex>& Graph::getVertices() const{
     return vertices;
 }
 
-const Vertex& Graph::getVertices(int GraphID) const{
+const Vertex& Graph::getVertice(int GraphID) const{
     return vertices[GraphID];
 }
 

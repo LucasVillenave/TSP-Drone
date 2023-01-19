@@ -6,8 +6,8 @@
 
 class Position{
     private :
-        const double m_longitude = -1;
-        const double m_latitude = -1;
+        double m_longitude = -1;
+        double m_latitude = -1;
         double m_x = -1;
         double m_y = -1;
 
