@@ -43,7 +43,7 @@ inline std::ostream &operator<<(std::ostream &os, Event e)
             break;
 
         case 2 :
-            os << e.getTime() << " ; LARGAGE DRONE " << e.getDroneID() << " POUR LIVRAISON COLIS ID : " << e.getDemandID() << " ; " << e.getDemandID() << " ; " << e.getPos1();
+            os << e.getTime() << " ; LARGAGE DRONE " << e.getDroneID() << " POUR LIVRAISON COLIS ID : " << e.getDemandID() << " ; " << e.getPos1();
             break;
 
         case 3 :

@@ -1,12 +1,12 @@
 #include "Instance.hpp"
 
 Instance::Instance(Graph t_graph, std::string t_instanceName, 
-                   std::vector<std::string> t_roadTypes, std::vector<double> t_roadSpeed)
-    : graph(std::move(t_graph)), instanceName(std::move(t_instanceName)), roadTypes(std::move(t_roadTypes)), roadSpeed(std::move(t_roadSpeed)) {}
+                   std::vector<std::string> t_roadTypes, std::vector<double> t_roadSpeed, double t_droneSpeed)
+    : graph(std::move(t_graph)), instanceName(std::move(t_instanceName)), roadTypes(std::move(t_roadTypes)), roadSpeed(std::move(t_roadSpeed)), droneSpeed(std::move(t_droneSpeed)) {}
 
 Instance::Instance(std::vector<Vertex> t_vertices, std::vector<Edge> t_edges, std::string t_instanceName,
-                   std::vector<std::string> t_roadTypes, std::vector<double> t_roadSpeed)
-    : graph(Graph(std::move(t_vertices), std::move(t_edges))), instanceName(std::move(t_instanceName)), roadTypes(std::move(t_roadTypes)), roadSpeed(std::move(t_roadSpeed)) {}
+                   std::vector<std::string> t_roadTypes, std::vector<double> t_roadSpeed, double t_droneSpeed)
+    : graph(Graph(std::move(t_vertices), std::move(t_edges))), instanceName(std::move(t_instanceName)), roadTypes(std::move(t_roadTypes)), roadSpeed(std::move(t_roadSpeed)), droneSpeed(std::move(t_droneSpeed)) {}
 
 void Instance::addDemands(const std::vector<Demand>& demands){
     graph.addDemands(demands);
@@ -20,7 +20,11 @@ const Graph & Instance::getGraph() const {
     return graph;
 }
 
-double Instance::getTravelTime(Edge e){
+int Instance::getDroneSpeed() const {
+    return droneSpeed;
+}
+
+double Instance::getTravelTime(Edge e) const{
     for (int i=0; i<roadTypes.size();++i){
         std::string roadType = roadTypes[i];
         if (roadType==e.getRoadType()){

@@ -42,6 +42,8 @@ void Graph::addDemands(const std::vector<Demand>& t_demands){
 void Graph::addDemand(Demand d){
     int closestID = closest(vertices,d.getPos());
     vertices[closestID].addDemand(d);
+    d.setNodeGraphID(closestID);
+    d.setNodePos(vertices[closestID].getPos());
     d.setGraphID(demands.size());
     demands.push_back(d);
 }

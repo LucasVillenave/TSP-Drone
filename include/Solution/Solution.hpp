@@ -22,7 +22,7 @@ class Solution{
 
         void check();
         int checkTruck();
-        int checkDronesTimes();
+        int checkDrones();
         int checkDemandSatisfaction();
         void checkScenarsSpecifics();
 
