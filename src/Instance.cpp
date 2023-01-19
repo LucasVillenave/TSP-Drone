@@ -2,11 +2,15 @@
 
 Instance::Instance(Graph t_graph, std::string t_instanceName, 
                    std::vector<std::string> t_roadTypes, std::vector<double> t_roadSpeed, double t_droneSpeed)
-    : graph(std::move(t_graph)), instanceName(std::move(t_instanceName)), roadTypes(std::move(t_roadTypes)), roadSpeed(std::move(t_roadSpeed)), droneSpeed(std::move(t_droneSpeed)) {}
+    : graph(std::move(t_graph)), instanceName(std::move(t_instanceName)), roadTypes(std::move(t_roadTypes)), roadSpeed(std::move(t_roadSpeed)), droneSpeed(std::move(t_droneSpeed)) {
+        graph.kernelize(*this);
+    }
 
 Instance::Instance(std::vector<Vertex> t_vertices, std::vector<Edge> t_edges, std::string t_instanceName,
                    std::vector<std::string> t_roadTypes, std::vector<double> t_roadSpeed, double t_droneSpeed)
-    : graph(Graph(std::move(t_vertices), std::move(t_edges))), instanceName(std::move(t_instanceName)), roadTypes(std::move(t_roadTypes)), roadSpeed(std::move(t_roadSpeed)), droneSpeed(std::move(t_droneSpeed)) {}
+    : graph(Graph(std::move(t_vertices), std::move(t_edges))), instanceName(std::move(t_instanceName)), roadTypes(std::move(t_roadTypes)), roadSpeed(std::move(t_roadSpeed)), droneSpeed(std::move(t_droneSpeed)) {
+        graph.kernelize(*this);
+    }
 
 void Instance::addDemands(const std::vector<Demand>& demands){
     graph.addDemands(demands);
@@ -15,6 +19,10 @@ void Instance::addDemands(const std::vector<Demand>& demands){
 void Instance::addDemand(Demand d){
     graph.addDemand(d);
 }
+
+int Instance::getTruckDeliveryTime() const{
+    return truckDeliveryTime;
+} 
 
 const Graph & Instance::getGraph() const {
     return graph;

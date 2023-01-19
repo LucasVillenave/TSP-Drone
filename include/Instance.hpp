@@ -15,6 +15,7 @@ class Instance{
 
         std::vector<std::string> roadTypes;
         std::vector<double> roadSpeed;
+        int truckDeliveryTime = 60;
 
         double droneSpeed;
 
@@ -29,6 +30,7 @@ class Instance{
         void addDemands(const std::vector<Demand>& demands);
         void addDemand(Demand d);
 
+        int Instance::getTruckDeliveryTime() const;
         double getTravelTime(Edge e) const;
         int getDroneSpeed() const;
 
