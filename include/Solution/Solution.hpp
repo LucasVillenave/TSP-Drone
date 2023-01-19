@@ -20,6 +20,9 @@ class Solution{
         const std::vector<Vertex>& getVertices() const;
         const std::vector<Edge>& getEdges() const;
 
+        int getIsValid(int scenar);
+        std::vector<int> getIsValids();
+
         void check();
         int checkTruck();
         int checkDrones();
@@ -30,6 +33,7 @@ class Solution{
 
 inline std::ostream &operator<<(std::ostream &os, Solution s)
 {
+    std::cout << "icibilly" << std::endl;
     for (Event e : s.getEvents()){
         os << e << std::endl;
     }

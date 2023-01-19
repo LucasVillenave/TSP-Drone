@@ -7,6 +7,11 @@ int main(){
 
     GRBEnv env(true);
 
+    Position p01(0,1);
+    Position p10(1,0);
+    Position p11(1,1);
+    Position p00(0,0);
+
     Position p1(1,2);
     Position p2(10,20);
     Position p3(50,100);
@@ -53,15 +58,16 @@ int main(){
     Instance i(g,"test");
 
     std::vector<Event> events;
-    events.push_back(Event(p6,3,0));
-    events.push_back(Event(p5,5,1));
+    events.push_back(Event(p00,0,0));
+    events.push_back(Event(p01,1,1));
     events.push_back(Event(p4,10,2,Position(),-1,1));
     events.push_back(Event(p4,10,3,Position(),-1,0));
     events.push_back(Event(p1,15,4,Position(),15,-1));
     events.push_back(Event(p2,155,5,Position(),160,1));
 
     Solution s(i,events);
-    std::cout << s << std::endl;
+    std::cout << "halahal a " << s << std::endl;
+    std::cout << s.getIsValid(0) << std::endl;
 
 
 }

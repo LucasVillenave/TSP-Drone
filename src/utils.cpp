@@ -9,7 +9,6 @@ int closest(std::vector<Vertex> vertices, Position pos){
     for (int i = 0; i<vertices.size(); ++i){
         Vertex v = vertices[i];
         double dist = euclidianDistance(v.getPos(), pos);
-        std::cout << dist << std::endl;
         if (dist < min){
             min = dist;
             returnID = i;
