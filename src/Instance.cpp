@@ -27,5 +27,5 @@ double Instance::getTravelTime(Edge e){
             return (e.getLength()/roadSpeed[i]);
         }
     }
-    return -1;
+    return e.getLength()/roadSpeed[roadSpeed.size()-1];
 }

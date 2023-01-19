@@ -89,14 +89,17 @@ int Solution::checkTruck(){
 }
 
 int Solution::checkDronesTimes(){
+    //ToDo
     return 1;
 }
 
 int Solution::checkDemandSatisfaction(){
+    //ToDo
     return 1;
 }
 
 void Solution::checkScenarsSpecifics(){
+    //ToDo
 }
 
 const std::vector<Event>& Solution::getEvents() const
