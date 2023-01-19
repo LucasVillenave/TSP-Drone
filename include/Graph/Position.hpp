@@ -6,23 +6,28 @@
 
 class Position{
     private :
-        double longitude = -1;
-        double latitude = -1;
+        double m_longitude = -1;
+        double m_latitude = -1;
+        double m_x = -1;
+        double m_y = -1;
 
     public :
-        Position();
-        Position(double latitude, double longitude);
+        Position()=default;
+        Position(double t_latitude, double t_longitude);
 
-        double getLatitude();
-        double getLongitude();
+        double getLongitude() const;
+        double getLatitude() const;
+        double getX() const;
+        double getY() const;
 
-        void setLongitude(double longitude);
-        void setLatitude(double latitude);
+        void setX(double t_x);
+        void setY(double t_y);
 };
 
 inline std::ostream &operator<<(std::ostream &os, Position p)
 {
-    os << std::setprecision(10) << "(LAT : " << p.getLatitude() << " ; LON : " << p.getLongitude() << ")";
+    os << std::setprecision(10) << "(LAT : " << p.getLatitude() << "(" << p.getX() << ") ; LON : " 
+    << p.getLongitude() << "(" << p.getY() << ")" << ")";
     return os;
 }
 

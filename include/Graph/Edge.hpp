@@ -14,21 +14,21 @@ class Edge{
         int GraphID = -1;
 
     public :
-        Edge();
-        Edge(int startID, int endID, int lenght, std::string roadType, int ID=-1);
+        Edge()=default;
+        Edge(int t_startID, int t_endID, int t_lenght, std::string t_roadType, int t_ID=-1);
 
-        int getStartID();
-        int getEndID();
+        int getStartID() const;
+        int getEndID() const;
 
-        double getLength();
+        double getLength() const;
 
-        int getID();
-        int getGraphID();
-        void setID(int ID);
-        void setGraphID(int GraphID);
+        int getID() const;
+        int getGraphID() const;
+        void setID(int t_ID);
+        void setGraphID(int t_GraphID);
 
-        std::string getRoadType();
-        void setRoadType(std::string roadType);
+        std::string getRoadType() const;
+        void setRoadType(std::string t_roadType);
 };
 
 inline std::ostream &operator<<(std::ostream &os, Edge e)

@@ -1,5 +1,5 @@
 #include <iostream>
-#include "Solution.hpp"
+#include "Solution/Solution.hpp"
 #include "gurobi_c++.h"
 
 int main(){

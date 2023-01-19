@@ -8,7 +8,8 @@ int closest(std::vector<Vertex> vertices, Position pos){
     int returnID = -1;
     for (int i = 0; i<vertices.size(); ++i){
         Vertex v = vertices[i];
-        int dist = euclidianDistance(v.getPos(), pos);
+        double dist = euclidianDistance(v.getPos(), pos);
+        std::cout << dist << std::endl;
         if (dist < min){
             min = dist;
             returnID = i;
@@ -18,16 +19,16 @@ int closest(std::vector<Vertex> vertices, Position pos){
 }
 
 double euclidianDistance(Position p1,Position p2){
-    double deltaLon = (p1.getLongitude()-p2.getLongitude())*100000;
+    double deltaLon = (p1.getX()-p2.getX());
     deltaLon = deltaLon*deltaLon;
-    double deltaLat = (p1.getLatitude()-p2.getLatitude())*100000;
+    double deltaLat = (p1.getY()-p2.getY());
     deltaLat = deltaLat*deltaLat;
     return std::sqrt(
            deltaLat+deltaLon
            );
 }
 
-int getNextVertex(const std::vector<int>& optimalDist, const std::vector<int>& isOpt){
+int getNextVertex(const std::vector<double>& optimalDist, const std::vector<int>& isOpt){
     int minID = -1;
     int min = INT_MAX;
     for (int i=0; i<optimalDist.size(); i++){
@@ -42,13 +43,13 @@ int getNextVertex(const std::vector<int>& optimalDist, const std::vector<int>& i
 }
 
 std::vector<std::vector<int>> dijkstra(int source, 
-                                         std::vector<std::vector<int>> & returnMatrix,
+                                         std::vector<std::vector<double>> & returnMatrix,
                                          const std::vector<std::vector<Edge>>& adjacencyList, 
                                          const std::vector<int>& vertices)
 {
     std::vector<std::vector<int>> optimalPath;
     std::vector<int> isOpt;
-    std::vector<int> optimalDist;
+    std::vector<double> optimalDist;
 
     int n = vertices.size();
 
@@ -88,7 +89,7 @@ std::vector<std::vector<int>> dijkstra(int source,
     return optimalPath;
 }
 
-std::vector<std::vector<std::vector<int>>> updateDistMatrix (std::vector<std::vector<int>> & returnMatrix,
+std::vector<std::vector<std::vector<int>>> updateDistMatrix (std::vector<std::vector<double>> & returnMatrix,
                                                                const std::vector<std::vector<Edge>>& adjacencyList, 
                                                                const std::vector<int>& vertices)
  {

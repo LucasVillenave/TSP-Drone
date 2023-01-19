@@ -3,38 +3,39 @@
 #include <stdexcept>
 #include <iostream>
 
-Graph::Graph(){}
+Graph::Graph(std::vector<Vertex> t_vertices, std::vector<Edge> t_edges) : vertices(t_vertices)
+{
+    adjacencyList = std::vector<std::vector<Edge>>(t_vertices.size(),std::vector<Edge>());
+    adjacencyMatrix = std::vector<std::vector<int>>(t_vertices.size(),std::vector<int>(t_vertices.size(),-1));
+    TSPKernelDist = std::vector<std::vector<double>>(t_vertices.size(),std::vector<double>(t_vertices.size(),-1));
 
-Graph::Graph(std::vector<Vertex> vertices, std::vector<Edge> edges){
-
-    for (int i=0; i<vertices.size(); ++i){
+    for (int i=0; i < t_vertices.size(); ++i){
         vertices[i].setGraphID(i);
-        adjacencyMatrix.push_back(std::vector<Edge>());
-        TSPKernelDist.push_back(std::vector<int>(vertices.size(),-1));
-        // for (int j=0; j<vertices.size(); ++j){
-
-        // }
     }
 
-    for (int i=0; i<edges.size(); ++i){
-        edges[i].setGraphID(i);
+    for (int i=0; i < t_edges.size(); ++i){
+        t_edges[i].setGraphID(i);
 
-        adjacencyMatrix[edges[i].getStartID()].push_back(edges[i]);
-        adjacencyMatrix[edges[i].getEndID()].push_back(edges[i]);
+        if (adjacencyMatrix[t_edges[i].getStartID()][t_edges[i].getEndID()] == -1){
+            adjacencyMatrix[t_edges[i].getStartID()][t_edges[i].getEndID()] = t_edges[i].getLength();
 
-        if ((edges[i].getStartID()<0 || edges[i].getStartID()>=vertices.size() ||
-             edges[i].getEndID()<0 || edges[i].getEndID()>=vertices.size())){
-            throw std::invalid_argument("Bad vertices index on edges");
+            adjacencyList[t_edges[i].getStartID()].push_back(t_edges[i]);
+            adjacencyList[t_edges[i].getEndID()].push_back(t_edges[i]);
+
+            edges.push_back(t_edges[i]);
+        }
+
+        if ((t_edges[i].getStartID() < 0 || t_edges[i].getStartID() >= t_vertices.size() ||
+             t_edges[i].getEndID() < 0 || t_edges[i].getEndID() >= t_vertices.size())){
+            throw std::invalid_argument("Bad t_vertices index on t_edges");
         }
     }
-
-    this->vertices = vertices;
-    this->edges = edges;
+    kernelize();
 }
 
-void Graph::addDemands(std::vector<Demand> demands){
-    for (Demand d : demands){
-        this->addDemand(d);
+void Graph::addDemands(const std::vector<Demand>& t_demands){
+    for (const Demand& d : t_demands){
+        addDemand(d);
     }
 }
 
@@ -45,27 +46,27 @@ void Graph::addDemand(Demand d){
     demands.push_back(d);
 }
 
-const std::vector<Vertex>& Graph::getVertices(){
+const std::vector<Vertex>& Graph::getVertices() const{
     return vertices;
 }
 
-const Vertex& Graph::getVertice(int GraphID){
+const Vertex& Graph::getVertice(int GraphID) const{
     return vertices[GraphID];
 }
 
-const std::vector<Demand>& Graph::getDemands(){
+const std::vector<Demand>& Graph::getDemands() const{
     return demands;
 }
 
-const Demand& Graph::getDemand(int GraphID){
+const Demand& Graph::getDemand(int GraphID) const{
     return demands[GraphID];
 }
 
-const std::vector<Edge>& Graph::getEdges(){
+const std::vector<Edge>& Graph::getEdges() const{
     return edges;
 }
 
-const Edge& Graph::getEdge(int GraphID){
+const Edge& Graph::getEdge(int GraphID) const{
     return edges[GraphID];
 }
 
@@ -74,37 +75,37 @@ void Graph::kernelize(){
     for (int i=0; i<vertices.size();++i){
         TMPvertices.push_back(i);
     }
-    TSPKernelPath = updateDistMatrix(TSPKernelDist,adjacencyMatrix,TMPvertices);
+    TSPKernelPath = updateDistMatrix(TSPKernelDist,adjacencyList,TMPvertices);
 }
 
-const std::vector<std::vector<int>>& Graph::getTSPKernelDist(){
-    if (isKernelized==0){
-        isKernelized=1;
-        kernelize();
-    }
+const std::vector<std::vector<double>>& Graph::getTSPKernelDist() const{
     return TSPKernelDist;
 }
 
-const std::vector<std::vector<std::vector<int>>>& Graph::getTSPKernelPath(){
-    if (isKernelized==0){
-        isKernelized=1;
-        kernelize();
-    }
+const std::vector<std::vector<std::vector<int>>>& Graph::getTSPKernelPath() const{
     return TSPKernelPath;
 }
 
-int Graph::getTSPKernelDist(int i, int j){
-    if (isKernelized==0){
-        isKernelized=1;
-        kernelize();
-    }
+double Graph::getTSPKernelDist(int i, int j) const{
     return TSPKernelDist[i][j];
 }
 
-const std::vector<int>& Graph::getTSPKernelPath(int i, int j){
-    if (isKernelized==0){
-        isKernelized=1;
-        kernelize();
-    }
+const std::vector<int>& Graph::getTSPKernelPath(int i, int j) const{
     return TSPKernelPath[i][j];
+}
+
+const std::vector<std::vector<Edge>>& Graph::getAdjacencyList() const{
+    return adjacencyList;
+}
+
+const std::vector<Edge>& Graph::getAdjacencyList(int vertexID) const{
+    return adjacencyList[vertexID];
+}
+
+const std::vector<std::vector<int>>& Graph::getAdjacencyMatrix() const{
+    return adjacencyMatrix;
+}
+
+const std::vector<int>& Graph::getAdjacencyMatrix(int vertexID) const{
+    return adjacencyMatrix[vertexID];
 }

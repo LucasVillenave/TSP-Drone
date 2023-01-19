@@ -11,24 +11,26 @@ class Demand{
         int GraphID = -1;
 
     public :
-        Demand();
-        Demand(Position pos, int amount,int ID=-1);
+        Demand()=default;
+        Demand(Position pos, int amount, int ID=-1);
 
-        int getAmount();
-        void setAmount(int amount);
+        int getAmount() const;
+        void setAmount(int t_amount);
 
-        int getLatitude();
-        int getLongitude();
-        void setLongitude(int longitude);
-        void setLatitude(int latitude);
+        double getLongitude() const;
+        double getLatitude() const;
+        double getX() const;
+        double getY() const;
+        void setX(double t_x);
+        void setY(double t_y);
 
-        Position getPos();
-        void setPos(Position pos);
+        const Position& getPos() const;
+        void setPos(Position t_pos);
 
-        int getID();
-        int getGraphID();
-        void setID(int ID);
-        void setGraphID(int GraphID);
+        int getID() const;
+        int getGraphID() const;
+        void setID(int t_ID);
+        void setGraphID(int t_GraphID);
 };
 
 inline std::ostream &operator<<(std::ostream &os, Demand d)
