@@ -336,3 +336,8 @@ const std::vector<Edge>& Solution::getEdges() const
 {
     return instance.getGraph().getEdges();
 }
+
+const std::vector<Demand>& Solution::getDemands() const
+{
+    return instance.getGraph().getDemands();
+}

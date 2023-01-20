@@ -19,6 +19,7 @@ class Solution{
         const std::vector<Event>& getEvents() const;
         const std::vector<Vertex>& getVertices() const;
         const std::vector<Edge>& getEdges() const;
+        const std::vector<Demand>& getDemands() const;
 
         void check();
         int checkTruck();
