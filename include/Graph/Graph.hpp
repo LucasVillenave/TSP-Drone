@@ -9,6 +9,8 @@
 // -- GraphID correspond to the position of the item in the graph List and therefore access to the item in O(1)
 // -- GraphID works best as long as the lists inside the graph aren't shuffled
 
+class Instance;
+
 class Graph{
     private :
         std::vector<Vertex> vertices;
@@ -23,15 +25,13 @@ class Graph{
         std::vector<std::vector<double>> TSPKernelDist;
         std::vector<std::vector<std::vector<int>>> TSPKernelPath;
 
-        int isKernelized=0;
-
-        void kernelize();
-
     public :
         // I made it so you can't modify the structure of the graph because the graph validity is checked in it's creation.
         // You must first create the graph with the vertices and edges and then add the demands
         Graph()=default;
         Graph(std::vector<Vertex> t_vertices, std::vector<Edge> t_edges);
+
+        void kernelize(Instance instance);
 
         void addDemands(const std::vector<Demand>& t_demands);
         void addDemand(Demand d);

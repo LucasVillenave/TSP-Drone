@@ -35,7 +35,7 @@ inline std::ostream &operator<<(std::ostream &os, Event e)
 {
     switch (e.getEventType()){
         case 0 :
-            os << e.getTime() << " ; DEPLACEMENT VEHICULE DESTINATION ; (LAT : " << e.getPos1() << " : " << e.getPos2();
+            os << e.getTime() << " ; DEPLACEMENT VEHICULE DESTINATION : " << e.getPos1() << " : " << e.getPos2();
             break;
 
         case 1 :

@@ -11,6 +11,7 @@ Solution::Solution(Instance t_instance, const std::vector<Event>& t_eventList)
         }
         time = e.getTime();
     }
+    check();
 }
 
 void Solution::check(){
@@ -27,7 +28,7 @@ int Solution::checkTruck(){
     Event previousEvent;
     int previousEventType = -1;
     for (int i=0; i<eventList.size();++i){
-        Event actualEvent = eventList[i];
+        const Event& actualEvent = eventList[i];
         int actualEventType = actualEvent.getEventType();
         if (actualEventType<=1){
 
@@ -57,11 +58,11 @@ int Solution::checkTruck(){
 
             if (actualEventType==0){
                 int isEdgeExisting = 0;
-                Position EventP1 = actualEvent.getPos1();
-                Position EventP2 = actualEvent.getPos2();
+                const Position& EventP1 = actualEvent.getPos1();
+                const Position& EventP2 = actualEvent.getPos2();
                 for (Edge edge : this->instance.getGraph().getEdges()){
-                    Position EdgeP1 = this->instance.getGraph().getVertice(edge.getStartID()).getPos();
-                    Position EdgeP2 = this->instance.getGraph().getVertice(edge.getEndID()).getPos();
+                    const Position& EdgeP1 = this->instance.getGraph().getVertice(edge.getStartID()).getPos();
+                    const Position& EdgeP2 = this->instance.getGraph().getVertice(edge.getEndID()).getPos();
                     if ( ((EventP1 == EdgeP1) && (EventP2 == EdgeP2)) || ((EventP1 == EdgeP2) && (EventP2 == EdgeP1))){
                         isEdgeExisting = 1;
 
@@ -146,13 +147,49 @@ int Solution::checkDrones(){
 
 int Solution::checkDemandSatisfaction(){
     std::vector<int> deliveredDemandAmounts;
-    const std::vector<Demand>& demands = this->instance.getGraph().getDemands();
+    const std::vector<Demand>& demands = instance.getGraph().getDemands();
     for (Demand d : demands){
         deliveredDemandAmounts.push_back(d.getAmount());
     }
 
-    for (Event event : eventList){
+    for (int i=0; i<eventList.size(); ++i){
+        Event event = eventList[i];
         if (event.getEventType()>=4){
+
+            if (event.getEventType()==4){
+                Event arrivalTruckEvent;
+                Event departureTruckEvent;
+                for (int j=0; j<i; ++i){
+                    Event newSuperPlusEvent = eventList[j];
+                    if (newSuperPlusEvent.getEventType()==1){
+                        arrivalTruckEvent = newSuperPlusEvent;
+                    }
+                }
+                for (int j=i+1; (j<eventList.size()) && (departureTruckEvent.getEventType()==-1); ++i){
+                    Event newSuperPlusEvent = eventList[j];
+                    if (newSuperPlusEvent.getEventType()==0){
+                        departureTruckEvent = newSuperPlusEvent;
+                    }
+                }
+
+                //truck don't go before demand is delvered, lazy fucker !
+                if (departureTruckEvent.getTime() < event.getTime() + instance.getTruckDeliveryTime()){
+                    isValid = std::vector<int>(4,-27);
+                    return 0;
+                }
+
+                //truck must be where he deliver
+                if ((event.getPos1()==arrivalTruckEvent.getPos1())!=1){
+                    isValid = std::vector<int>(4,-26);
+                    return 0;
+                }
+            }
+
+            // invalid event DemandID
+            if (event.getDemandID()<=0 || event.getDemandID() > instance.getGraph().getDemands().size()){
+                isValid = std::vector<int>(4,-25);
+                return 0;
+            }
             deliveredDemandAmounts[event.getDemandID()] -= 1;
         }
     }
@@ -179,21 +216,22 @@ void Solution::checkScenarsSpecifics(){
 
     for (int i=0; i<eventList.size(); ++i){
         Event event = eventList[i];
+        int droneID = event.getDroneID();
         if (event.getEventType() == 2){
             Event arrivalDroneEvent;
             int arrivalDroneTime;
             for (int j=i+1; ((j<eventList.size()) && (arrivalDroneEvent.getEventType()==-1)); ++j){
-                if (eventList[j].getEventType()==3){
+                if ((eventList[j].getEventType()==3) && (eventList[j].getDroneID()==droneID)){
                     arrivalDroneEvent = eventList[j];
-                    arrivalDroneTime = i;
+                    arrivalDroneTime = j;
                 }
             }
 
             std::vector<int> isLastArrival(2,-1);
             std::vector<int> arrivalTime (2,-1);
 
-            std::vector<Event> arrivalTruckEvent(2,Event());
-            std::vector<Event> departureTruckEvent(2,Event());
+            std::vector<Event> arrivalTruckEvent(2,Event(instance.getGraph().getVertice(0).getPos(),0,1));
+            std::vector<Event> departureTruckEvent(2,Event(instance.getGraph().getVertice(0).getPos(),0,1,instance.getGraph().getVertice(0).getPos()));
 
             for (int j=0; j<i; ++j){
                 if (eventList[j].getEventType()==1){
@@ -326,7 +364,6 @@ const std::vector<Event>& Solution::getEvents() const
     return eventList;
 }
 
-
 const std::vector<Vertex>& Solution::getVertices() const
 {
     return instance.getGraph().getVertices();
@@ -335,6 +372,14 @@ const std::vector<Vertex>& Solution::getVertices() const
 const std::vector<Edge>& Solution::getEdges() const
 {
     return instance.getGraph().getEdges();
+}
+
+int Solution::getIsValid(int scenar){
+    return isValid[scenar];
+}
+
+std::vector<int> Solution::getIsValids(){
+    return isValid;
 }
 
 const std::vector<Demand>& Solution::getDemands() const
