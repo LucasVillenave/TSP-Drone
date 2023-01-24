@@ -3,6 +3,12 @@
 #include <climits>
 #include <iostream>
 
+double degree_to_meter(double x)
+{
+    // 1' = 1852m
+    return 60*1852*x;
+}
+
 int closest(std::vector<Vertex> vertices, Position pos){
     int min = INT_MAX;
     int returnID = -1;
@@ -25,6 +31,15 @@ double euclidianDistance(Position p1,Position p2){
     return std::sqrt(
            deltaLat+deltaLon
            );
+}
+
+double euclidianDistance(double t_x_first, double t_y_first, double t_x_second, double t_y_second)
+{
+    double delta_lon = degree_to_meter(t_x_first - t_x_second),
+            delta_lat = degree_to_meter(t_y_first - t_y_second);
+    delta_lon = delta_lon*delta_lon;
+    delta_lat = delta_lat*delta_lat;
+    return std::sqrt(delta_lon + delta_lat);
 }
 
 int getNextVertex(const std::vector<double>& optimalDist, const std::vector<int>& isOpt){
