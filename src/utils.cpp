@@ -127,12 +127,59 @@ std::vector<std::vector<std::vector<int>>> updateDistMatrix (std::vector<std::ve
     return optimalPath;
 }
 
-Solution convert(Instance instance, std::vector<std::vector<std::vector<int>>> x, std::vector<std::vector<std::vector<int>>> z, std::vector<int> y, int scenario){
+void convertDroneCase1(const Instance& instance, std::vector<std::vector<std::vector<int>>> z, std::vector<Event>& eventList, int startingNode, double time){
+    int n = instance.getGraph().getVertices().size();
+    int m = instance.getGraph().getDemands().size();
+    const std::vector<Vertex>& vertices = instance.getGraph().getVertices();
+
+    for (int a=0; a<1; a++){
+        for (int d=0; d<m; ++d){
+            const std::vector<Demand>& demands = instance.getGraph().getDemands();
+            Vertex t = vertices[demands[d].getNodeGraphID()];
+            if (z[startingNode][d][a]==1){
+                eventList.push_back(Event(vertices[startingNode].getPos(),time,2,t.getPos(),m,a));
+                time += euclidianDistance(vertices[startingNode].getPos(),t.getPos())/instance.getDroneSpeed();
+                eventList.push_back(Event(t.getPos(),time,5,Position(),m,a));
+                time += euclidianDistance(vertices[startingNode].getPos(),t.getPos())/instance.getDroneSpeed();
+                eventList.push_back(Event(vertices[startingNode].getPos(),time,3,Position(),-1,a));
+            }
+        }
+    }
+}
+
+void sortByTime(std::vector<Event>& eventList){
+    std::vector<double> times;
+    std::vector<Event> sortedList;
+    for (Event e : eventList){
+        double eTime = e.getTime();
+        int asBeenPlaced = 0;
+        if (times[0]>eTime){
+            times.insert(times.begin(),eTime);
+            sortedList.insert(sortedList.begin(),e);
+        }else{
+            for (int i=1; i<times.size(); ++i){
+                if ((times[i-1]<eTime) && (times[i]>eTime)){
+                    asBeenPlaced=1;
+                    times.insert(times.begin()+i,eTime);
+                    sortedList.insert(sortedList.begin()+i,e);
+                    break;
+                }
+            }
+        }
+        if (asBeenPlaced==0){
+            times.push_back(eTime);
+            sortedList.push_back(e);
+        }
+    }
+    eventList = sortedList;
+}
+
+Solution convertCase01(const Instance& instance, std::vector<std::vector<std::vector<int>>> x, std::vector<std::vector<std::vector<int>>> z, int scenario){
     std::vector<Event> eventList;
     double time = 0;
 
     int n = instance.getGraph().getVertices().size();
-    if (z.size()!=n || y.size()!=n){
+    if (z.size()!=n){
         throw std::invalid_argument("invalid sized arguments");
     }
     for (int i=0; i<n; ++i){
@@ -168,31 +215,32 @@ Solution convert(Instance instance, std::vector<std::vector<std::vector<int>>> x
             throw std::invalid_argument("invalid x");
         }
     }
-
+    
     const std::vector<Vertex>& vertices = instance.getGraph().getVertices();
 
-    if (scenario==0){
-        for (std::vector<std::vector<int>> xt : x){
-            for (int i=0; i<n; ++i){
-                for (int j=0; j<n; ++j){
-                    if (xt[i][j]==1){
-                        std::vector<int> path = instance.getGraph().getTSPKernelPath(i,j);
-                        for(int k=1; k<path.size(); k++){
-                            eventList.push_back(Event(vertices[path[k-1]].getPos(),time,0,vertices[path[k]].getPos()));
-                            time += instance.getGraph().getTSPKernelDist(path[k-1],path[k]);
-                            eventList.push_back(Event(vertices[path[k]].getPos(),time,1));
-                        }
-                        for (Demand d : instance.getGraph().getVertice(j).getDemands()){
-                            for (int kl=0; kl<d.getAmount(); ++kl){
-                                eventList.push_back(Event(d.getNodePos(),time,4,Position(),d.getGraphID()));
-                                time += instance.getTruckDeliveryTime();
-                            }
+    for (std::vector<std::vector<int>> xt : x){
+        for (int i=0; i<n; ++i){
+            for (int j=0; j<n; ++j){
+                if (xt[i][j]==1){
+                    std::vector<int> path = instance.getGraph().getTSPKernelPath(i,j);
+                    for(int k=1; k<path.size(); k++){
+                        eventList.push_back(Event(vertices[path[k-1]].getPos(),time,0,vertices[path[k]].getPos()));
+                        time += instance.getGraph().getTSPKernelDist(path[k-1],path[k]);
+                        eventList.push_back(Event(vertices[path[k]].getPos(),time,1));
+                        convertDroneCase1(instance,z,eventList,vertices[path[k]].getGraphID(),time);
+                    }
+                    for (Demand d : instance.getGraph().getVertice(j).getDemands()){
+                        for (int kl=0; kl<d.getAmount(); ++kl){
+                            eventList.push_back(Event(d.getNodePos(),time,4,Position(),d.getGraphID()));
+                            time += instance.getTruckDeliveryTime();
                         }
                     }
                 }
             }
         }
     }
+
+    sortByTime(eventList);
 
     return Solution(instance,std::vector<Event>());
 }

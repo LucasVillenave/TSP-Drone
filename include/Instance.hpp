@@ -30,7 +30,7 @@ class Instance{
         void addDemands(const std::vector<Demand>& demands);
         void addDemand(Demand d);
 
-        int Instance::getTruckDeliveryTime() const;
+        int getTruckDeliveryTime() const;
         double getTravelTime(Edge e) const;
         int getDroneSpeed() const;
 
