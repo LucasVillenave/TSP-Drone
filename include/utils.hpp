@@ -15,6 +15,6 @@ std::vector<std::vector<std::vector<int>>> updateDistMatrix (std::vector<std::ve
                                                                const std::vector<std::vector<Edge>>& adjacencyList, 
                                                                const std::vector<int>& vertices, Instance instance);
 
-Solution convert(Instance i, std::vector<std::vector<int>> x, std::vector<std::vector<std::vector<int>>> z, std::vector<int> y, int scenario);
+Solution convertCase01(Instance i, std::vector<std::vector<int>> x, std::vector<std::vector<std::vector<int>>> z, int scenario);
 
 #endif
