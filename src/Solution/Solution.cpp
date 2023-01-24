@@ -11,7 +11,9 @@ Solution::Solution(Instance t_instance, const std::vector<Event>& t_eventList)
         }
         time = e.getTime();
     }
+    std::cout << "checking" << std::endl;
     check();
+    std::cout << "finished checking" << std::endl;
 }
 
 void Solution::check(){

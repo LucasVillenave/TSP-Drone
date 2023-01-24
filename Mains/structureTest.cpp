@@ -20,9 +20,9 @@ int main(){
     Position p5(11,25);
     Position p6(15,35);
 
-    Demand d1(p4,5);
-    Demand d2(p5,1);
-    Demand d3(p6,1);
+    Demand d1(p4,5,15);
+    Demand d2(p5,1,16);
+    Demand d3(p6,1,12);
 
     Vertex v1(p1 ,std::vector<Demand>(), 12);
     Vertex v2(p2 ,std::vector<Demand>(), 18);
@@ -65,7 +65,10 @@ int main(){
     events.push_back(Event(p1,15,4,Position(),15,-1));
     events.push_back(Event(p2,155,5,Position(),160,1));
 
+    std::vector<int> roadSpeeds(1,0);
+
     Solution s(i,events);
+
     std::cout << "halahal a " << s << std::endl;
     std::cout << s.getIsValid(0) << std::endl;
 

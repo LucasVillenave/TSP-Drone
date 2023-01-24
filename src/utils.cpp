@@ -62,6 +62,7 @@ std::vector<std::vector<int>> dijkstra(int source,
 
     int actualVertex = source;
     int isAllOpt=0;
+
     while(!isAllOpt){
         isOpt[actualVertex] = 1;
         for (Edge e : adjacencyList[actualVertex]){
