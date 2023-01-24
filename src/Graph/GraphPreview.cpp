@@ -8,24 +8,24 @@ class GraphPreview : public Preview {
     void write_tikz() override;
 
 public:
-    explicit GraphPreview(Graph t_graph);
+    GraphPreview(Graph t_graph, const std::string& t_filename);
 
 };
 
-GraphPreview::GraphPreview(Graph t_graph)
-    : Preview("graph"), m_graph(std::move(t_graph))
+GraphPreview::GraphPreview(Graph t_graph, const std::string& t_filename)
+    : Preview(t_filename), m_graph(std::move(t_graph))
 {
     set_minimum(m_graph.getVertices());
 }
 
-void graphPreview(Graph t_graph)
+void graphPreview(const Graph& t_graph, const std::string& t_filename)
 {
-    GraphPreview(std::move(t_graph))();
+    GraphPreview(t_graph, t_filename)();
 }
 
 void GraphPreview::write_tikz()
 {
-    m_file << "\\begin{tikzpicture}[xscale=" << m_xscale << "]\n";
+    m_file << "\\begin{tikzpicture}[xscale=1]\n";
     write_edges(m_graph.getEdges(), m_graph.getVertices());
     write_vertices(m_graph.getVertices());
     new_line();
