@@ -21,8 +21,8 @@ class Solution{
         const std::vector<Edge>& getEdges() const;
         const std::vector<Demand>& getDemands() const;
 
-        int getIsValid(int scenar);
-        std::vector<int> getIsValids();
+        int getIsValid(unsigned int scenar) const;
+        std::vector<int> getIsValid() const;
 
         void check();
         int checkTruck();
@@ -34,7 +34,6 @@ class Solution{
 
 inline std::ostream &operator<<(std::ostream &os, Solution s)
 {
-    std::cout << "icibilly" << std::endl;
     for (Event e : s.getEvents()){
         os << e << std::endl;
     }

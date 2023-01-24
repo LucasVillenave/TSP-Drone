@@ -137,6 +137,7 @@ Graph loadGraph(string instancePath, string instanceName){
 
                 if (parameterName == "type"){
                     roadType = value[i];
+                    roadType = roadType.substr(1, roadType.size()-2);
                 }
 
                 if (parameterName == "length"){
@@ -255,8 +256,8 @@ Instance load(const string& instancePath, const string& instanceName){
     g.addDemands(demands);
 
     std::vector<std::string> roadTypes;
-    roadTypes.push_back("Primary");
-    roadTypes.push_back("Secondary");
+    roadTypes.push_back("primary");
+    roadTypes.push_back("secondary");
 
     std::vector<double> roadSpeed;
     roadSpeed.push_back(60);
