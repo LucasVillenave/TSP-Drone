@@ -19,10 +19,14 @@ class Solution{
         const std::vector<Event>& getEvents() const;
         const std::vector<Vertex>& getVertices() const;
         const std::vector<Edge>& getEdges() const;
+        const std::vector<Demand>& getDemands() const;
+
+        int getIsValid(unsigned int scenar) const;
+        std::vector<int> getIsValid() const;
 
         void check();
         int checkTruck();
-        int checkDronesTimes();
+        int checkDrones();
         int checkDemandSatisfaction();
         void checkScenarsSpecifics();
 

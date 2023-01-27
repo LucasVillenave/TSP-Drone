@@ -4,6 +4,6 @@
 #include "Graph.hpp"
 #include "Preview.hpp"
 
-void graphPreview(Graph t_graph);
+void graphPreview(const Graph& t_graph, const std::string& t_filename="graph");
 
 #endif //VRP_DRONE_GRAPHPREVIEW_H

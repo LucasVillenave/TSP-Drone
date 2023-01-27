@@ -30,7 +30,6 @@ Graph::Graph(std::vector<Vertex> t_vertices, std::vector<Edge> t_edges) : vertic
             throw std::invalid_argument("Bad t_vertices index on t_edges");
         }
     }
-    kernelize();
 }
 
 void Graph::addDemands(const std::vector<Demand>& t_demands){
@@ -42,6 +41,8 @@ void Graph::addDemands(const std::vector<Demand>& t_demands){
 void Graph::addDemand(Demand d){
     int closestID = closest(vertices,d.getPos());
     vertices[closestID].addDemand(d);
+    d.setNodeGraphID(closestID);
+    d.setNodePos(vertices[closestID].getPos());
     d.setGraphID(demands.size());
     demands.push_back(d);
 }
@@ -70,12 +71,12 @@ const Edge& Graph::getEdge(int GraphID) const{
     return edges[GraphID];
 }
 
-void Graph::kernelize(){
+void Graph::kernelize(Instance instance){
     std::vector<int> TMPvertices;
     for (int i=0; i<vertices.size();++i){
         TMPvertices.push_back(i);
     }
-    TSPKernelPath = updateDistMatrix(TSPKernelDist,adjacencyList,TMPvertices);
+    TSPKernelPath = updateDistMatrix(TSPKernelDist,adjacencyList,TMPvertices, instance);
 }
 
 const std::vector<std::vector<double>>& Graph::getTSPKernelDist() const{
