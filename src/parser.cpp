@@ -1,6 +1,5 @@
 #include "parser.hpp"
 #include <vector>
-#include <sstream>
 #include <fstream>
 #include <iostream>
 
@@ -265,9 +264,4 @@ Instance load(const string& instancePath, const string& instanceName){
     roadSpeed.push_back(30);
 
     return Instance(g,instanceName,roadTypes,roadSpeed);
-}
-
-
-void write(Solution sol){
-    //ToDo
 }

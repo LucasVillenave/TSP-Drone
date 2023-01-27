@@ -33,7 +33,7 @@ double euclidianDistance(Position p1,Position p2){
            );
 }
 
-double euclidianDistance(double t_x_first, double t_y_first, double t_x_second, double t_y_second)
+double euclidianDistanceBis(double t_x_first, double t_y_first, double t_x_second, double t_y_second)
 {
     double delta_lon = degree_to_meter(t_x_first - t_x_second),
             delta_lat = degree_to_meter(t_y_first - t_y_second);
@@ -114,16 +114,16 @@ std::vector<std::vector<std::vector<int>>> updateDistMatrix (std::vector<std::ve
     int n = vertices.size();
 
     if (returnMatrix.size()!=vertices.size()){
-        throw std::invalid_argument("invalid argument size in diskstra");
+        throw std::invalid_argument("invalid argument size in dijkstra");
     }
 
     if (adjacencyList.size()!=vertices.size()){
-        throw std::invalid_argument("invalid argument size in diskstra");
+        throw std::invalid_argument("invalid argument size in dijkstra");
     }
 
     for (int i=0; i<n; i++){
         if(returnMatrix[i].size()!=n){
-            throw std::invalid_argument("invalid argument size in diskstra");
+            throw std::invalid_argument("invalid argument size in dijkstra");
         }
     }
     int scale = (n/10)+1;

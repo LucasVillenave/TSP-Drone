@@ -34,6 +34,7 @@ class Solution{
 
 inline std::ostream &operator<<(std::ostream &os, Solution s)
 {
+    os << "TEMPS ; EVENEMENT ; LOCALISATION" << std::endl;
     for (Event e : s.getEvents()){
         os << e << std::endl;
     }
