@@ -315,11 +315,6 @@ std::vector<Event> getEventCase3(const Instance& instance)
 }
 
 int main(){
-    Solution s = solution_convert("../Data/", "init", "../python/results_tsp.txt");
-    for(unsigned int i = 0, n = s.getIsValid().size(); i < n; ++i)
-        std::cout << s.getIsValid(i) << std::endl;
-    return 1;
-
     Instance instance = load("../Data/","init");
     const Graph& graph = instance.getGraph();
 /*
@@ -350,12 +345,11 @@ int main(){
     //solutionPreview(solution);
     //system("pdflatex solution.tex");
     //system("xdg-open solution.pdf");
-
+/*
     std::filebuf fb;
     fb.open ("solution.txt",std::ios::out);
     std::ostream os(&fb);
     os << solution;
     fb.close();
-
-
+*/
 }
