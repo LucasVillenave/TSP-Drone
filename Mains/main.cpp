@@ -28,4 +28,7 @@ int main(){
     //     }
     //     std::cout << std::endl; 
     // }
+
+    std::cout << g.getNbr_noeuds_demandes() << std::endl;
+    std::cout << g.getNbr_demandes_unitaires() << std::endl;
 }

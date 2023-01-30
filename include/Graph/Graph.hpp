@@ -17,6 +17,9 @@ class Graph{
         std::vector<Edge> edges;
         std::vector<Demand> demands;
 
+        int nbr_noeuds_demandes;
+        int nbr_demandes_unitaires;
+
         std::vector<std::vector<Edge>> adjacencyList;
 
         //warning, the adjacency matrix keep -1 if vertices aren't adjacent and the length of it's edge otherwise
@@ -35,6 +38,9 @@ class Graph{
 
         void addDemands(const std::vector<Demand>& t_demands);
         void addDemand(Demand d);
+
+        int getNbr_noeuds_demandes() const;
+        int getNbr_demandes_unitaires() const;
 
         const std::vector<std::vector<Edge>>& getAdjacencyList() const;
         const std::vector<Edge>& getAdjacencyList(int vertexID) const;

@@ -2,6 +2,8 @@
 // #include "Mod1V1.hpp"
 
 
+
+// // i supose everything is well loaded and the graph is kernilised
 // Solution Mod1V1::solve(FLPData instance){
     
 //     Solution returnSol;

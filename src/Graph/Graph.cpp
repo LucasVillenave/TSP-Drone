@@ -40,11 +40,23 @@ void Graph::addDemands(const std::vector<Demand>& t_demands){
 
 void Graph::addDemand(Demand d){
     int closestID = closest(vertices,d.getPos());
+    if (vertices[closestID].getTDA() > 0){
+        nbr_noeuds_demandes = nbr_noeuds_demandes + 1;
+    }
     vertices[closestID].addDemand(d);
     d.setNodeGraphID(closestID);
     d.setNodePos(vertices[closestID].getPos());
     d.setGraphID(demands.size());
     demands.push_back(d);
+    nbr_demandes_unitaires = nbr_demandes_unitaires + d.getAmount();
+}
+
+int Graph::getNbr_noeuds_demandes() const{
+    return nbr_noeuds_demandes;
+}
+
+int Graph::getNbr_demandes_unitaires() const{
+    return nbr_demandes_unitaires;
 }
 
 const std::vector<Vertex>& Graph::getVertices() const{
