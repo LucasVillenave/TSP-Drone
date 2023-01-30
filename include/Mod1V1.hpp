@@ -1,10 +1,11 @@
-#ifndef Mod1V1
-#define Mod1V1
+#ifndef MOD1V1
+#define MOD1V1
 
 #include <vector>
 #include <string>
 
-#include "Solution.hpp"
+#include "Solution/Solution.hpp"
+#include "utils.hpp"
 
 class Mod1V1{
     public : 
@@ -12,7 +13,7 @@ class Mod1V1{
 
         Mod1V1(int timeout){this->timeLimit = timeout;}
 
-        Solution solve(FLPData instance);
+        Solution solve(Instance instance);
 };
 
 #endif
