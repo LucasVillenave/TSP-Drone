@@ -27,8 +27,8 @@ void Solution::check(){
 // the 4 first checks checks for flow conservation. the last two check if the truck is time coherent and on roads.
 int Solution::checkTruck(){
 
-    Event previousEvent;
-    int previousEventType = -1;
+    Event previousEvent(instance.getGraph().getVertice(0).getPos(),0,1);
+    int previousEventType = 1;
     for (int i=0; i<eventList.size();++i){
         const Event& actualEvent = eventList[i];
         int actualEventType = actualEvent.getEventType();
@@ -58,7 +58,7 @@ int Solution::checkTruck(){
                 return 0;
             }
 
-            if (previousEventType == 0){//(actualEventType==0 && previousEventType != -1)!!
+            if (actualEventType == 1){
                 int isEdgeExisting = 0;
                 const Position& EventP1 = previousEvent.getPos1();
                 const Position& EventP2 = previousEvent.getPos2();
@@ -67,9 +67,11 @@ int Solution::checkTruck(){
                     const Position& EdgeP2 = this->instance.getGraph().getVertice(edge.getEndID()).getPos();
                     if ( ((EventP1 == EdgeP1) && (EventP2 == EdgeP2)) || ((EventP1 == EdgeP2) && (EventP2 == EdgeP1))){
                         isEdgeExisting = 1;
+                        std::cout << edge.getRoadType() << std::endl;
 
                         //trucker warped space-time again (arriving before depart time + travel time)
                         if (actualEvent.getTime() < (previousEvent.getTime() + this->instance.getTravelTime(edge))){
+                            std::cout << "time necessary " << this->instance.getTravelTime(edge) << std::endl;
                             isValid = std::vector<int>(4,-6);
                             return 0;
                         }
@@ -89,6 +91,13 @@ int Solution::checkTruck(){
             previousEvent = actualEvent;
         }
     }
+
+    //At the end you should arrive to depot
+    if ((previousEventType!=1) || (1!=(previousEvent.getPos1()==instance.getGraph().getVertice(0).getPos()))){
+        isValid = std::vector<int>(4,-69);
+        return 0;
+    }
+
     return 1;
 }
 
@@ -198,9 +207,11 @@ int Solution::checkDemandSatisfaction(){
         }
     }
 
-    for (int i : deliveredDemandAmounts){
+    for (int i = 0; i<deliveredDemandAmounts.size(); ++i){
+        int amountDelivered = deliveredDemandAmounts[i];
         //Delivered too much or not enought
-        if (i != 0){
+        if (amountDelivered != 0){
+            std::cout << "on demand " << i << " delivered " << (demands[i].getAmount()-amountDelivered) << " instead of " << demands[i].getAmount() << std::endl;
             isValid = std::vector<int>(4,-13);
             return 0;
         }

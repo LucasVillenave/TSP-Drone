@@ -41,24 +41,32 @@ int main(){
 
     //Demands
     Demand d0(p1,1,-5);
+    Demand d1(p5,3,-4);
+
 
     //Basic stuffs
     Graph graph(vertices,edges);
     graph.addDemand(d0);
+    graph.addDemand(d1);
 
     Instance instance(graph,"dindon");
 
-    vertices[1].addDemand(d0);
-
     //Events
     std::vector<Event> events;
-    Event ev0(p0,0,0,p1);
-    Event ev1(p1,200,1);
-    Event ev2(p1,200,4,Position(),0);
-    Event ev3(p1,3000,0,p0);
-    Event ev4(p0,3200,1);
-
-    events.push_back(ev0); events.push_back(ev1); events.push_back(ev2); events.push_back(ev3); events.push_back(ev4);
+    events.push_back(Event(p0,0,0,p1));
+    events.push_back(Event(p1,200,1));
+    events.push_back(Event(p1,200,4,Position(),0));
+    events.push_back(Event(p1,260,0,p3));
+    events.push_back(Event(p3,460,1));
+    events.push_back(Event(p3,460,0,p5));
+    events.push_back(Event(p5,660,1));
+    events.push_back(Event(p5,660,4,Position(),1));
+    events.push_back(Event(p5,720,4,Position(),1));
+    events.push_back(Event(p5,780,4,Position(),1));
+    events.push_back(Event(p5,840,0,p2));
+    events.push_back(Event(p2,1040,1));
+    events.push_back(Event(p2,1040,0,p0));
+    events.push_back(Event(p0,1240,1));
 
     Solution sol(instance,events);
 
