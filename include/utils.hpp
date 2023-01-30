@@ -9,7 +9,7 @@ double degree_to_meter(double x);
 int closest(std::vector<Vertex> vertices, Position pos);
 
 double euclidianDistance(Position p1,Position p2);
-double euclidianDistance(double t_x_first, double t_y_first, double t_x_second, double t_y_second);
+double euclidianDistanceBis(double t_x_first, double t_y_first, double t_x_second, double t_y_second);
 
 std::vector<std::vector<std::vector<int>>> updateDistMatrix (std::vector<std::vector<double>> & returnMatrix,
                                                                const std::vector<std::vector<Edge>>& adjacencyList, 

@@ -7,10 +7,11 @@ Il a pour but d'optimiser l'intégration de drones de livraison dans la flotte d
 ## TODO
 
 - [x] **[Lucas]** Lecture des données et structures
-- [ ] Écriture des solutions
-- [ ] Affichage des solutions
-- [ ] Checker de solution
-- [ ] Modèle pour le problème de base
-- [ ] Modèle pour le premier cas
+- [x] **[Lucas]** Écriture des solutions
+- [x] **[Chloé]** Lecture des solutions
+- [x] **[Chloé]** Affichage des solutions
+- [x] **[Lucas]** Checker de solution
+- [x] **[Basile]** Modèle pour le problème de base
+- [ ] **[Patxi]** Modèle pour le premier cas
 - [ ] Heuristique pour le premier cas
 - [ ] Heuristique pour le second cas
