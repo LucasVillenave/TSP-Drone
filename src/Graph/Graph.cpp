@@ -51,6 +51,13 @@ void Graph::addDemand(Demand d){
     d.setGraphID(demands.size());
     demands.push_back(d);
     nbr_demandes_unitaires = nbr_demandes_unitaires + d.getAmount();
+    Demand d_unit = Demand(d.getInitPos(), 1, -1);
+    d_unit.setNodeGraphID(closestID);
+    d_unit.setNodePos(vertices[closestID].getPos());
+    d_unit.setGraphID(demandsUnit.size());
+    for (int eps=0; eps<d.getAmount(); ++eps){
+        demandsUnit.push_back(d_unit);
+    }
 }
 
 int Graph::getNbr_noeuds_demandes() const{
@@ -74,6 +81,14 @@ const std::vector<Demand>& Graph::getDemands() const{
 }
 
 const Demand& Graph::getDemand(int GraphID) const{
+    return demands[GraphID];
+}
+
+const std::vector<Demand>& Graph::getDemandsUnit() const{
+    return demands;
+}
+
+const Demand& Graph::getDemandUnit(int GraphID) const{
     return demands[GraphID];
 }
 

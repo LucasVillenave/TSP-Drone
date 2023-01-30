@@ -55,6 +55,9 @@ class Graph{
         const std::vector<Demand>& getDemands() const;
         const Demand& getDemand(int GraphID) const;
 
+        const std::vector<Demand>& getDemandsUnit() const;
+        const Demand& getDemandUnit(int GraphID) const;
+
         const std::vector<Edge>& getEdges() const;
         const Edge& getEdge(int GraphID) const;
 
