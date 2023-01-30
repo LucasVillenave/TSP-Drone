@@ -22,7 +22,7 @@
 // void SolveurTSPMTZ::solve(){
 //     //Get shortest distances between clients
 //     Graph graph = inst.getGraph();
-//     std::vector<std::vector<double>> distances = graph.getTSPKernelDist();
+//     std::vector<std::vector<double>> distances = graph.getTSPKernelTime();
 //     std::vector<Demand> demands = graph.getDemands();
 //     int nb_clients = 0;
 //     std::vector<std::vector<double>> costs;
@@ -101,7 +101,7 @@
 // // void SolveurTSPMTZ::solve(){
 // //     try{
 // //         //Get shortest distances between clients
-// //         std::vector<std::vector<int>> distances = inst.getGraph().getTSPKernelDist();
+// //         std::vector<std::vector<int>> distances = inst.getGraph().getTSPKernelTime();
 // //         std::vector<int> demands = inst.getGraph().getDemands();
 // //         int nb_clients = 0;
 // //         std::vector<std::vector<double>> costs;

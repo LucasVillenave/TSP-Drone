@@ -241,7 +241,7 @@ Solution convertCase01(const Instance& instance, std::vector<std::vector<std::ve
                     std::vector<int> path = instance.getGraph().getTSPKernelPath(i,j);
                     for(int k=1; k<path.size(); k++){
                         eventList.push_back(Event(vertices[path[k-1]].getPos(),time,0,vertices[path[k]].getPos()));
-                        time += instance.getGraph().getTSPKernelDist(path[k-1],path[k]);
+                        time += instance.getGraph().getTSPKernelTime(path[k-1],path[k]);
                         eventList.push_back(Event(vertices[path[k]].getPos(),time,1));
                         convertDroneCase1(instance,z,eventList,vertices[path[k]].getGraphID(),time);
                     }

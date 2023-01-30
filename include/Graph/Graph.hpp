@@ -26,7 +26,7 @@ class Graph{
         //warning, the adjacency matrix keep -1 if vertices aren't adjacent and the length of it's edge otherwise
         std::vector<std::vector<int>> adjacencyMatrix;
 
-        std::vector<std::vector<double>> TSPKernelDist;
+        std::vector<std::vector<double>> TSPKernelTime;
         std::vector<std::vector<std::vector<int>>> TSPKernelPath;
 
     public :
@@ -61,10 +61,10 @@ class Graph{
         const std::vector<Edge>& getEdges() const;
         const Edge& getEdge(int GraphID) const;
 
-        const std::vector<std::vector<double>>& getTSPKernelDist() const;
+        const std::vector<std::vector<double>>& getTSPKernelTime() const;
         const std::vector<std::vector<std::vector<int>>>& getTSPKernelPath() const;
 
-        double getTSPKernelDist(int i, int j) const;
+        double getTSPKernelTime(int i, int j) const;
         const std::vector<int>& getTSPKernelPath(int i, int j) const;
 };
 

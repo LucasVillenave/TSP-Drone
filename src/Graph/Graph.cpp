@@ -7,7 +7,7 @@ Graph::Graph(std::vector<Vertex> t_vertices, std::vector<Edge> t_edges) : vertic
 {
     adjacencyList = std::vector<std::vector<Edge>>(t_vertices.size(),std::vector<Edge>());
     adjacencyMatrix = std::vector<std::vector<int>>(t_vertices.size(),std::vector<int>(t_vertices.size(),-1));
-    TSPKernelDist = std::vector<std::vector<double>>(t_vertices.size(),std::vector<double>(t_vertices.size(),-1));
+    TSPKernelTime = std::vector<std::vector<double>>(t_vertices.size(),std::vector<double>(t_vertices.size(),-1));
     nbr_noeuds_demandes = 0;
     nbr_demandes_unitaires = 0;
 
@@ -51,11 +51,11 @@ void Graph::addDemand(Demand d){
     d.setGraphID(demands.size());
     demands.push_back(d);
     nbr_demandes_unitaires = nbr_demandes_unitaires + d.getAmount();
-    Demand d_unit = Demand(d.getInitPos(), 1, -1);
-    d_unit.setNodeGraphID(closestID);
-    d_unit.setNodePos(vertices[closestID].getPos());
-    d_unit.setGraphID(demandsUnit.size());
     for (int eps=0; eps<d.getAmount(); ++eps){
+        Demand d_unit = Demand(d.getInitPos(), 1, -1);
+        d_unit.setNodeGraphID(closestID);
+        d_unit.setNodePos(vertices[closestID].getPos());
+        d_unit.setGraphID(demandsUnit.size());
         demandsUnit.push_back(d_unit);
     }
 }
@@ -105,19 +105,19 @@ void Graph::kernelize(Instance instance){
     for (int i=0; i<vertices.size();++i){
         TMPvertices.push_back(i);
     }
-    TSPKernelPath = updateDistMatrix(TSPKernelDist,adjacencyList,TMPvertices, instance);
+    TSPKernelPath = updateDistMatrix(TSPKernelTime,adjacencyList,TMPvertices, instance);
 }
 
-const std::vector<std::vector<double>>& Graph::getTSPKernelDist() const{
-    return TSPKernelDist;
+const std::vector<std::vector<double>>& Graph::getTSPKernelTime() const{
+    return TSPKernelTime;
 }
 
 const std::vector<std::vector<std::vector<int>>>& Graph::getTSPKernelPath() const{
     return TSPKernelPath;
 }
 
-double Graph::getTSPKernelDist(int i, int j) const{
-    return TSPKernelDist[i][j];
+double Graph::getTSPKernelTime(int i, int j) const{
+    return TSPKernelTime[i][j];
 }
 
 const std::vector<int>& Graph::getTSPKernelPath(int i, int j) const{
