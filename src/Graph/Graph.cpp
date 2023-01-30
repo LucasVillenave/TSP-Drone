@@ -8,6 +8,8 @@ Graph::Graph(std::vector<Vertex> t_vertices, std::vector<Edge> t_edges) : vertic
     adjacencyList = std::vector<std::vector<Edge>>(t_vertices.size(),std::vector<Edge>());
     adjacencyMatrix = std::vector<std::vector<int>>(t_vertices.size(),std::vector<int>(t_vertices.size(),-1));
     TSPKernelDist = std::vector<std::vector<double>>(t_vertices.size(),std::vector<double>(t_vertices.size(),-1));
+    nbr_noeuds_demandes = 0;
+    nbr_demandes_unitaires = 0;
 
     for (int i=0; i < t_vertices.size(); ++i){
         vertices[i].setGraphID(i);
@@ -40,7 +42,7 @@ void Graph::addDemands(const std::vector<Demand>& t_demands){
 
 void Graph::addDemand(Demand d){
     int closestID = closest(vertices,d.getPos());
-    if (vertices[closestID].getTDA() > 0){
+    if (vertices[closestID].getTDA() <= 0){
         nbr_noeuds_demandes = nbr_noeuds_demandes + 1;
     }
     vertices[closestID].addDemand(d);

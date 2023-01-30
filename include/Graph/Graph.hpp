@@ -16,6 +16,7 @@ class Graph{
         std::vector<Vertex> vertices;
         std::vector<Edge> edges;
         std::vector<Demand> demands;
+        std::vector<Demand> demandsUnit;
 
         int nbr_noeuds_demandes;
         int nbr_demandes_unitaires;
