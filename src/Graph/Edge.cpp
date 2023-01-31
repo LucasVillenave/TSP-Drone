@@ -2,7 +2,7 @@
 
 #include <utility>
 
-Edge::Edge(int t_startID, int t_endID, int t_lenght, std::string t_roadType, int t_ID)
+Edge::Edge(int t_startID, int t_endID, double t_lenght, std::string t_roadType, int t_ID)
     : startID(t_startID), endID(t_endID), length(t_lenght), roadType(std::move(t_roadType)), ID(t_ID) {}
 
 int Edge::getStartID() const{

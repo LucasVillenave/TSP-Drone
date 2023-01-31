@@ -4,12 +4,12 @@ project (VRP-Drone)
 
 set(CMAKE_BUILD_TYPE Debug)
 
-set(GUROBI_ROOT "/opt/gurobi1000/linux64/")
-set(GUROBI_INCLUDE_DIR "${GUROBI_ROOT}include")
+find_library(GUROBI_LIBRARY_CPLUS libgurobi_c++.a PATHS /opt/gurobi1000/linux64/lib/ /opt/gurobi951/linux64/lib/)
+find_library(GUROBI_LIBRARY libgurobi100.so OR libgurobi95.so PATHS /opt/gurobi1000/linux64/lib/ /opt/gurobi951/linux64/lib/)
+
+set(GUROBI_INCLUDE_DIR /opt/gurobi1000/linux64/include /opt/gurobi951/linux64/include)
 message(STATUS "GUROBI_INCLUDE_DIR : ${GUROBI_INCLUDE_DIR}")
 
-set(GUROBI_LIBRARY_CPLUS "${GUROBI_ROOT}lib/libgurobi_c++.a")
-set(GUROBI_LIBRARY "${GUROBI_ROOT}lib/libgurobi100.so")
 set(GUROBI_LIBRARIES ${GUROBI_LIBRARY_CPLUS} ${GUROBI_LIBRARY})
 message(STATUS "GUROBI_LIBRARIES : ${GUROBI_LIBRARIES}")
 

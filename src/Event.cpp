@@ -11,7 +11,7 @@ Event::Event(Position t_pos1, int t_time, int t_eventType, Position t_pos2, int 
         throw std::invalid_argument("event related to drones should have valid t_droneID");
     }
     if ((t_eventType > 3) && (t_demandID < 0) ){
-        throw std::invalid_argument("event related to demands should have valid t_demandID");
+        throw std::invalid_argument("event related to m_demands should have valid t_demandID");
     }
 
 }

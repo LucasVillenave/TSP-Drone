@@ -13,17 +13,15 @@ class Instance;
 
 class Graph{
     private :
-        std::vector<Vertex> vertices;
-        std::vector<Edge> edges;
-        std::vector<Demand> demands;
-        std::vector<Demand> demandsUnit;
+        std::vector<Vertex> m_vertices;
+        std::vector<Edge> m_edges;
+        std::vector<Demand> m_demands;
 
-        int nbr_noeuds_demandes;
-        int nbr_demandes_unitaires;
+        int m_number_of_demand_nodes;
 
         std::vector<std::vector<Edge>> adjacencyList;
 
-        //warning, the adjacency matrix keep -1 if vertices aren't adjacent and the length of it's edge otherwise
+        //warning, the adjacency matrix keep -1 if m_vertices aren't adjacent and the length of it's edge otherwise
         std::vector<std::vector<int>> adjacencyMatrix;
 
         std::vector<std::vector<double>> TSPKernelTime;
@@ -31,17 +29,18 @@ class Graph{
 
     public :
         // I made it so you can't modify the structure of the graph because the graph validity is checked in it's creation.
-        // You must first create the graph with the vertices and edges and then add the demands
+        // You must first create the graph with the m_vertices and m_edges and then add the m_demands
         Graph()=default;
-        Graph(std::vector<Vertex> t_vertices, std::vector<Edge> t_edges);
+        Graph(const std::vector<Vertex>& t_vertices, std::vector<Edge> t_edges);
 
         void kernelize(Instance instance);
 
         void addDemands(const std::vector<Demand>& t_demands);
         void addDemand(Demand d);
 
-        int getNbr_noeuds_demandes() const;
-        int getNbr_demandes_unitaires() const;
+        Graph getUnitDemandGraph() const;
+
+        int getNumberDemandNodes() const;
 
         const std::vector<std::vector<Edge>>& getAdjacencyList() const;
         const std::vector<Edge>& getAdjacencyList(int vertexID) const;

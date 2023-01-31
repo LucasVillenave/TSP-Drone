@@ -315,7 +315,7 @@ std::vector<Event> getEventCase3(const Instance& instance)
 }
 
 int main(){
-    Instance instance = load("../Data/","init");
+    Instance instance = load("../Data/","test");
     const Graph& graph = instance.getGraph();
 /*
     for(const auto& edge : instance.getGraph().getEdges())
@@ -332,16 +332,19 @@ int main(){
 */
 
     //std::cout << graph << std::endl;
+    Graph graph_unit = graph.getUnitDemandGraph();
+    std::cout << graph.getNumberDemandNodes() << std::endl;
+    std::cout << graph_unit.getNumberDemandNodes() << std::endl;
     //graphPreview(graph);
     //system("pdflatex graph.tex");
     //system("xdg-open graph.pdf");
 
 
 
-    Solution solution = Solution(instance, getEventCase1(instance));
+    //Solution solution = Solution(instance, getEventCase1(instance));
     //std::cout << solution << std::endl;
-    for(unsigned int i = 0, n = solution.getIsValid().size(); i < n; ++i)
-        std::cout << solution.getIsValid(i) << std::endl;
+    //for(unsigned int i = 0, n = solution.getIsValid().size(); i < n; ++i)
+    //    std::cout << solution.getIsValid(i) << std::endl;
     //solutionPreview(solution);
     //system("pdflatex solution.tex");
     //system("xdg-open solution.pdf");

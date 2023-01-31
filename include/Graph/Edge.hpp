@@ -15,7 +15,7 @@ class Edge{
 
     public :
         Edge()=default;
-        Edge(int t_startID, int t_endID, int t_lenght, std::string t_roadType, int t_ID=-1);
+        Edge(int t_startID, int t_endID, double t_lenght, std::string t_roadType, int t_ID=-1);
 
         int getStartID() const;
         int getEndID() const;
@@ -31,13 +31,13 @@ class Edge{
         void setRoadType(std::string t_roadType);
 };
 
-inline std::ostream &operator<<(std::ostream &os, Edge e)
+inline std::ostream &operator<<(std::ostream &os, const Edge& e)
 {
     os << "edge " << e.getGraphID() << "(" << e.getID() << ") between " << e.getStartID()  << " and " << e.getEndID();
     return os;
 }
 
-inline bool operator==(Edge e1, Edge e2)
+inline bool operator==(const Edge& e1, const Edge& e2)
 {
     return (
         e1.getStartID() == e2.getStartID() &&

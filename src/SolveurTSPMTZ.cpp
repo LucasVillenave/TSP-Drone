@@ -23,17 +23,17 @@
 //     //Get shortest distances between clients
 //     Graph graph = inst.getGraph();
 //     std::vector<std::vector<double>> distances = graph.getTSPKernelTime();
-//     std::vector<Demand> demands = graph.getDemands();
+//     std::vector<Demand> m_demands = graph.getDemands();
 //     int nb_clients = 0;
 //     std::vector<std::vector<double>> costs;
 //     for(int i = 0; i < distances.size(); i++){
-//         if(demands[i].getAmount() <= 0){
+//         if(m_demands[i].getAmount() <= 0){
 //             continue;
 //         }
 //         std::vector<double> costs_i;
 //         nb_clients ++;
 //         for(int j = 0; j < distances.size(); j++){
-//             if(demands[j].getAmount() <= 0){
+//             if(m_demands[j].getAmount() <= 0){
 //                 continue;
 //             }
 //             costs_i.push_back(distances[i][j]);
@@ -102,17 +102,17 @@
 // //     try{
 // //         //Get shortest distances between clients
 // //         std::vector<std::vector<int>> distances = inst.getGraph().getTSPKernelTime();
-// //         std::vector<int> demands = inst.getGraph().getDemands();
+// //         std::vector<int> m_demands = inst.getGraph().getDemands();
 // //         int nb_clients = 0;
 // //         std::vector<std::vector<double>> costs;
 // //         for(int i = 0; i < distances.size(); i++){
-// //             if(demands[i] == 0){
+// //             if(m_demands[i] == 0){
 // //                 continue;
 // //             }
 // //             std::vector<double> costs_i;
 // //             nb_clients ++;
 // //             for(int j = 0; j < distances.size(); j++){
-// //                 if(demands[j] == 0){
+// //                 if(m_demands[j] == 0){
 // //                     continue;
 // //                 }
 // //                 costs_i.push_back(distances[i][j]);
