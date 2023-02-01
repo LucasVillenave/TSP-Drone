@@ -7,7 +7,7 @@ class Event{
     private :
         Position pos1;
         Position pos2;
-        int time = -1;
+        double time = -1;
         int demandID = -1;
         int droneID = -1;
 
@@ -21,9 +21,9 @@ class Event{
 
     public : 
         Event()=default;
-        Event(Position t_pos1, int t_time, int t_eventType, Position t_pos2 = Position(), int t_demandID = -1, int t_droneID = -1);
+        Event(Position t_pos1, double t_time, int t_eventType, Position t_pos2 = Position(), int t_demandID = -1, int t_droneID = -1);
 
-        int getTime() const;
+        double getTime() const;
         int getEventType() const;
         int getDemandID() const;
         int getDroneID() const;

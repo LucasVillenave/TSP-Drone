@@ -91,6 +91,8 @@ int main(){
     std::vector<std::vector<std::vector<int>>> x(6,std::vector<std::vector<int>>(6,std::vector<int>(6,0)));
     std::vector<std::vector<std::vector<int>>> z(6,std::vector<std::vector<int>>(instance.getGraph().getDemands().size(),std::vector<int>(2,0)));
 
+    z[0][0][0] = 1;
+
     for (int i=0; i<6; ++i){
         for (int j=0; j<6; ++j){
             std::cout << instance.getGraph().getTSPKernelTime(i,j) << ",   ";
@@ -111,5 +113,6 @@ int main(){
     Solution sol2 = convertCase01(instance,x,z);
     
     std::cout << "after check, sol 2 case 0 is valid : " << sol2.getIsValid(0) << std::endl;
+    std::cout << "after check, sol 2 case 1 is valid : " << sol2.getIsValid(1) << std::endl;
 
 }
