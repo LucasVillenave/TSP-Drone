@@ -14,8 +14,8 @@ int main(){
     p1.setX(0); p1.setY(1);
     p2.setX(1); p2.setY(0);
     p3.setX(1); p3.setY(1);
-    p4.setX(2); p0.setY(1);
-    p5.setX(1); p0.setY(2);
+    p4.setX(2); p4.setY(1);
+    p5.setX(1); p5.setY(2);
 
     std::vector<Position> positions;
     std::vector<Vertex> vertices;
@@ -28,12 +28,19 @@ int main(){
     }
 
     //Edges
-    Edge e0(0,1,euclidianDistance(p0,p1),"route étoilé");
-    Edge e1(0,2,euclidianDistance(p0,p2),"route champi");
-    Edge e2(1,3,euclidianDistance(p1,p3),"route torillas");
-    Edge e3(3,4,euclidianDistance(p3,p4),"route de perlinpimpin");
-    Edge e4(2,5,euclidianDistance(p2,p5),"route de la soie");
-    Edge e5(3,5,euclidianDistance(p3,p5),"destination finale");
+    // Edge e0(0,1,euclidianDistance(p0,p1),"route étoilé");
+    // Edge e1(0,2,euclidianDistance(p0,p2),"route champi");
+    // Edge e2(1,3,euclidianDistance(p1,p3),"route torillas");
+    // Edge e3(3,4,euclidianDistance(p3,p4),"route de perlinpimpin");
+    // Edge e4(2,5,euclidianDistance(p2,p5),"route de la soie");
+    // Edge e5(3,5,euclidianDistance(p3,p5),"destination finale");
+
+    Edge e0(0,1,8,"route étoilé");
+    Edge e1(0,2,6,"route champi");
+    Edge e2(1,3,25,"route torillas");
+    Edge e3(3,4,1,"route de perlinpimpin");
+    Edge e4(2,5,3,"route de la soie");
+    Edge e5(3,5,12,"destination finale");
 
     std::vector<Edge> edges;
     edges.push_back(e0); edges.push_back(e1); edges.push_back(e2);
@@ -42,7 +49,6 @@ int main(){
     //Demands
     Demand d0(p1,1,-5);
     Demand d1(p5,3,-4);
-
 
     //Basic stuffs
     Graph graph(vertices,edges);
@@ -71,5 +77,39 @@ int main(){
     Solution sol(instance,events);
 
     std::cout << "after check case 0 is valid : " << sol.getIsValid(0) << std::endl;
+
+    std::vector<int> tourney;
+    
+    tourney.push_back(0);
+    tourney.push_back(5);
+    tourney.push_back(2);
+    tourney.push_back(3);
+    tourney.push_back(4);
+    tourney.push_back(1);
+
+    tourney = TSP2OPT(instance.getGraph().getTSPKernelTime(), tourney);
+    std::vector<std::vector<std::vector<int>>> x(6,std::vector<std::vector<int>>(6,std::vector<int>(6,0)));
+    std::vector<std::vector<std::vector<int>>> z(6,std::vector<std::vector<int>>(instance.getGraph().getDemands().size(),std::vector<int>(2,0)));
+
+    for (int i=0; i<6; ++i){
+        for (int j=0; j<6; ++j){
+            std::cout << instance.getGraph().getTSPKernelTime(i,j) << ",   ";
+        }
+        std::cout << std::endl;
+    }
+
+    std::cout << "tourney : ";
+    for (int i=0; i<5; ++i){
+        std::cout << tourney[i] << " ";
+        x[i][tourney[i]][tourney[i+1]] = 1;
+    }
+    std::cout << tourney[5] << std::endl;
+    x[5][tourney[5]][tourney[0]] = 1;
+
+    std::cout << vertices[0] << std::endl;
+
+    Solution sol2 = convertCase01(instance,x,z);
+    
+    std::cout << "after check, sol 2 case 0 is valid : " << sol2.getIsValid(0) << std::endl;
 
 }

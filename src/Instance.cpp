@@ -44,18 +44,12 @@ int Instance::getDroneSpeed() const {
     return droneSpeed;
 }
 
-double kilometer_per_hour_to_meter_per_second(double x)
-{
-    //3.6 km/h = 1 m/s
-    return x/3.6;
-}
-
 double Instance::getTravelTime(Edge e) const{
     for (int i=0; i<roadTypes.size();++i){
         std::string roadType = roadTypes[i];
         if (roadType==e.getRoadType()){
-            return (e.getLength()/kilometer_per_hour_to_meter_per_second(roadSpeed[i]));
+            return (e.getLength()/roadSpeed[i]);
         }
     }
-    return e.getLength()/kilometer_per_hour_to_meter_per_second(roadSpeed[roadSpeed.size()-1]);
+    return e.getLength()/roadSpeed[roadSpeed.size()-1];
 }

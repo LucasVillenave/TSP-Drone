@@ -67,7 +67,6 @@ int Solution::checkTruck(){
                     const Position& EdgeP2 = this->instance.getGraph().getVertice(edge.getEndID()).getPos();
                     if ( ((EventP1 == EdgeP1) && (EventP2 == EdgeP2)) || ((EventP1 == EdgeP2) && (EventP2 == EdgeP1))){
                         isEdgeExisting = 1;
-                        std::cout << edge.getRoadType() << std::endl;
 
                         //trucker warped space-time again (arriving before depart time + travel time)
                         if (actualEvent.getTime() < (previousEvent.getTime() + this->instance.getTravelTime(edge))){
@@ -167,7 +166,6 @@ int Solution::checkDemandSatisfaction(){
     for (int i=0; i<eventList.size(); ++i){
         Event event = eventList[i];
         if (event.getEventType()>=4){
-
             if (event.getEventType()==4){
                 Event arrivalTruckEvent;
                 Event departureTruckEvent;
