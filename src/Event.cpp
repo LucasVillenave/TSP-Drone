@@ -1,7 +1,7 @@
 #include "Event.hpp"
 #include <iostream>
 
-Event::Event(Position t_pos1, int t_time, int t_eventType, Position t_pos2, int t_demandID, int t_droneID)
+Event::Event(Position t_pos1, double t_time, int t_eventType, Position t_pos2, int t_demandID, int t_droneID)
     : pos1(t_pos1), pos2(t_pos2), time(t_time), eventType(t_eventType), demandID(t_demandID), droneID(t_droneID)
 {
     if (t_time < 0 || t_eventType < 0 || t_eventType > 5){
@@ -16,7 +16,7 @@ Event::Event(Position t_pos1, int t_time, int t_eventType, Position t_pos2, int 
 
 }
 
-int Event::getTime() const{
+double Event::getTime() const{
     return time;
 }
 

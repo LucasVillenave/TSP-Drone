@@ -15,6 +15,11 @@ std::vector<std::vector<std::vector<int>>> updateDistMatrix (std::vector<std::ve
                                                                const std::vector<std::vector<Edge>>& adjacencyList, 
                                                                const std::vector<int>& vertices, Instance instance);
 
-Solution convertCase01(Instance i, std::vector<std::vector<int>> x, std::vector<std::vector<std::vector<int>>> z, int scenario);
+//x_t,i,j the truck moving between i and j at time period t. z_t,d,a amount of demand d fullfilled by drones at time period t
+Solution convertCase01(const Instance& i, const std::vector<std::vector<std::vector<int>>>& x, const std::vector<std::vector<std::vector<int>>>& z);
+
+// interchange 2 edges such that the cost is reduced, does this until local minimum is reached.
+// easily put it uncross edges until no edges cross anymore in the tourney.
+std::vector<int> TSP2OPT(const std::vector<std::vector<double>>& distMastrix, std::vector<int> points);
 
 #endif

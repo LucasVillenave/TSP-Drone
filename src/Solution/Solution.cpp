@@ -67,7 +67,6 @@ int Solution::checkTruck(){
                     const Position& EdgeP2 = this->instance.getGraph().getVertice(edge.getEndID()).getPos();
                     if ( ((EventP1 == EdgeP1) && (EventP2 == EdgeP2)) || ((EventP1 == EdgeP2) && (EventP2 == EdgeP1))){
                         isEdgeExisting = 1;
-                        std::cout << edge.getRoadType() << std::endl;
 
                         //trucker warped space-time again (arriving before depart time + travel time)
                         if (actualEvent.getTime() < (previousEvent.getTime() + this->instance.getTravelTime(edge))){
@@ -144,7 +143,13 @@ int Solution::checkDrones(){
             if (actualEventType!=2){
                 //Drone warped space-time again (arriving before previous time + travel time)
                 if (actualEvent.getTime() < 
-                (previousEvent[droneID].getTime() + (euclidianDistance(previousEvent[droneID].getPos1(),actualEvent.getPos1())*this->instance.getDroneSpeed()))){
+                (previousEvent[droneID].getTime() + (euclidianDistance(previousEvent[droneID].getPos1(),actualEvent.getPos1())/this->instance.getDroneSpeed()))){
+                    std::cout << previousEvent[droneID].getTime() << std::endl;
+                    std::cout << previousEvent[droneID] << std::endl;
+                    std::cout << actualEvent << std::endl;
+                    std::cout << actualEvent.getTime() << " " <<  
+                    (previousEvent[droneID].getTime() + (euclidianDistance(previousEvent[droneID].getPos1(),actualEvent.getPos1())/this->instance.getDroneSpeed())) 
+                    << std::endl;
                     isValid = std::vector<int>(4,-11);
                     return 0;
                 }
@@ -167,7 +172,6 @@ int Solution::checkDemandSatisfaction(){
     for (int i=0; i<eventList.size(); ++i){
         Event event = eventList[i];
         if (event.getEventType()>=4){
-
             if (event.getEventType()==4){
                 Event arrivalTruckEvent;
                 Event departureTruckEvent;
@@ -235,10 +239,11 @@ void Solution::checkScenarsSpecifics(){
         if (event.getEventType() == 2){
             Event arrivalDroneEvent;
             int arrivalDroneTime;
-            for (int j=i+1; ((j<eventList.size()) && (arrivalDroneEvent.getEventType()==-1)); ++j){
+            for (int j=i+1; j<eventList.size(); ++j){
                 if ((eventList[j].getEventType()==3) && (eventList[j].getDroneID()==droneID)){
                     arrivalDroneEvent = eventList[j];
                     arrivalDroneTime = j;
+                    break;
                 }
             }
 
@@ -248,31 +253,39 @@ void Solution::checkScenarsSpecifics(){
             std::vector<Event> arrivalTruckEvent(2,Event(instance.getGraph().getVertice(0).getPos(),0,1));
             std::vector<Event> departureTruckEvent(2,Event(instance.getGraph().getVertice(0).getPos(),0,1,instance.getGraph().getVertice(0).getPos()));
 
-            for (int j=0; j<i; ++j){
+            for (int j=i-1; j>0; --j){
                 if (eventList[j].getEventType()==1){
+                    std::cout << "arrival 0 " << j << std::endl;
                     arrivalTruckEvent[0] = eventList[j];
                     arrivalTime[0] = j;
+                    break;
                 }
             }
 
-            for (int j=0; j<i; ++j){
-                if (eventList[j].getEventType()==1){
+            for (int j=i-1; j>=0; --j){
+                if (eventList[j].getEventType()==0){
+                    std::cout << "departure 0 " << j << std::endl;
                     departureTruckEvent[0] = eventList[j];
                     isLastArrival[0] = (j<arrivalTime[0]);
+                    break;
                 }
             }
 
-            for (int j=0; j<arrivalDroneTime; ++j){
+            for (int j=arrivalDroneTime-1; j>0; --j){
                 if (eventList[j].getEventType()==1){
+                    std::cout << "arrival 1 " << j << std::endl;
                     arrivalTruckEvent[1] = eventList[j];
                     arrivalTime[1] = j;
+                    break;
                 }
             }
 
-            for (int j=0; j<arrivalDroneTime; ++j){
-                if (eventList[j].getEventType()==1){
+            for (int j=arrivalDroneTime-1; j>=0; --j){
+                if (eventList[j].getEventType()==0){
+                    std::cout << "departure 1 " << j << std::endl;
                     departureTruckEvent[1] = eventList[j];
                     isLastArrival[1] = (j<arrivalTime[1]);
+                    break;
                 }
             }
 
@@ -339,6 +352,7 @@ void Solution::checkScenarsSpecifics(){
             //Truck need to be here to pick up drones (3rd scenario)
             if (isLastArrival[1]==0){
                 // truck moving when drones are to be picked up
+                std::cout << "here" << std::endl;// !!!
                 isValid[1] = -18;
                 isValid[2] = -18;
 

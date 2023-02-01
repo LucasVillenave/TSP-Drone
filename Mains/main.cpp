@@ -31,9 +31,11 @@ int main(){
     // }
 
     std::cout << g.getNumberDemandNodes() << std::endl;
-    std::cout << g.getNbr_demandes_unitaires() << std::endl;
+    // std::cout << g.getNbr_demandes_unitaires() << std::endl;
     std::cout << g.getDemandsUnit().size() << std::endl;
 
     // Mod1V1 Model(600);
     // Model.solve(instance);
+
+    
 }

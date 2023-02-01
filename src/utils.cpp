@@ -143,30 +143,35 @@ std::vector<std::vector<std::vector<int>>> updateDistMatrix (std::vector<std::ve
     return optimalPath;
 }
 
-void convertDroneCase1(const Instance& instance, std::vector<std::vector<std::vector<int>>> z, std::vector<Event>& eventList, int startingNode, double time){
-    int n = instance.getGraph().getVertices().size();
-    int m = instance.getGraph().getDemands().size();
-    const std::vector<Vertex>& vertices = instance.getGraph().getVertices();
+// void convertDroneCase1(const Instance& instance, std::vector<std::vector<std::vector<int>>> z, std::vector<Event>& eventList, int startingNode, double & time){
+//     int n = instance.getGraph().getVertices().size();
+//     int m = instance.getGraph().getUnitDemandGraph().getDemands().size();
+//     const std::vector<Vertex>& vertices = instance.getGraph().getVertices();
 
-    for (int a=0; a<1; a++){
-        for (int d=0; d<m; ++d){
-            const std::vector<Demand>& demands = instance.getGraph().getDemands();
-            Vertex t = vertices[demands[d].getNodeGraphID()];
-            if (z[startingNode][d][a]==1){
-                eventList.push_back(Event(vertices[startingNode].getPos(),time,2,t.getPos(),m,a));
-                time += euclidianDistance(vertices[startingNode].getPos(),t.getPos())/instance.getDroneSpeed();
-                eventList.push_back(Event(t.getPos(),time,5,Position(),m,a));
-                time += euclidianDistance(vertices[startingNode].getPos(),t.getPos())/instance.getDroneSpeed();
-                eventList.push_back(Event(vertices[startingNode].getPos(),time,3,Position(),-1,a));
-            }
-        }
-    }
-}
+//     for (int a=0; a<1; a++){
+//         for (int d=0; d<m; ++d){
+//             const std::vector<Demand>& demands = instance.getGraph().getUnitDemandGraph().getDemands();
+//             Vertex t = vertices[demands[d].getNodeGraphID()];
+//             if (z[startingNode][d][a]==1){
+//                 eventList.push_back(Event(vertices[startingNode].getPos(),time,2,t.getPos(),m,a));
+//                 time += euclidianDistance(vertices[startingNode].getPos(),t.getPos())/instance.getDroneSpeed();
+//                 eventList.push_back(Event(t.getPos(),time,5,Position(),m,a));
+//                 time += euclidianDistance(vertices[startingNode].getPos(),t.getPos())/instance.getDroneSpeed();
+//                 eventList.push_back(Event(vertices[startingNode].getPos(),time,3,Position(),-1,a));
+//             }
+//         }
+//     }
+// }
 
 void sortByTime(std::vector<Event>& eventList){
     std::vector<double> times;
     std::vector<Event> sortedList;
-    for (Event e : eventList){
+    if (eventList.size()!=0){
+        times.push_back(eventList[0].getTime());
+        sortedList.push_back(eventList[0]);
+    }
+    for (int i=1; i<eventList.size();++i){
+        Event e = eventList[i];
         double eTime = e.getTime();
         int asBeenPlaced = 0;
         if (times[0]>eTime){
@@ -190,19 +195,48 @@ void sortByTime(std::vector<Event>& eventList){
     eventList = sortedList;
 }
 
-Solution convertCase01(const Instance& instance, std::vector<std::vector<std::vector<int>>> x, std::vector<std::vector<std::vector<int>>> z, int scenario){
+
+std::vector<int> calculateTruckCouverture(const std::vector<std::vector<std::vector<int>>>& z, const std::vector<Demand>& demands){
+    std::vector<int> y;
+    for (Demand d : demands){
+        y.push_back(d.getAmount());
+    }
+
+    for (std::vector<std::vector<int>> zt : z){
+        for (int d=0; d<y.size(); ++d){
+            y[d] -= zt[d][0];
+            y[d] -= zt[d][1];
+        }
+    }
+
+    for (int d=0; d<y.size(); ++d){
+        if (y[d]<0){
+            throw std::invalid_argument("invalid z");
+        }
+    }
+
+    return y;
+}
+
+Solution convertCase01(const Instance& instance, const std::vector<std::vector<std::vector<int>>>& x, const std::vector<std::vector<std::vector<int>>>& z){
     std::vector<Event> eventList;
     double time = 0;
 
+    std::cout << "---> convertor from (x,z) to event solution" << std::endl;
+    std::cout << "------> checking input" << std::endl;
+
     int n = instance.getGraph().getVertices().size();
-    if (z.size()!=n){
+    int m = instance.getGraph().getDemands().size();
+
+    if (z.size() != x.size()){
         throw std::invalid_argument("invalid sized arguments");
     }
-    for (int i=0; i<n; ++i){
-        if (z[i].size()!=n){
+
+    for (int i=0; i<z.size(); ++i){
+        if (z[i].size()!=m){
             throw std::invalid_argument("invalid sized arguments");
         }
-        for (int j=0; j<n; ++j){
+        for (int j=0; j<m; ++j){
             if (z[i][j].size()!=2){
                 throw std::invalid_argument("invalid sized arguments");
             }
@@ -233,22 +267,45 @@ Solution convertCase01(const Instance& instance, std::vector<std::vector<std::ve
     }
     
     const std::vector<Vertex>& vertices = instance.getGraph().getVertices();
+    std::vector<int> y = calculateTruckCouverture(z,instance.getGraph().getDemands());
 
-    for (std::vector<std::vector<int>> xt : x){
+    std::cout << "------> generating events" << std::endl;
+
+    for (int t=0; t<x.size(); ++t){
+        std::vector<std::vector<int>> xt = x[t];
+        std::vector<std::vector<int>> zt = z[t];
         for (int i=0; i<n; ++i){
             for (int j=0; j<n; ++j){
                 if (xt[i][j]==1){
                     std::vector<int> path = instance.getGraph().getTSPKernelPath(i,j);
+                    //add the events of the implicit passing of the truck (possibly just i->j)
                     for(int k=1; k<path.size(); k++){
+                        // std::cout << "from " << path[k-1] << " to " << path[k] << " : " << vertices[path[k-1]].getPos() << " -> " << vertices[path[k]].getPos() << std::endl;
                         eventList.push_back(Event(vertices[path[k-1]].getPos(),time,0,vertices[path[k]].getPos()));
                         time += instance.getGraph().getTSPKernelTime(path[k-1],path[k]);
                         eventList.push_back(Event(vertices[path[k]].getPos(),time,1));
-                        convertDroneCase1(instance,z,eventList,vertices[path[k]].getGraphID(),time);
                     }
-                    for (Demand d : instance.getGraph().getVertice(j).getDemands()){
-                        for (int kl=0; kl<d.getAmount(); ++kl){
-                            eventList.push_back(Event(d.getNodePos(),time,4,Position(),d.getGraphID()));
-                            time += instance.getTruckDeliveryTime();
+
+                    //we add all event of covered demands
+                    for (int d=0; d<m; ++d){
+                        Demand demand = instance.getGraph().getDemand(d);
+                        //by drones
+                        for (int a=0; a<2; ++a){
+                            for (int k=0; k<zt[d][a]; ++k){
+                                eventList.push_back(Event(vertices[j].getPos(),time,2,demand.getNodePos(),d,a));
+                                time += euclidianDistance(vertices[j].getPos(),demand.getNodePos())/instance.getDroneSpeed();
+                                eventList.push_back(Event(demand.getNodePos(),time,5,Position(),d,a));
+                                time += euclidianDistance(vertices[j].getPos(),demand.getNodePos())/instance.getDroneSpeed();
+                                eventList.push_back(Event(vertices[j].getPos(),time,3,Position(),-1,a));
+                            }
+                        }
+
+                        //by truck
+                        if (demand.getNodeGraphID()==j){
+                            for (int k=0; k<y[d]; ++k){
+                                eventList.push_back(Event(demand.getNodePos(),time,4,Position(),demand.getGraphID()));
+                                time += instance.getTruckDeliveryTime();
+                            }
                         }
                     }
                 }
@@ -258,5 +315,51 @@ Solution convertCase01(const Instance& instance, std::vector<std::vector<std::ve
 
     sortByTime(eventList);
 
-    return Solution(instance,std::vector<Event>());
+    // for (Event e : eventList){
+    //     std::cout << e << std::endl;
+    // }
+
+    return Solution(instance,eventList);
+}
+
+std::vector<int> TSP2OPT(const std::vector<std::vector<double>>& distMastrix, std::vector<int> points){
+    if (points.size() < 3){
+        return points;
+    }
+    int isAmeliorating = 1;
+    while(isAmeliorating){
+        isAmeliorating = 0;
+        for (int i=1; i<points.size()-1; i++){
+            for (int j=i+1; j<points.size(); j++){
+                if (isAmeliorating==0){
+                    int p1 = points[i];
+                    int p2 = points[j];
+
+                    int predecesseurP1 = points[i-1];
+                    int successeurP2 = points[j+1];
+
+                    if (j==(points.size()-1)){
+                        successeurP2 = points[0];
+                    }
+
+                    int partialCost = 0;
+                    partialCost += distMastrix[predecesseurP1][p2];
+                    partialCost -= distMastrix[predecesseurP1][p1];
+
+                    partialCost += distMastrix[p1][successeurP2];
+                    partialCost -= distMastrix[p2][successeurP2];
+
+                    if (partialCost<0){
+                        for (int k=0; k<(((j-i)/2)+1); k++){
+                            int tmp = points[i+k];
+                            points[i+k] = points[j-k];
+                            points[j-k] = tmp;
+                        }
+                        isAmeliorating = 1;
+                    }
+                }
+            }
+        }
+    }
+    return points;
 }
