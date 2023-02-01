@@ -3,6 +3,7 @@ from TSPDData import *
 
 def draw_on_plan(instance, order):
     for i in range(len(order)):
+        print("truck does (" + str(order[i-1]) + "," + str(order[i]) + ") with costs : "+ str(instance.distance_customers[order[i-1]][order[i]]))
         x1 = instance.positions[instance.indices_customers[order[i-1]]][0]
         y1 = instance.positions[instance.indices_customers[order[i-1]]][1]
         x2 = instance.positions[instance.indices_customers[order[i]]][0]

@@ -1,15 +1,17 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import json
+import geopy.distance
 
 class TSPDData:
     def __init__(self, path_graph, path_demands):
         self.positions = []  #[lat,lon,demand]
-        self.edges = []      #[ID sommet 1, ID sommet 2, duration, length, road_type]
-        self.adjacency_matrix = [] #[ID neighbor, cost]
+        self.edges = {}      #[ID sommet 1, ID sommet 2, duration, length, road_type]
+        self.adjacency_matrix = [] #[ID neighbor, duration]
         self.max_cost = -1
         self.distance_customers = []
         self.indices_customers = []
+        self.shortest_path_customers = []
 
 
         with open(path_graph) as json_data:
@@ -39,9 +41,10 @@ class TSPDData:
                 speed = 60/3.6
             if data_roads[i]['type'] == 'secondary':
                 speed = 45/3.6
-            self.edges.append([min([index_first_point, index_second_point]), max([index_first_point, index_second_point]), data_roads[i]['length'] / speed])
-            if i == 0 or self.edges[-1][2] > self.max_cost:
-                self.max_cost = self.edges[-1][2]
+            if (min([index_first_point, index_second_point]), max([index_first_point, index_second_point])) in self.edges : continue
+            self.edges[min([index_first_point, index_second_point]), max([index_first_point, index_second_point])] =  data_roads[i]['length'] / speed
+            if i == 0 or data_roads[i]['length'] / speed > self.max_cost:
+                self.max_cost = data_roads[i]['length'] / speed
 
         #DEMANDS
         with open(path_demands) as json_data:
@@ -59,26 +62,31 @@ class TSPDData:
         for i in range(len(self.positions)):
             self.adjacency_matrix.append([])
 
-        for i in range(len(self.edges)):
-            self.adjacency_matrix[self.edges[i][0]].append([self.edges[i][1], self.edges[i][2]])
-            self.adjacency_matrix[self.edges[i][1]].append([self.edges[i][0], self.edges[i][2]])
+        for key in self.edges.keys():
+            self.adjacency_matrix[key[0]].append([key[1], self.edges[key]])
+            self.adjacency_matrix[key[1]].append([key[0], self.edges[key]])
 
         #DISTANCE_CUSTOMERS
         for i in range(len(self.positions)):
             if i == 0 or self.positions[i][2] > 0:
                 self.distance_customers.append([])
+                self.shortest_path_customers.append([])
                 self.indices_customers.append(i)
                 for j in range(len(self.positions)):
                     if j == 0 or self.positions[j][2] > 0:
-                        self.distance_customers[-1].append(self.shortest_path(i,j))
+                        dist_cus, path_cus = self.shortest_path(j,i)
+                        self.distance_customers[-1].append(dist_cus)
+                        self.shortest_path_customers[-1].append(path_cus)
 
 
 
     def shortest_path(self, point1, point2):
         distance_min = [self.max_cost * len(self.positions)] * len(self.positions)
+        prec = [-1] * len(self.positions)
         distance_min[point1] = 0
         to_visit = [point1]
-        while len(to_visit) != 0:
+        dist_node_min = 0
+        while to_visit:
             node_min = -1
             dist_node_min = self.max_cost * len(self.positions)
             for i in range(len(to_visit)):
@@ -86,12 +94,17 @@ class TSPDData:
                     dist_node_min = distance_min[to_visit[i]]
                     node_min = to_visit[i]
             if node_min == point2:
-                return dist_node_min
+                break
             to_visit.remove(node_min)
             for i in range(len(self.adjacency_matrix[node_min])):
                 if distance_min[node_min] + self.adjacency_matrix[node_min][i][1] < distance_min[self.adjacency_matrix[node_min][i][0]]:
                     distance_min[self.adjacency_matrix[node_min][i][0]] = distance_min[node_min] + self.adjacency_matrix[node_min][i][1]
+                    prec[self.adjacency_matrix[node_min][i][0]] = node_min
                     to_visit.append(self.adjacency_matrix[node_min][i][0])
+        best_path = [point2]
+        while(best_path[-1] != point1):
+            best_path.append(prec[best_path[-1]])
+        return dist_node_min, best_path
 
 
 

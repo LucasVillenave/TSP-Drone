@@ -3,6 +3,7 @@ import gurobipy as gp
 from gurobipy import GRB
 from TSPDData import *
 from usefull_fonctions import *
+import math
 
 # Callback - use lazy constraints to eliminate sub-tours
 def subtourelim(model, where):
@@ -41,7 +42,9 @@ instance = TSPDData("../Data/init/Graph.txt", "../Data/init/Demand.txt")
 n = len(instance.distance_customers)
 dist = {(i, j):
         instance.distance_customers[i][j]
+        #math.sqrt(sum((instance.positions[instance.indices_customers[i]][k]-instance.positions[instance.indices_customers[j]][k])**2 for k in range(2)))  #remplacer ligne précédente par celle-là pour farie avec dist à vol d'oiseau
         for i in range(n) for j in range(i)}
+print("DIST", dist)
     
 
 
@@ -88,5 +91,5 @@ print('Optimal tour: %s' % str(tour))
 print('Optimal cost: %g' % m.ObjVal)
 print('')
 
-draw_on_plan(instance, tour)
+#draw_on_plan(instance, tour)
 write_in_txt(instance, tour)
