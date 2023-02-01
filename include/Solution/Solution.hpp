@@ -11,7 +11,7 @@ class Solution{
     private :
         Instance instance;
         std::vector<Event> eventList;
-        std::vector<int> isValid = std::vector<int>(4,-1);
+        std::vector<int> isValid = std::vector<int>(4,0);
 
     public :
         Solution(Instance t_instance, const std::vector<Event>& t_eventList);
@@ -19,13 +19,22 @@ class Solution{
         const std::vector<Event>& getEvents() const;
         const std::vector<Vertex>& getVertices() const;
         const std::vector<Edge>& getEdges() const;
+        const std::vector<Demand>& getDemands() const;
 
-        int check(int scenario);
+        int getIsValid(unsigned int scenar) const;
+        std::vector<int> getIsValid() const;
+
+        void check();
+        int checkTruck();
+        int checkDrones();
+        int checkDemandSatisfaction();
+        void checkScenarsSpecifics();
 
 };
 
 inline std::ostream &operator<<(std::ostream &os, Solution s)
 {
+    os << "TEMPS ; EVENEMENT ; LOCALISATION" << std::endl;
     for (Event e : s.getEvents()){
         os << e << std::endl;
     }

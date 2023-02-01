@@ -35,7 +35,7 @@ inline std::ostream &operator<<(std::ostream &os, Event e)
 {
     switch (e.getEventType()){
         case 0 :
-            os << e.getTime() << " ; DEPLACEMENT VEHICULE DESTINATION ; (LAT : " << e.getPos1() << " : " << e.getPos2();
+            os << e.getTime() << " ; DEPLACEMENT VEHICULE DESTINATION : " << e.getPos2() << " ; " << e.getPos1();
             break;
 
         case 1 :
@@ -43,11 +43,11 @@ inline std::ostream &operator<<(std::ostream &os, Event e)
             break;
 
         case 2 :
-            os << e.getTime() << " ; LARGAGE DRONE " << e.getDroneID() << " POUR LIVRAISON COLIS ID : " << e.getDemandID() << " ; " << e.getDemandID() << " ; " << e.getPos1();
+            os << e.getTime() << " ; LARGAGE DRONE " << e.getDroneID() << " POUR LIVRAISON COLIS ID : " << e.getDemandID() << " ; " << e.getPos1();
             break;
 
         case 3 :
-            os << e.getTime() << " ; RECUPERATION DRONE " << e.getDroneID() << " ;" << e.getPos1();
+            os << e.getTime() << " ; RECUPERATION DRONE " << e.getDroneID() << " ; " << e.getPos1();
             break;
 
         case 4 :

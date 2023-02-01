@@ -6,8 +6,8 @@
 
 class Position{
     private :
-        const double m_longitude = -1;
-        const double m_latitude = -1;
+        double m_longitude = -1;
+        double m_latitude = -1;
         double m_x = -1;
         double m_y = -1;
 
@@ -35,7 +35,9 @@ inline bool operator==(Position p1, Position p2)
 {
     return (
         p1.getLatitude() == p2.getLatitude() &&
-        p1.getLongitude() == p2.getLongitude());
+        p1.getLongitude() == p2.getLongitude() &&
+        p1.getX() == p2.getX() &&
+        p1.getY() == p2.getY());
 }
 
 #endif

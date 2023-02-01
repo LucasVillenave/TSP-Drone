@@ -3,8 +3,8 @@
 
 #include "Solution/Solution.hpp"
 
-Instance load(const std::string& instancePath, const std::string& instanceName);
+std::vector<std::string> split(std::string s, char delim);
 
-void write(Solution sol);
+Instance load(const std::string& instancePath, const std::string& instanceName);
 
 #endif

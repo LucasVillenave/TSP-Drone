@@ -4,7 +4,6 @@ project (VRP-Drone)
 
 set(CMAKE_BUILD_TYPE Debug)
 
-
 find_library(GUROBI_LIBRARY_CPLUS libgurobi_c++.a PATHS /opt/gurobi1000/linux64/lib/ /opt/gurobi951/linux64/lib/)
 find_library(GUROBI_LIBRARY libgurobi100.so OR libgurobi95.so PATHS /opt/gurobi1000/linux64/lib/ /opt/gurobi951/linux64/lib/)
 
@@ -24,4 +23,8 @@ add_executable(StructureTest.exe Mains/structureTest.cpp ${SRCS})
 
 add_executable(main.exe Mains/main.cpp ${SRCS})
 
+add_executable(simpleTest.exe Mains/simpleTest.cpp ${SRCS})
+
 target_link_libraries(StructureTest.exe ${GUROBI_LIBRARIES})
+target_link_libraries(simpleTest.exe ${GUROBI_LIBRARIES})
+target_link_libraries(main.exe ${GUROBI_LIBRARIES})

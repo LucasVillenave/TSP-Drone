@@ -5,14 +5,23 @@
 
 class Demand{
     private :
-        Position pos;
+        Position initPos;
+        Position nodePos;
+        int nodeGraphID = -1;
+
         int amount = -1;
         int ID;
         int GraphID = -1;
 
     public :
         Demand()=default;
-        Demand(Position pos, int amount, int ID=-1);
+        Demand(Position t_initPos, int amount, int ID=-1);
+
+        void setNodePos(Position nodePos);
+        void setNodeGraphID(int nodeGraphID);
+        Position getInitPos() const;
+        Position getNodePos() const;
+        int getNodeGraphID() const;
 
         int getAmount() const;
         void setAmount(int t_amount);
@@ -33,13 +42,13 @@ class Demand{
         void setGraphID(int t_GraphID);
 };
 
-inline std::ostream &operator<<(std::ostream &os, Demand d)
+inline std::ostream &operator<<(std::ostream &os, const Demand& d)
 {
     os << "demand " << d.getGraphID() << "(" << d.getID() << ") of pos : " << d.getPos() << " and amount " << d.getAmount();
     return os;
 }
 
-inline bool operator==(Demand d1, Demand d2)
+inline bool operator==(const Demand& d1, const Demand& d2)
 {
     return (
         d1.getPos() == d2.getPos() &&

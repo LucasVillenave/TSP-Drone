@@ -1,7 +1,7 @@
 #include "Graph/Demand.hpp"
 
-Demand::Demand(Position pos, int amount, int ID)
-    : pos(pos), amount(amount), ID(ID) {}
+Demand::Demand(Position t_intiPos, int amount, int ID)
+    : initPos(t_intiPos), amount(amount), ID(ID) {}
 
 int Demand::getAmount() const{
     return amount;
@@ -12,36 +12,36 @@ void Demand::setAmount(int t_amount){
 }
 
 double Demand::getLongitude() const{
-    return pos.getLongitude();
+    return initPos.getLongitude();
 }
 
 double Demand::getLatitude() const{
-    return pos.getLatitude();
+    return initPos.getLatitude();
 }
 
 double Demand::getX() const{
-    return pos.getX();
+    return initPos.getX();
 }
 
 double Demand::getY() const{
-    return pos.getY();
+    return initPos.getY();
 }
 
 void Demand::setX(double t_x){
-    pos.setX(t_x);
+    initPos.setX(t_x);
 }
 
 void Demand::setY(double t_y){
-    pos.setY(t_y);
+    initPos.setY(t_y);
 }
 
 const Position& Demand::getPos() const{
-    return pos;
+    return initPos;
 }
 
 void Demand::setPos(Position t_pos){
-    pos.setX(t_pos.getX());
-    pos.setY(t_pos.getY());
+    initPos.setX(t_pos.getX());
+    initPos.setY(t_pos.getY());
 }
 
 int Demand::getID() const{
@@ -58,4 +58,24 @@ void Demand::setID(int t_ID){
 
 void Demand::setGraphID(int t_GraphID){
     GraphID = t_GraphID;
+}
+
+void Demand::setNodePos(Position nodePos){
+    this->nodePos = nodePos;
+}
+
+void Demand::setNodeGraphID(int nodeGraphID){
+    this->nodeGraphID = nodeGraphID;
+}
+
+Position Demand::getInitPos() const{
+    return initPos;
+}
+
+Position Demand::getNodePos() const{
+    return nodePos;
+}
+
+int Demand::getNodeGraphID() const{
+    return nodeGraphID;
 }

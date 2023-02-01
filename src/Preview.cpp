@@ -1,11 +1,6 @@
 #include <cmath>
 #include "Preview.hpp"
-
-double Preview::degree_to_meters(double x)
-{
-    // 1' = 1852m
-    return 60*1852*x;
-}
+#include "utils.hpp"
 
 void Preview::set_minimum(const std::vector<Vertex> &t_vertices)
 {
@@ -25,12 +20,12 @@ void Preview::set_minimum(const std::vector<Vertex> &t_vertices)
 
 double Preview::getY(double y) const
 {
-    return degree_to_meters(y - m_latitude_init) / 100;
+    return degree_to_meter(y - m_latitude_init) / 100;
 }
 
 double Preview::getX(double x) const
 {
-    return degree_to_meters(x - m_longitude_init)/100;
+    return degree_to_meter(x - m_longitude_init) / 100;
 }
 
 void Preview::new_line()
@@ -69,14 +64,25 @@ void Preview::draw_node(double t_x_point, double t_y_point, const std::string& t
     m_file << "  \\filldraw[" << t_color << "] (" << t_x_point << ", " << t_y_point << ") circle (3pt);\n";
 }
 
+void Preview::draw_square(double t_x_point, double t_y_point, const std::string& t_color, double t_plus)
+{
+    double x_first_corner = t_x_point + 0.11 + t_plus;
+    double y_first_corner = t_y_point + 0.11 + t_plus;
+    double x_opposed_corner = t_x_point - 0.11 - t_plus;
+    double y_opposed_corner = t_y_point - 0.11 - t_plus;
+    m_file << "  \\fill[" << t_color
+           << "] (" << x_first_corner << "," << y_first_corner
+           << ") rectangle (" << x_opposed_corner << "," << y_opposed_corner << ");\n";
+}
+
 void Preview::write_vertices(const std::vector<Vertex> &t_vertices, const std::string& t_color_with, const std::string& t_color_without)
 {
+    //draw depot
+    double x = getX(t_vertices[0].getLongitude()), y = getY(t_vertices[0].getLatitude());
+    draw_square(x, y, t_color_without);
     for(auto& v : t_vertices)
     {
-        double x = getX(v.getLongitude()),
-                y = getY(v.getLatitude());
-        draw_node(x, y, t_color_without);
-
+        x = getX(v.getLongitude()), y = getY(v.getLatitude());
         if(v.getTDA() > 0)
         {
             draw_node(x, y, t_color_with);
@@ -88,16 +94,16 @@ void Preview::write_vertices(const std::vector<Vertex> &t_vertices, const std::s
     }
 }
 
-void Preview::write_edges(const std::vector<Edge> &t_edges, const std::vector<Vertex>& t_vertices, std::string t_color)
+void Preview::write_edges(const std::vector<Edge> &t_edges, const std::vector<Vertex>& t_vertices, const std::string& t_color)
 {
     for(auto& e : t_edges)
     {
-        auto i = t_vertices[e.getStartID()];
-        auto l_i = getX(i.getLongitude());
-        auto L_i = getY(i.getLatitude());
-        auto j = t_vertices[e.getEndID()];
-        auto l_j = getX(j.getLongitude());
-        auto L_j = getY(j.getLatitude());
+        const auto& i = t_vertices[e.getStartID()];
+        const auto& l_i = getX(i.getLongitude());
+        const auto& L_i = getY(i.getLatitude());
+        const auto& j = t_vertices[e.getEndID()];
+        const auto& l_j = getX(j.getLongitude());
+        const auto& L_j = getY(j.getLatitude());
         draw_line(l_i, L_i, l_j, L_j, t_color);
     }
 }

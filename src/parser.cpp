@@ -1,6 +1,5 @@
 #include "parser.hpp"
 #include <vector>
-#include <sstream>
 #include <fstream>
 #include <iostream>
 
@@ -137,6 +136,7 @@ Graph loadGraph(string instancePath, string instanceName){
 
                 if (parameterName == "type"){
                     roadType = value[i];
+                    roadType = roadType.substr(1, roadType.size()-2);
                 }
 
                 if (parameterName == "length"){
@@ -254,10 +254,14 @@ Instance load(const string& instancePath, const string& instanceName){
     g = Graph(vertices,g.getEdges());
     g.addDemands(demands);
 
-    return Instance(g,instanceName);
-}
+    std::vector<std::string> roadTypes;
+    roadTypes.push_back("primary");
+    roadTypes.push_back("secondary");
 
+    std::vector<double> roadSpeed;
+    roadSpeed.push_back(60);
+    roadSpeed.push_back(45);
+    roadSpeed.push_back(30);
 
-void write(Solution sol){
-    //ToDo
+    return Instance(g,instanceName,roadTypes,roadSpeed);
 }
