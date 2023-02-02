@@ -4,14 +4,10 @@ Ce projet est un projet de M2, groupe B pour le projet professionnel de La Poste
 
 Il a pour but d'optimiser l'intégration de drones de livraison dans la flotte de La Poste.
 
-## TODO
+## Installation
 
-- [x] **[Lucas]** Lecture des données et structures
-- [x] **[Lucas]** Écriture des solutions
-- [x] **[Chloé]** Lecture des solutions
-- [x] **[Chloé]** Affichage des solutions
-- [x] **[Lucas]** Checker de solution
-- [x] **[Basile]** Modèle pour le problème de base
-- [ ] **[Patxi]** Modèle pour le premier cas
-- [ ] Heuristique pour le premier cas
-- [ ] Heuristique pour le second cas
+- You need a GUROBI license
+- You need python packages : numpy, pandas, folium, networkx
+```shell
+pip install numpy
+```
