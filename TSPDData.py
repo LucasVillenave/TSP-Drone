@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 import folium
+import networkx as nx
+import geopy.distance
 
 class TSPDData:
     def __init__(self, path):
@@ -31,8 +33,34 @@ class TSPDData:
         df_demands = pd.read_json(filepath + "/Demand.txt")
         vertices = vertices.merge(df_demands, left_on=['lat', 'lon'], right_on=['lat', 'lon'], how = 'left').reindex(columns=['index', 'lat', 'lon', 'amount'])
 
-        self.df_edge = df
+        self.df_edges = df
         self.df_vertices = vertices
+
+    def create_all_graphs(self):
+        g = nx.from_pandas_edgelist(self.df_edges, 'start_id','end_id','costs')
+
+        all_paths = dict(nx.all_pairs_dijkstra_path(g, weight='costs'))
+        all_paths_length = dict(nx.all_pairs_dijkstra_path_length(g, weight='costs'))
+        nb_vertices = len(self.df_vertices.index)
+
+        self.drone_time = {u:{ v:{
+                                'drone_time':geopy.distance.geodesic((self.df_vertices.at[u,'lat'],self.df_vertices.at[u,'lon']), (self.df_vertices.at[v,'lat'],self.df_vertices.at[v,'lon']))}
+                                for v in range(nb_vertices)} 
+                                for u in range(nb_vertices)}
+        self.truck_shortest_time = {u:{ v:{
+                                'truck_shortest_time':all_paths_length[u][v]}
+                                for v in range(nb_vertices)} 
+                                for u in range(nb_vertices)}
+        self.truck_shortest_path = {u:{ v:{
+                                'truck_shortest_path':all_paths[u][v]}
+                                for v in range(nb_vertices)} 
+                                for u in range(nb_vertices)}
+        self.road_graph = {u:{ v:{
+                                'road_time':g[u][v]['costs']}
+                                for v in range(nb_vertices) if g.has_edge(u,v)} 
+                                for u in range(nb_vertices)}
+
+
 
     def get_road_graph(self):
         """

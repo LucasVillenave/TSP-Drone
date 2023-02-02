@@ -5,6 +5,8 @@ from TSPDData import *
 from usefull_fonctions import *
 import math
 
+
+class TSPModel:
 # Callback - use lazy constraints to eliminate sub-tours
 def subtourelim(model, where):
     if where == GRB.Callback.MIPSOL:
@@ -38,7 +40,7 @@ def subtour(vals):
             cycle = thiscycle
     return cycle
 
-instance = TSPDData("../Data/init/Graph.txt", "../Data/init/Demand.txt")
+instance = TSPDData("../Data/init")
 n = len(instance.distance_customers)
 dist = {(i, j):
         instance.distance_customers[i][j]
