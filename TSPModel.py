@@ -38,7 +38,7 @@ class TSPModel:
                     neighbors = [j for i, j in edges.select(current, '*')
                                 if j in unvisited]
                 if len(cycle) > len(thiscycle):
-                    cycle = thiscycle   
+                    cycle = thiscycle
             return cycle
 
         instance = self.data.get_compact_graph()
@@ -47,14 +47,12 @@ class TSPModel:
                 instance[i][j]
                 #math.sqrt(sum((instance.positions[instance.indices_customers[i]][k]-instance.positions[instance.indices_customers[j]][k])**2 for k in range(2)))  #remplacer ligne précédente par celle-là pour farie avec dist à vol d'oiseau
                 for i in range(n) for j in range(i)}
-        print("DIST", dist)
-            
+
 
 
         m = gp.Model()
 
         # Create variables
-
         vars = m.addVars(dist.keys(), obj=dist, vtype=GRB.BINARY, name='e')
         for i, j in vars.keys():
             vars[j, i] = vars[i, j]  # edge in opposite direction
@@ -93,3 +91,5 @@ class TSPModel:
         print('Optimal tour: %s' % str(tour))
         print('Optimal cost: %g' % m.ObjVal)
         print('')
+        tour.append(0)
+        return m.ObjVal, tour
