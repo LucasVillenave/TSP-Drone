@@ -262,24 +262,26 @@ std::vector<Event> getEventCase2(const Instance& instance)
     time += instance.getTravelTime(graph.getEdge(12))+1;
     events.emplace_back(p18, time, 1);
     //drones
-    events.emplace_back(p18, time, 2, Position(), 0, 0);
-    double depart_time = time;
-    events.emplace_back(p18, time, 2, Position(), 3, 1);
-    time += euclidianDistanceBis(p18.getLongitude(), p18.getLongitude(), p12.getLongitude(), p12.getLatitude()) / instance.getDroneSpeed();
-    events.emplace_back(p12, time, 5, Position(), 0, 0);
-    time += euclidianDistanceBis(p12.getLongitude(), p12.getLongitude(), p18.getLongitude(), p18.getLatitude()) / instance.getDroneSpeed();
-    events.emplace_back(p18, time, 3, Position(), -1, 0);
+    double time_drone_1 = time, time_drone_0 = time;
+    events.emplace_back(p18, time_drone_0, 2, Position(), 0, 0);
+    events.emplace_back(p18, time_drone_1, 2, Position(), 3, 1);
     //truck
     events.emplace_back(p18, time, 0, p1);
     time += instance.getTravelTime(graph.getEdge(16))+1;
     events.emplace_back(p1, time, 1);
-    //drone
-    depart_time += euclidianDistanceBis(p18.getLongitude(), p18.getLongitude(), p3.getLongitude(), p3.getLatitude()) / instance.getDroneSpeed();
-    events.emplace_back(p3, depart_time, 5, Position(), 3, 1);
-    time = depart_time +
-            euclidianDistanceBis(p3.getLongitude(), p3.getLongitude(), p18.getLongitude(), p18.getLatitude()) / instance.getDroneSpeed();
-    events.emplace_back(p1, time, 3, Position(), -1, 1);
+    //livraison drone 1
+    time_drone_1 += euclidianDistanceBis(p18.getLongitude(), p18.getLongitude(), p3.getLongitude(), p3.getLatitude()) / instance.getDroneSpeed();
+    events.emplace_back(p3, time_drone_1, 5, Position(), 3, 1);
+    //livraison drone 2
+    time_drone_0 += euclidianDistanceBis(p18.getLongitude(), p18.getLongitude(), p12.getLongitude(), p12.getLatitude()) / instance.getDroneSpeed();
+    events.emplace_back(p12, time_drone_0, 5, Position(), 0, 0);
+    //retour drone
+    time_drone_1 += euclidianDistanceBis(p3.getLongitude(), p3.getLongitude(), p1.getLongitude(), p1.getLatitude()) / instance.getDroneSpeed();
+    events.emplace_back(p1, time_drone_1, 3, Position(), -1, 1);
+    time_drone_0 += euclidianDistanceBis(p12.getLongitude(), p12.getLongitude(), p1.getLongitude(), p1.getLatitude()) / instance.getDroneSpeed();
+    events.emplace_back(p18, time_drone_0, 3, Position(), -1, 0);
     //truck
+    time += std::max(time_drone_0, time_drone_1);
     events.emplace_back(p1, time, 0, p0);
     time += instance.getTravelTime(graph.getEdge(0))+1;
     events.emplace_back(p0, time, 1);
@@ -331,20 +333,17 @@ int main(){
     }
 */
 
-    //std::cout << graph << std::endl;
-    Graph graph_unit = graph.getUnitDemandGraph();
-    std::cout << graph.getNumberDemandNodes() << std::endl;
-    std::cout << graph_unit.getNumberDemandNodes() << std::endl;
+    std::cout << graph.getUnitDemandGraph() << std::endl;
     //graphPreview(graph);
     //system("pdflatex graph.tex");
     //system("xdg-open graph.pdf");
+    exit(1);
 
 
-
-    //Solution solution = Solution(instance, getEventCase1(instance));
-    //std::cout << solution << std::endl;
-    //for(unsigned int i = 0, n = solution.getIsValid().size(); i < n; ++i)
-    //    std::cout << solution.getIsValid(i) << std::endl;
+    Solution solution = Solution(instance, getEventCase2(instance));
+    std::cout << solution << std::endl;
+    for(unsigned int i = 0, n = solution.getIsValid().size(); i < n; ++i)
+        std::cout << solution.getIsValid(i) << std::endl;
     //solutionPreview(solution);
     //system("pdflatex solution.tex");
     //system("xdg-open solution.pdf");

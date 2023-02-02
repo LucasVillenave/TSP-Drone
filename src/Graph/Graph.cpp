@@ -117,6 +117,22 @@ Graph Graph::getUnitDemandGraph() const
             }
         }
     }
+    for(const auto& id : id_vertices)
+    {
+        unsigned int size = id.size();
+        if(size <= 1)
+            continue;
+        for(int i = 0; i < size; ++i)
+        {
+            for(int j = i + 1; j < size; ++j)
+            {
+                if(i == j)
+                    continue;
+                edges.emplace_back(i, j, 0, " ", edge_id);
+                ++edge_id;
+            }
+        }
+    }
 
     return {vertices, edges};
 }

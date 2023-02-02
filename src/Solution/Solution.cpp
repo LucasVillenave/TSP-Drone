@@ -47,7 +47,7 @@ int Solution::checkTruck(){
             }
 
             //truck teleporting (moving from place different from arrival)
-            if ((actualEventType==0) && (previousEventType != -1) && ((actualEvent.getPos1()==previousEvent.getPos1())!=1)){ //previousEvent.getPos2()!!
+            if ((actualEventType==0) && (previousEventType != -1) && ((actualEvent.getPos1()==previousEvent.getPos1())!=1)){
                 isValid = std::vector<int>(4,-4);
                 return 0;
             }
@@ -110,19 +110,19 @@ int Solution::checkDrones(){
             int droneID = actualEvent.getDroneID();
 
             //Drone lift off without being picked up
-            if ((actualEventType == 2) && (previousEventType[droneID] != 3)){//5=3!!
+            if ((actualEventType == 2) && (previousEventType[droneID] != 3)){
                 isValid = std::vector<int>(4,-7);
                 return 0;
             }
 
             //Drone arrive without delivering
-            if ((actualEventType == 3) && (previousEventType[droneID] != 5)){// != = ==!!
+            if ((actualEventType == 3) && (previousEventType[droneID] != 5)){
                 isValid = std::vector<int>(4,-8);
                 return 0;
             }
 
             //Drone deliver without lifting off
-            if ((actualEventType == 5) && (previousEventType[droneID] != 2)){// != = ==!!
+            if ((actualEventType == 5) && (previousEventType[droneID] != 2)){
                 isValid = std::vector<int>(4,-9);
                 return 0;
             }
@@ -135,7 +135,7 @@ int Solution::checkDrones(){
 
             //Drone stolled (delivered from place different from planned)
             Position pos2 = instance.getGraph().getDemand( previousEvent[droneID].getDemandID() ).getPos();
-            if ((actualEventType==5) && ((actualEvent.getPos1()==pos2)!=1)){//previousEvent[droneID].getPos2() = pos2!!
+            if ((actualEventType==5) && ((actualEvent.getPos1()==pos2)!=1)){
                 isValid = std::vector<int>(4,-10);
                 return 0;
             }
@@ -175,13 +175,13 @@ int Solution::checkDemandSatisfaction(){
             if (event.getEventType()==4){
                 Event arrivalTruckEvent;
                 Event departureTruckEvent;
-                for (int j=0; j<i; ++j){//i=j!!
+                for (int j=0; j<i; ++j){
                     Event newSuperPlusEvent = eventList[j];
                     if (newSuperPlusEvent.getEventType()==1){
                         arrivalTruckEvent = newSuperPlusEvent;
                     }
                 }
-                for (int j=i+1; (j<eventList.size()) && (departureTruckEvent.getEventType()==-1); ++j){//i=j!!
+                for (int j=i+1; (j<eventList.size()) && (departureTruckEvent.getEventType()==-1); ++j){
                     Event newSuperPlusEvent = eventList[j];
                     if (newSuperPlusEvent.getEventType()==0){
                         departureTruckEvent = newSuperPlusEvent;
@@ -300,6 +300,7 @@ void Solution::checkScenarsSpecifics(){
                 isValid[2] = -16;
                 if (isLastArrival[0]==1){
                     isValid[3] = -17;
+                    std::cout << "lift off" << std::endl;
                 }
             }
 
@@ -309,13 +310,13 @@ void Solution::checkScenarsSpecifics(){
                 isValid[2] = -17;
                 if (isLastArrival[1]==1){
                     isValid[3] = -17;
+                    std::cout << "pick up" << std::endl;
                 }
             }
 
             //Truck need to be here to drop off drones (3rd scenario)
             if (isLastArrival[0]==0){
                 // truck moving when drones are to be dropped
-                std::cout << "here" << std::endl;// !!!
                 isValid[1] = -18;
                 isValid[2] = -18;
 
@@ -352,7 +353,6 @@ void Solution::checkScenarsSpecifics(){
             //Truck need to be here to pick up drones (3rd scenario)
             if (isLastArrival[1]==0){
                 // truck moving when drones are to be picked up
-                std::cout << "here" << std::endl;// !!!
                 isValid[1] = -18;
                 isValid[2] = -18;
 
