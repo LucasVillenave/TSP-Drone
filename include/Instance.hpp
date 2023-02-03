@@ -18,6 +18,7 @@ class Instance{
         int truckDeliveryTime = 60;
 
         double droneSpeed;
+        double droneRechargingTime = 30;
 
     public :
         Instance()=default;
@@ -33,6 +34,7 @@ class Instance{
         int getTruckDeliveryTime() const;
         double getTravelTime(Edge e) const;
         int getDroneSpeed() const;
+        double getDroneRechargingTime() const;
 
         const Graph & getGraph() const;
 };

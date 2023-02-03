@@ -100,17 +100,7 @@ int main(){
         std::cout << std::endl;
     }
 
-    std::cout << "tourney : ";
-    for (int i=0; i<5; ++i){
-        std::cout << tourney[i] << " ";
-        x[i][tourney[i]][tourney[i+1]] = 1;
-    }
-    std::cout << tourney[5] << std::endl;
-    x[5][tourney[5]][tourney[0]] = 1;
-
-    std::cout << vertices[0] << std::endl;
-
-    Solution sol2 = convertCase01(instance,x,z);
+    Solution sol2 = convertCase01(instance,tourney,z);
     
     std::cout << "after check, sol 2 case 0 is valid : " << sol2.getIsValid(0) << std::endl;
     std::cout << "after check, sol 2 case 1 is valid : " << sol2.getIsValid(1) << std::endl;

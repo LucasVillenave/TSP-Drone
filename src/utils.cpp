@@ -143,25 +143,34 @@ std::vector<std::vector<std::vector<int>>> updateDistMatrix (std::vector<std::ve
     return optimalPath;
 }
 
-// void convertDroneCase1(const Instance& instance, std::vector<std::vector<std::vector<int>>> z, std::vector<Event>& eventList, int startingNode, double & time){
-//     int n = instance.getGraph().getVertices().size();
-//     int m = instance.getGraph().getUnitDemandGraph().getDemands().size();
-//     const std::vector<Vertex>& vertices = instance.getGraph().getVertices();
+int isToBePlacedBefore(int eventType, int toPlaceEventType){
+    if (eventType == 0){
+        eventType = 10;
+    }
+    if (eventType == 3){
+        eventType = 5;
+    }else{
+        if (eventType == 5){
+            eventType = 3;
+        }
+    }
 
-//     for (int a=0; a<1; a++){
-//         for (int d=0; d<m; ++d){
-//             const std::vector<Demand>& demands = instance.getGraph().getUnitDemandGraph().getDemands();
-//             Vertex t = vertices[demands[d].getNodeGraphID()];
-//             if (z[startingNode][d][a]==1){
-//                 eventList.push_back(Event(vertices[startingNode].getPos(),time,2,t.getPos(),m,a));
-//                 time += euclidianDistance(vertices[startingNode].getPos(),t.getPos())/instance.getDroneSpeed();
-//                 eventList.push_back(Event(t.getPos(),time,5,Position(),m,a));
-//                 time += euclidianDistance(vertices[startingNode].getPos(),t.getPos())/instance.getDroneSpeed();
-//                 eventList.push_back(Event(vertices[startingNode].getPos(),time,3,Position(),-1,a));
-//             }
-//         }
-//     }
-// }
+    if (toPlaceEventType == 0){
+        toPlaceEventType = 10;
+    }
+    if (toPlaceEventType == 3){
+        toPlaceEventType = 5;
+    }else{
+        if (toPlaceEventType == 5){
+            toPlaceEventType = 3;
+        }
+    }
+
+    if (toPlaceEventType<eventType){
+        return 1;
+    }
+    return 0;
+}
 
 void sortByTime(std::vector<Event>& eventList){
     std::vector<double> times;
@@ -173,17 +182,32 @@ void sortByTime(std::vector<Event>& eventList){
     for (int i=1; i<eventList.size();++i){
         Event e = eventList[i];
         double eTime = e.getTime();
+        if (eTime<1 && eTime>0){
+            std::cout << "yup yup" << std::endl;
+        }
         int asBeenPlaced = 0;
         if (times[0]>eTime){
             times.insert(times.begin(),eTime);
             sortedList.insert(sortedList.begin(),e);
         }else{
             for (int i=1; i<times.size(); ++i){
-                if ((times[i-1]<eTime) && (times[i]>eTime)){
+                std::cout << times[i] << " " << eTime << std::endl;
+                if ((times[i]<(eTime + 0.0001))&&(times[i]>(eTime - 0.0001))){
                     asBeenPlaced=1;
-                    times.insert(times.begin()+i,eTime);
-                    sortedList.insert(sortedList.begin()+i,e);
+                    std::cout << "comparing " << sortedList[i] << std::endl;
+                    std::cout << "and " << e << std::endl;
+                    int toBePlacedBefore = isToBePlacedBefore(sortedList[i].getEventType(), e.getEventType());
+                    std::cout << "returned " << toBePlacedBefore << std::endl;
+                    times.insert(times.begin()+i+1-toBePlacedBefore, eTime);
+                    sortedList.insert(sortedList.begin()+i+1-toBePlacedBefore,e);
                     break;
+                }else{
+                    if ((times[i-1]<eTime) && (times[i]>eTime)){
+                        asBeenPlaced=1;
+                        times.insert(times.begin()+i,eTime);
+                        sortedList.insert(sortedList.begin()+i,e);
+                        break;
+                    }
                 }
             }
         }
@@ -218,9 +242,10 @@ std::vector<int> calculateTruckCouverture(const std::vector<std::vector<std::vec
     return y;
 }
 
-Solution convertCase01(const Instance& instance, const std::vector<std::vector<std::vector<int>>>& x, const std::vector<std::vector<std::vector<int>>>& z){
+Solution convertCase01(const Instance& instance, const std::vector<int>& x, const std::vector<std::vector<std::vector<int>>>& z){
     std::vector<Event> eventList;
     double time = 0;
+    std::vector<double> dronesTimes(2,0);
 
     std::cout << "---> convertor from (x,z) to event solution" << std::endl;
     std::cout << "------> checking input" << std::endl;
@@ -242,29 +267,6 @@ Solution convertCase01(const Instance& instance, const std::vector<std::vector<s
             }
         }
     }
-
-    for (std::vector<std::vector<int>> xt : x){
-        if (xt.size()!=n){
-            throw std::invalid_argument("invalid sized arguments");
-        }
-        for (int i=0; i<xt.size(); ++i){
-            if (xt[i].size()!=n){
-                throw std::invalid_argument("invalid sized arguments");
-            }
-        }
-
-        int xLeave = 0;
-        for (int i=0; i<n; ++i){
-            for (int j=0; j<n; ++j){
-                if (xt[i][j]==1){
-                    xLeave++;
-                }
-            }
-        }
-        if (xLeave>1){
-            throw std::invalid_argument("invalid x");
-        }
-    }
     
     const std::vector<Vertex>& vertices = instance.getGraph().getVertices();
     std::vector<int> y = calculateTruckCouverture(z,instance.getGraph().getDemands());
@@ -272,52 +274,75 @@ Solution convertCase01(const Instance& instance, const std::vector<std::vector<s
     std::cout << "------> generating events" << std::endl;
 
     for (int t=0; t<x.size(); ++t){
-        std::vector<std::vector<int>> xt = x[t];
+        int nextNode = x[t];
         std::vector<std::vector<int>> zt = z[t];
-        for (int i=0; i<n; ++i){
-            for (int j=0; j<n; ++j){
-                if (xt[i][j]==1){
-                    std::vector<int> path = instance.getGraph().getTSPKernelPath(i,j);
-                    //add the events of the implicit passing of the truck (possibly just i->j)
-                    for(int k=1; k<path.size(); k++){
-                        // std::cout << "from " << path[k-1] << " to " << path[k] << " : " << vertices[path[k-1]].getPos() << " -> " << vertices[path[k]].getPos() << std::endl;
-                        eventList.push_back(Event(vertices[path[k-1]].getPos(),time,0,vertices[path[k]].getPos()));
-                        time += instance.getGraph().getTSPKernelTime(path[k-1],path[k]);
-                        eventList.push_back(Event(vertices[path[k]].getPos(),time,1));
-                    }
 
-                    //we add all event of covered demands
-                    for (int d=0; d<m; ++d){
-                        Demand demand = instance.getGraph().getDemand(d);
-                        //by drones
-                        for (int a=0; a<2; ++a){
-                            for (int k=0; k<zt[d][a]; ++k){
-                                eventList.push_back(Event(vertices[j].getPos(),time,2,demand.getNodePos(),d,a));
-                                time += euclidianDistance(vertices[j].getPos(),demand.getNodePos())/instance.getDroneSpeed();
-                                eventList.push_back(Event(demand.getNodePos(),time,5,Position(),d,a));
-                                time += euclidianDistance(vertices[j].getPos(),demand.getNodePos())/instance.getDroneSpeed();
-                                eventList.push_back(Event(vertices[j].getPos(),time,3,Position(),-1,a));
-                            }
-                        }
+        if (t!=0){
+            int actualNode = x[t-1];
 
-                        //by truck
-                        if (demand.getNodeGraphID()==j){
-                            for (int k=0; k<y[d]; ++k){
-                                eventList.push_back(Event(demand.getNodePos(),time,4,Position(),demand.getGraphID()));
-                                time += instance.getTruckDeliveryTime();
-                            }
-                        }
-                    }
+            std::vector<int> path = instance.getGraph().getTSPKernelPath(actualNode,nextNode);
+
+            //add the events of the implicit passing of the truck (possibly just i->j)
+            for(int k=1; k<path.size(); k++){
+                // std::cout << "from " << path[k-1] << " to " << path[k] << " : " << vertices[path[k-1]].getPos() << " -> " << vertices[path[k]].getPos() << std::endl;
+                eventList.push_back(Event(vertices[path[k-1]].getPos(),time,0,vertices[path[k]].getPos()));
+                time += instance.getGraph().getTSPKernelTime(path[k-1],path[k]);
+                eventList.push_back(Event(vertices[path[k]].getPos(),time,1));
+            }
+        }
+
+        //overHauls
+        if (time>dronesTimes[0]){
+            dronesTimes[0] = time;
+        }
+        if (time>dronesTimes[1]){
+            dronesTimes[1] = time;
+        }
+
+        //we add all event of covered demands
+        for (int d=0; d<m; ++d){
+            Demand demand = instance.getGraph().getDemand(d);
+            //by drones
+            for (int a=0; a<2; ++a){
+                for (int k=0; k<zt[d][a]; ++k){
+                    eventList.push_back(Event(vertices[nextNode].getPos(),dronesTimes[a],2,demand.getNodePos(),d,a));
+                    dronesTimes[a] += euclidianDistance(vertices[nextNode].getPos(),demand.getNodePos())/instance.getDroneSpeed();
+                    eventList.push_back(Event(demand.getNodePos(),dronesTimes[a],5,Position(),d,a));
+                    dronesTimes[a] += euclidianDistance(vertices[nextNode].getPos(),demand.getNodePos())/instance.getDroneSpeed();
+                    eventList.push_back(Event(vertices[nextNode].getPos(),dronesTimes[a],3,Position(),-1,a));
+                    dronesTimes[a]+=instance.getDroneRechargingTime();
+                }
+            }
+            //by truck
+            if (demand.getNodeGraphID()==nextNode){
+                for (int k=0; k<y[d]; ++k){
+                    eventList.push_back(Event(demand.getNodePos(),time,4,Position(),demand.getGraphID()));
+                    time += instance.getTruckDeliveryTime();
                 }
             }
         }
+
+        //Truck awaits drones if needed
+        if (time+instance.getDroneRechargingTime()<dronesTimes[0]){
+            time = dronesTimes[0]-instance.getDroneRechargingTime();
+        }
+        if (time+instance.getDroneRechargingTime()<dronesTimes[1]){
+            time = dronesTimes[1]-instance.getDroneRechargingTime();
+        }
+    }
+
+    std::vector<int> path = instance.getGraph().getTSPKernelPath(x[x.size()-1],x[0]);
+    for(int k=1; k<path.size(); k++){
+        eventList.push_back(Event(vertices[path[k-1]].getPos(),time,0,vertices[path[k]].getPos()));
+        time += instance.getGraph().getTSPKernelTime(path[k-1],path[k]);
+        eventList.push_back(Event(vertices[path[k]].getPos(),time,1));
     }
 
     sortByTime(eventList);
 
-    // for (Event e : eventList){
-    //     std::cout << e << std::endl;
-    // }
+    for (Event e : eventList){
+        std::cout << e << std::endl;
+    }
 
     return Solution(instance,eventList);
 }

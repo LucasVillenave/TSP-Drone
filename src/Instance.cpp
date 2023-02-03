@@ -53,3 +53,7 @@ double Instance::getTravelTime(Edge e) const{
     }
     return e.getLength()/roadSpeed[roadSpeed.size()-1];
 }
+
+double Instance::getDroneRechargingTime() const{
+    return droneRechargingTime;
+}
