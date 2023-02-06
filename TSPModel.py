@@ -92,4 +92,5 @@ class TSPModel:
         print('Optimal cost: %g' % m.ObjVal)
         print('')
         tour.append(0)
-        return m.ObjVal, tour
+        obj = m.ObjVal + self.data.get_number_demand_nodes()*self.data.truck_delivery_time
+        return obj, tour

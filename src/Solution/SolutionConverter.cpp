@@ -76,7 +76,7 @@ void SolutionConverter::find_matching_edge()
         }
         if(not find)
         {
-            std::cout << m_vertices[i].getPos() << std::endl << m_vertices[i + 1].getPos() << std::endl;
+            std::cout << m_vertices[i] << std::endl << m_vertices[i + 1] << std::endl;
             throw std::invalid_argument("no matching edge in solution converter");
         }
     }

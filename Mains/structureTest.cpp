@@ -317,22 +317,29 @@ std::vector<Event> getEventCase3(const Instance& instance)
 }
 
 int main(){
-    std::string name = "30"; //{"init", "30", "50", "80", "100"};
+    std::vector<std::string> filename = {"init", "30", "50", "80", "100"};
+    for(std::string name : filename)
+    {
+        //Instance instance = load("../Data/",name);
+        //std::cout << instance.getGraph().getEdges().size() << std::endl;
 
-    //Instance instance = load("../Data/",name);
-    //std::cout << instance.getGraph().getDemands().size() << std::endl;
-    Solution solution = solution_convert("../Data/", name, "../results_tsp_"+name+".txt");
-    std::cout << solution.getDemands().size() << std::endl;
-    for(unsigned int i = 0, n = solution.getIsValid().size(); i < n; ++i)
-        std::cout << solution.getIsValid(i) << std::endl;
-    solutionPreview(solution, "sol"+name);
+        Solution solution = solution_convert("../Data/", name, "../results_tsp_"+name+".txt");
+        for(unsigned int i = 0, n = solution.getIsValid().size(); i < n; ++i)
+            std::cout << solution.getIsValid(i) << std::endl;
+        //solutionPreview(solution, "sol"+name);
+        std::filebuf fb;
+        fb.open ("solution"+name+".txt",std::ios::out);
+        std::ostream os(&fb);
+        os << solution;
+        fb.close();
+    }
+    //system("pdflatex sol50.tex");
+    //system("xdg-open sol50.pdf");
 
-    system("pdflatex sol30.tex");
-    system("xdg-open sol30.pdf");
     exit(1);
 
-    Instance instance = load("../Data/","test");
-    const Graph& graph = instance.getGraph();
+    //Instance instance = load("../Data/","test");
+    //const Graph& graph = instance.getGraph();
 /*
     //COMPARAISON DES DISTANCES
     for(const auto& edge : instance.getGraph().getEdges())

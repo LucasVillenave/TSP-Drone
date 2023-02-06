@@ -176,7 +176,7 @@ int Solution::checkDemandSatisfaction(){
         Event event = eventList[i];
         if (event.getEventType()>=4){
             if (event.getEventType()==4){
-                Event arrivalTruckEvent;
+                Event arrivalTruckEvent(instance.getDepotLocation(),0,1);
                 Event departureTruckEvent;
                 for (int j=0; j<i; ++j){
                     Event newSuperPlusEvent = eventList[j];
