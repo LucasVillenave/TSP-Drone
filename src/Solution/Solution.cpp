@@ -27,7 +27,7 @@ void Solution::check(){
 // the 4 first checks checks for flow conservation. the last two check if the truck is time coherent and on roads.
 int Solution::checkTruck(){
 
-    Event previousEvent(instance.getGraph().getVertice(0).getPos(),0,1);
+    Event previousEvent(instance.getDepotLocation(),0,1);
     int previousEventType = 1;
     for (int i=0; i<eventList.size();++i){
         const Event& actualEvent = eventList[i];
@@ -48,6 +48,9 @@ int Solution::checkTruck(){
 
             //truck teleporting (moving from place different from arrival)
             if ((actualEventType==0) && (previousEventType != -1) && ((actualEvent.getPos1()==previousEvent.getPos1())!=1)){
+                std::cout << "teleporting from " << previousEvent.getPos1() << " to " << actualEvent.getPos1() << std::endl;
+                std::cout << previousEvent << std::endl;
+                std::cout << actualEvent << std::endl;
                 isValid = std::vector<int>(4,-4);
                 return 0;
             }
@@ -92,7 +95,7 @@ int Solution::checkTruck(){
     }
 
     //At the end you should arrive to depot
-    if ((previousEventType!=1) || (1!=(previousEvent.getPos1()==instance.getGraph().getVertice(0).getPos()))){
+    if ((previousEventType!=1) || (1!=(previousEvent.getPos1()==instance.getDepotLocation()))){
         isValid = std::vector<int>(4,-69);
         return 0;
     }
