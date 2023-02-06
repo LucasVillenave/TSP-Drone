@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import folium
 import networkx as nx
-import geopy.distance
+import geopy.distance 
 
 class TSPDData:
     def __init__(self, path):
@@ -38,8 +38,8 @@ class TSPDData:
         df_edges.rename(columns={'index': 'start_id'}, inplace = True)
         df_edges = df_edges.merge(df_vertices, left_on=['lat_min', 'lon_min'], right_on=['lat', 'lon']).reindex(columns=['start_id','index', 'length', 'type'])
         df_edges.rename(columns={'index': 'end_id'}, inplace = True)
-        df_edges.replace({'type' : { 'primary' : self.speed[1], 'secondary' : self.speed[2]}}, inplace=True)
         df_edges['type'].loc[(df_edges['type'] != 'primary') & (df_edges['type'] != 'secondary')] = self.speed[3]
+        df_edges.replace({'type' : { 'primary' : self.speed[1], 'secondary' : self.speed[2]}}, inplace=True)
         df_edges['costs'] = df_edges['length'] / df_edges['type']
         df_edges.drop(columns=['length','type'], inplace=True)
 
@@ -67,8 +67,7 @@ class TSPDData:
         all_paths_length = dict(nx.all_pairs_dijkstra_path_length(g, weight='costs'))
         nb_vertices = len(self.df_vertices.index)
 
-        self.drone_time = {u:{ v:{
-                                'drone_time':geopy.distance.geodesic((self.df_vertices.at[u,'lat'],self.df_vertices.at[u,'lon']), (self.df_vertices.at[v,'lat'],self.df_vertices.at[v,'lon']))}
+        self.drone_time = {u:{ v: geopy.distance.geodesic((self.df_vertices.at[u,'lat'],self.df_vertices.at[u,'lon']), (self.df_vertices.at[v,'lat'],self.df_vertices.at[v,'lon'])).m / self.speed[0]
                                 for v in range(nb_vertices)}
                                 for u in range(nb_vertices)}
         self.truck_shortest_time = {u:{ v:all_paths_length[u][v]
@@ -80,6 +79,9 @@ class TSPDData:
         self.road_time = {u:{ v:g[u][v]['costs']
                                 for v in range(nb_vertices) if g.has_edge(u,v)}
                                 for u in range(nb_vertices)}
+        print(self.drone_time[0])
+        print(len(self.truck_shortest_path), self.truck_shortest_time[0][15], self.truck_shortest_path[0][15])
+        a
 
 
     def get_road_graph(self):
