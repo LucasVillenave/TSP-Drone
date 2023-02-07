@@ -146,13 +146,30 @@ class TSPDData:
 
     def get_number_demand_nodes(self):
         """
-        return the number of nodes with positive demand
+        return number of nodes with positive demand
         """
         return self.df_customers.index.size - 1
 
+    def get_demand_id(self, node_id):
+        """
+        return demand_id of corresponding node_id
+        """
+        demandID = self.df_customers['index'].loc[self.df_customers['node_id']==node_id]
+        if len(demandID) == 0:
+            raise Exception(str(node_id) + " is not a demand node")
+        return int(demandID)
+
+    def get_demand_amount(self, id):
+        """
+        return amount of corresponding id
+        """
+        if id < 0 or id > self.df_customers.index.size :
+            raise Exception(str(id) + " is not an demand id")
+        return int(self.df_customers.loc[id].amount)
+
     def get_total_demand(self):
         """
-        return the sum of all demand
+        return sum of all demand
         """
         return self.df_vertices['amount'].sum()
 

@@ -1,4 +1,10 @@
 from TSPDData import *
+from TSPDEvent import *
+
+def get_coordinate_from_file(line):
+    line = line.split(':')[1]
+    line = line.split('(')[0]
+    return float(line)
 
 class TSPDSolution:
     def __init__(self, data):
@@ -7,7 +13,8 @@ class TSPDSolution:
         #truck tour must be in the form : depot, each node visited, depot
         self.truck_tour = []
         #drone tour must be in the form : {time : [lift off node, delivery node, pick up node]}
-        self.drone_tour = [{}, {}]
+        self.drone_tour = [{5 : [11,177,17]}, {}]
+        self.list_events = []
 
     def import_TSP(self, obj, tour):
         self.value = obj
@@ -25,19 +32,98 @@ class TSPDSolution:
 
     def import_file(self, file):
         with open(file, "r") as fd:
-            line = fd.readline()
-            #...
+            fd.readline()
+            for line in fd:
+                tab = line.split(';')
+                size = len(tab)
+                if size < 2:
+                    continue
+
+                time = int(tab[0])
+                location = (-1,-1)
+                destination = (-1,-1)
+                droneID = -1
+                demandID = -1
+
+                eventName = tab[1][1:12]
+                if eventName == "LIVRAISON D":
+                    droneID = int(tab[1][17:18])
+                    demandID = int(tab[1].split(':')[1])
+                else:
+                    lat = get_coordinate_from_file(tab[size-2])
+                    lon = get_coordinate_from_file(tab[size-1])
+                    location = (lat, lon)
+                #if eventName == "ARRIVEE VEH":
+                if eventName == "DEPLACEMENT":
+                    lat = get_coordinate_from_file(tab[1].split('(')[1])
+                    lon = get_coordinate_from_file(tab[2])
+                    destination = (lat, lon)
+                elif eventName == "LARGAGE DRO":
+                    droneID = int(tab[1][15:16])
+                    demandID = int(tab[1].split(':')[1])
+                elif eventName == "RECUPERATIO":
+                    droneID = int(tab[1][20:21])
+                elif eventName == "LIVRAISON C":
+                    demandID = int(tab[1].split(':')[1])
+                self.list_events.append(TSPDEvent(time, location, destination, droneID, demandID))
         fd.close()
 
-    def update(self):
-        #tour to list_event
-        return None
+    def update_from_x_to_event(self):
+        is_delivery = [False] * self.data.get_number_demand_nodes()
+        time = 0
+        if len(self.truck_tour) > 0:
+            previous_vertex = self.truck_tour[0]
+            location = self.data.get_node_location(previous_vertex)
+        for vertex in self.truck_tour:
+            destination = self.data.get_node_location(vertex)
+            #movement
+            self.list_events.append(TSPDEvent(time, location=location, destination=destination))
+            time += 1
+            #arrival
+            self.list_events.append(TSPDEvent(time, location=destination))
+            #delivery
+            if vertex in self.data.get_demand_nodes():
+                demandID = self.data.get_demand_id(vertex)
+                if not is_delivery[demandID-1]:
+                    for demand in range(self.data.get_demand_amount(demandID)):
+                        self.list_events.append(TSPDEvent(time, location=destination, demandID=demandID))
+                        time += 1
+                    is_delivery[demandID-1] = True
+            previous_vertex = vertex
+            location = destination
+
+        for droneID in range(2):
+            dict = self.drone_tour[droneID]
+            for time in dict.keys():
+                tab = dict.get(time)
+                start = self.data.get_node_location(tab[0])
+                step = self.data.get_node_location(tab[1])
+                demandID = self.data.get_demand_id(tab[1])
+                end = self.data.get_node_location(tab[2])
+                #lift off
+                self.list_events.append(TSPDEvent(time, location=start, droneID=droneID, demandID=demandID))
+                time += 2
+                #delivery
+                self.list_events.append(TSPDEvent(time, droneID=droneID, demandID=demandID))
+                #pick up
+                time += 2
+                self.list_events.append(TSPDEvent(time, location=start, droneID=droneID))
+
+        self.list_events.sort(key=lambda x: x.destination[0])
+        self.list_events.sort(key=lambda x: x.time)
+
+    def update_from_event_to_x(self):
+        """
+        for event in self.list_events:
+            print(event)
+        """
 
     def export(self, name="solution"):
-        self.update()
+        self.update_from_x_to_event()
         with open(name + ".txt", 'w') as fd:
             fd.write("TEMPS ; EVENEMENT ; LOCALISATION\n")
-            #...
+            for event in self.list_events:
+                fd.write(event.display())
         fd.close()
 
     def to_map(self, verbose=True, name="solution"):
