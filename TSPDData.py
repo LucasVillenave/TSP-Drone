@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import folium
 import networkx as nx
-import geopy.distance
+import geopy.distance 
 
 class TSPDData:
     def __init__(self, path):
@@ -85,8 +85,8 @@ class TSPDData:
 
         self.all_paths = dict(nx.all_pairs_dijkstra_path(self.road_graph, weight='costs'))
         self.all_paths_length = dict(nx.all_pairs_dijkstra_path_length(self.road_graph, weight='costs'))
-        self.drone_time = {u:{ v:{
-                                'drone_time':geopy.distance.geodesic((self.df_vertices.at[u,'lat'],self.df_vertices.at[u,'lon']), (self.df_vertices.at[v,'lat'],self.df_vertices.at[v,'lon']))}
+        self.drone_time = {u:{ v:
+                                geopy.distance.geodesic((self.df_vertices.at[u,'lat'],self.df_vertices.at[u,'lon']), (self.df_vertices.at[v,'lat'],self.df_vertices.at[v,'lon'])).m / self.speed[0]
                                 for v in range(nb_vertices)}
                                 for u in range(nb_vertices)}
         self.truck_shortest_time = {u:{ v: self.all_paths_length[self.df_customers.node_id.loc[u]][self.df_customers.node_id.loc[v]]
