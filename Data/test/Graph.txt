@@ -20,6 +20,6 @@
 {"command_number":0,"id":79,"lat_max":44.8536919,"lat_min":44.8502586,"length":1296.94,"lon_max":0.6039617,"lon_min":0.5928066,"oneway":0,"osmid":297484194,"type":"primary"},
 {"command_number":0,"id":54,"lat_max":44.8536919,"lat_min":44.8530705,"length":440.733,"lon_max":0.6039617,"lon_min":0.607879,"oneway":0,"osmid":34647538,"type":"unclassified"},
 {"command_number":0,"id":52,"lat_max":44.8575552,"lat_min":44.8554403,"length":236.225,"lon_max":0.5975149,"lon_min":0.5972994,"oneway":0,"osmid":[71809970,145262762,71809975],"type":"tertiary"},
-{"command_number":0,"id":52,"lat_max":44.8502586,"lat_min":44.8554403,"length":762.086,"lon_max":0.5928066,"lon_min":0.5972994,"oneway":0,"osmid":[71809970,145262762,71809975],"type":"tertiary"},,
+{"command_number":0,"id":52,"lat_max":44.8502586,"lat_min":44.8554403,"length":762.086,"lon_max":0.5928066,"lon_min":0.5972994,"oneway":0,"osmid":[71809970,145262762,71809975],"type":"tertiary"},
 {"command_number":0,"id":71,"lat_max":44.8554896,"lat_min":44.8605358,"length":578.252,"lon_max":0.6028614,"lon_min":0.6015902,"oneway":0,"osmid":256597918,"type":"secondary"},
 {"command_number":0,"id":71,"lat_max":44.8528755,"lat_min":44.8605358,"length":1193.1,"lon_max":0.6091138,"lon_min":0.6015902,"oneway":0,"osmid":256597918,"type":"secondary"}]

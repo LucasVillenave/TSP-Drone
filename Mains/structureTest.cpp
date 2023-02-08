@@ -317,9 +317,31 @@ std::vector<Event> getEventCase3(const Instance& instance)
 }
 
 int main(){
-    Instance instance = load("../Data/","test");
-    const Graph& graph = instance.getGraph();
+    std::vector<std::string> filename = {"init", "30", "50", "80", "100"};
+    for(std::string name : filename)
+    {
+        //Instance instance = load("../Data/",name);
+        //std::cout << instance.getGraph().getEdges().size() << std::endl;
+
+        Solution solution = solution_convert("../Data/", name, "../results_tsp_"+name+".txt");
+        for(unsigned int i = 0, n = solution.getIsValid().size(); i < n; ++i)
+            std::cout << solution.getIsValid(i) << std::endl;
+        //solutionPreview(solution, "sol"+name);
+        std::filebuf fb;
+        fb.open ("solution"+name+".txt",std::ios::out);
+        std::ostream os(&fb);
+        os << solution;
+        fb.close();
+    }
+    //system("pdflatex sol50.tex");
+    //system("xdg-open sol50.pdf");
+
+    exit(1);
+
+    //Instance instance = load("../Data/","test");
+    //const Graph& graph = instance.getGraph();
 /*
+    //COMPARAISON DES DISTANCES
     for(const auto& edge : instance.getGraph().getEdges())
     {
         std::cout << std::endl << edge.getID() << std::endl;
@@ -333,21 +355,8 @@ int main(){
     }
 */
 
-    std::cout << graph.getUnitDemandGraph() << std::endl;
-    //graphPreview(graph);
-    //system("pdflatex graph.tex");
-    //system("xdg-open graph.pdf");
-    exit(1);
-
-
-    Solution solution = Solution(instance, getEventCase2(instance));
-    std::cout << solution << std::endl;
-    for(unsigned int i = 0, n = solution.getIsValid().size(); i < n; ++i)
-        std::cout << solution.getIsValid(i) << std::endl;
-    //solutionPreview(solution);
-    //system("pdflatex solution.tex");
-    //system("xdg-open solution.pdf");
 /*
+    //ÉCRITURE DE LA SOLUTION DANS UN FICHIER
     std::filebuf fb;
     fb.open ("solution.txt",std::ios::out);
     std::ostream os(&fb);

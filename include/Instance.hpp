@@ -13,6 +13,9 @@ class Instance{
         std::string instanceName;
         Graph graph;
 
+        Position depot_location = Position(44.8500102, 0.5370699);
+        int depot_id = -1;
+
         std::vector<std::string> roadTypes;
         std::vector<double> roadSpeed = std::vector<double>(1,1);
         int truckDeliveryTime = 60;
@@ -31,6 +34,8 @@ class Instance{
         void addDemands(const std::vector<Demand>& demands);
         void addDemand(Demand d);
 
+        Position getDepotLocation() const;
+        int getDepotId() const;
         int getTruckDeliveryTime() const;
         double getTravelTime(Edge e) const;
         int getDroneSpeed() const;

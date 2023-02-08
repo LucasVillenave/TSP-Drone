@@ -31,6 +31,7 @@ class TSPDData:
         df_edges = pd.read_json(filepath + "/Graph.txt")
         df_demands = pd.read_json(filepath + "/Demand.txt")
 
+        #Get vertices from edges
         col_arrivees = pd.DataFrame({'lat' : df_edges['lat_max'], 'lon' : df_edges['lon_max']})
         col_departs = pd.DataFrame({'lat' : df_edges['lat_min'], 'lon' : df_edges['lon_min']})
         df_vertices = col_arrivees.merge(col_departs, how='outer')
@@ -38,14 +39,8 @@ class TSPDData:
         df_vertices.reset_index(inplace=True)
         df_vertices.drop(columns = ['index'], inplace=True)
         df_vertices.reset_index(inplace=True)
-        """
-        df_vertices['lat'] = round(df_vertices['lat'], 7)
-        df_vertices['lon'] = round(df_vertices['lon'], 7)
-        df_edges['lat_max'] = round(df_edges['lat_max'], 7)
-        df_edges['lon_max'] = round(df_edges['lon_max'], 7)
-        df_edges['lat_min'] = round(df_edges['lat_min'], 7)
-        df_edges['lon_min'] = round(df_edges['lon_min'], 7)
-        """
+
+        #Get edges from start_id to end_id corresponding to vertices id
         df_edges = df_edges.merge(df_vertices, left_on=['lat_max', 'lon_max'], right_on=['lat', 'lon']).reindex(columns=['index', 'lat_min', 'lon_min', 'lat_max', 'lon_max', 'length', 'type'])
         df_edges.rename(columns={'index': 'start_id'}, inplace = True)
         df_edges = df_edges.merge(df_vertices, left_on=['lat_min', 'lon_min'], right_on=['lat', 'lon']).reindex(columns=['start_id','index', 'length', 'type'])
@@ -55,6 +50,12 @@ class TSPDData:
         df_edges['costs'] = df_edges['length'] / df_edges['type']
         df_edges.drop(columns=['length','type'], inplace=True)
 
+        #Get demands without duplicated
+        df_demands['amount'] = df_demands.groupby(['lat', 'lon'])['amount'].transform('sum')
+        df_demands.drop_duplicates(inplace=True)
+        df_demands.reset_index(inplace=True)
+        df_demands.drop(columns = ['index'], inplace=True)
+        #Matching demands with vertices
         df_vertices = df_vertices.merge(df_demands, left_on=['lat', 'lon'], right_on=['lat', 'lon'], how = 'left').reindex(columns=['index', 'lat', 'lon', 'amount'])
 
         return df_edges, df_vertices
@@ -119,6 +120,12 @@ class TSPDData:
         """
         return self.truck_shortest_time
 
+    def get_drone_graph(self):
+        """
+        return the dictionary of a complete graph for drone
+        """
+        return self.drone_time
+
     def get_node_location(self, id):
         if id < 0 or id > self.road_graph.number_of_nodes():
             return None
@@ -133,7 +140,7 @@ class TSPDData:
 
     def get_demand_nodes(self):
         """
-        return id of nodes with positive demand
+        return list of nodes id with positive demand and depot at first
         """
         return self.df_customers.node_id.to_list()
 
