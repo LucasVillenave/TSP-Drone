@@ -1,6 +1,6 @@
 import gurobipy as gp
 from gurobipy import GRB
-from TSPDData import *
+import python_propre.TSPDData
 from itertools import combinations
 
 class TSPModel:

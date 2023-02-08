@@ -1,5 +1,5 @@
-from TSPDData import *
-from TSPDEvent import *
+import python_propre.TSPDData
+from python_propre.TSPDEvent import TSPDEvent
 
 def get_coordinate_from_file(line):
     line = line.split(':')[1]
@@ -11,9 +11,9 @@ class TSPDSolution:
         self.data = data
         self.value = -1
         #truck tour must be in the form : depot, each node visited, depot
-        self.truck_tour = []
-        #drone tour must be in the form : {time : [lift off node, delivery node, pick up node]}
-        self.drone_tour = [{5 : [11,177,17]}, {}]
+        self.truck_tour = [] #{time : node_id, time : node_id}
+        #drone tour must be in the form : {time : [lift off node, delivery node, pick up node], time : ...}
+        self.drone_tour = [{}, {}]
         self.list_events = []
 
     def import_TSP(self, obj, tour):

@@ -1,6 +1,7 @@
 import gurobipy as gp
 from gurobipy import GRB
-from TSPDData import *
+import numpy as np
+from python_propre.TSPDData import TSPDData
 
 class TSPDModelSPCas1:
     def __init__(self, data):
@@ -12,21 +13,21 @@ class TSPDModelSPCas1:
         a
 
     def get_five_closest_neighbors(self):
-        compact_graph = self.data.truck_shortest_time
+        compact_graph = self.data.get_compact_graph()
         closest_clients = []
         for i in range(len(compact_graph)):
             closest_clients.append(dict(sorted(compact_graph[i].items(), key=lambda item: item[1])[:6]))
         return closest_clients
 
     def get_possible_intersections(self):
-        compact_graph_path = self.data.truck_shortest_path
-        return np.unique(np.concatenate(np.array([np.array(path) for set_paths in compact_graph_path for path in set_paths])))
-        
+        compact_graph_path = self.data.get_shortest_path_graph()
+        return np.unique(np.concatenate(np.array([np.array(compact_graph_path[set_paths][path]) for set_paths in compact_graph_path for path in compact_graph_path[set_paths]])))
 
-        
+
+
     def solve(self):
-        compact_graph_path = self.data.truck_shortest_path
-        compact_graph_values = self.data.truck_shortest_time
+        compact_graph_path = self.data.get_shortest_path_graph()
+        compact_graph_values = self.data.get_compact_graph()
         nb_clients = len(compact_graph_values)
         drone_graph = self.data.drone_time
         nb_nodes = len(drone_graph)
@@ -47,14 +48,14 @@ class TSPDModelSPCas1:
         u = model.addVars(2, nb_nodes, nb_clients, lb = 0, vtype=GRB.CONTINUOUS, name='u')
         v = model.addVars(2, nb_nodes, nb_clients, lb = 0, vtype=GRB.INTEGER, name='v')
         mommaU = model.addVars(nb_nodes, nb_clients, obj=1, lb = 0, vtype=GRB.CONTINUOUS, name='mommaU')
-        
-        
+
+
         print("variables done")
 
 
 
         #FLOT TRUCK
-        
+
         model.addConstrs(gp.quicksum(x[j,i,t] - x[i,j,t+1] for j in range(nb_clients)) == 0 for i in range(1,nb_clients) for t in range(nb_clients-1))
 
         model.addConstr(gp.quicksum([x[0,i,0] for i in range(nb_clients)]) == 1)
@@ -73,15 +74,15 @@ class TSPDModelSPCas1:
 
 
         #DEPART TRAJET DRONE SUR NOEUD VISITE PAR TRUCK
-        
-        #model.addConstrs(gp.quicksum(x[l,k,t] for l in range(nb_clients) for k in range(nb_clients) if i in compact_graph_path[l][k]) >= w[a,i,j,t] 
-        #                                    for a in range(2) 
-        #                                    for i in range(nb_nodes) 
-        #                                    for j in range(nb_clients) 
+
+        #model.addConstrs(gp.quicksum(x[l,k,t] for l in range(nb_clients) for k in range(nb_clients) if i in compact_graph_path[l][k]) >= w[a,i,j,t]
+        #                                    for a in range(2)
+        #                                    for i in range(nb_nodes)
+        #                                    for j in range(nb_clients)
         #                                    for t in range(nb_clients))
 
         model.addConstrs(2*nb_clients*gp.quicksum(x[l,k,t] for l in range(nb_clients) for k in range(nb_clients) if i in compact_graph_path[l][k]) >= gp.quicksum(w[0,i,j,t] + w[1,i,j,t] for j in range(nb_clients))
-                                            for i in range(nb_nodes) 
+                                            for i in range(nb_nodes)
                                             for t in range(nb_clients))
 
         print("depart drone faisabilité done")
@@ -122,6 +123,3 @@ class TSPDModelSPCas1:
         for key in mommaU.keys():
             if mommaU[key] > 0.5:
                 print(key, vals_v[key], mommaU[key])
-
-
-
