@@ -3,7 +3,8 @@
 class SolutionConverter {
 
     std::vector<Vertex> m_vertices;
-    std::vector<bool> m_have_demand;
+    std::vector<int> m_demand;
+    std::vector<bool> m_is_delivery;
     std::vector<Edge> m_edges;
     Instance m_instance;
     std::vector<Event> m_events;
@@ -37,23 +38,13 @@ std::vector<Position> SolutionConverter::read_lines(std::ifstream &t_file)
 
 void SolutionConverter::find_vertices(std::vector<Position> t_positions)
 {
-    t_positions.emplace_back(t_positions[0]);
-    Vertex previous_vertex, vertex = find_matching_vertex(t_positions[0]);
-    m_vertices.emplace_back(vertex);
-    m_have_demand.emplace_back(false);
-    for(unsigned int p = 1, n = t_positions.size(); p < n; ++p)
+    //t_positions.emplace_back(t_positions[0]);
+    Vertex vertex;
+    for(unsigned int p = 0, n = t_positions.size(); p < n; ++p)
     {
-        previous_vertex = vertex;
         vertex = find_matching_vertex(t_positions[p]);
-        for(auto& v : m_instance.getGraph().getTSPKernelPath(previous_vertex.getGraphID(), vertex.getGraphID()))
-        {
-            if(v == previous_vertex.getGraphID() || v == vertex.getGraphID())
-                continue;
-            m_vertices.emplace_back(m_instance.getGraph().getVertice(v));
-            m_have_demand.emplace_back(false);
-        }
         m_vertices.emplace_back(vertex);
-        m_have_demand.emplace_back(true);
+        m_demand.emplace_back(find_mathching_demandID(vertex.getGraphID()));
     }
 }
 
@@ -85,6 +76,7 @@ void SolutionConverter::find_matching_edge()
         }
         if(not find)
         {
+            std::cout << m_vertices[i] << std::endl << m_vertices[i + 1] << std::endl;
             throw std::invalid_argument("no matching edge in solution converter");
         }
     }
@@ -95,7 +87,7 @@ int SolutionConverter::find_mathching_demandID(int t_vertex_id)
     for(auto& demand : m_instance.getGraph().getDemands())
         if(demand.getNodeGraphID() == t_vertex_id)
             return demand.getGraphID();
-    throw std::invalid_argument("no matching demand in solution converter");
+    return -1;
 }
 
 void SolutionConverter::create_events()
@@ -107,14 +99,15 @@ void SolutionConverter::create_events()
         pos1 = m_vertices[i].getPos();
         pos2 = m_vertices[i + 1].getPos();
         //livraison
-        if(m_have_demand[i])
+        demandID = m_demand[i];
+        if(demandID != -1 && !m_is_delivery[demandID])
         {
-            demandID = find_mathching_demandID(m_vertices[i].getGraphID());
             for(unsigned j = 0; j < m_instance.getGraph().getDemand(demandID).getAmount(); ++j)
             {
                 m_events.emplace_back(pos1, time, 4, Position(), demandID);
                 time += m_instance.getTruckDeliveryTime();
             }
+            m_is_delivery[demandID] = true;
         }
         //deplacement
         m_events.emplace_back(pos1, time, 0, pos2);
@@ -127,6 +120,7 @@ void SolutionConverter::create_events()
 SolutionConverter::SolutionConverter(const std::string& t_instance_path, const std::string& t_instance_name, const std::string& t_solution_path)
 {
     m_instance = load(t_instance_path, t_instance_name);
+    m_is_delivery = std::vector<bool>(m_instance.getGraph().getDemands().size(), false);
     std::ifstream file;
     std::cout << "Trying to load : " << t_solution_path << std::endl;
     file.open(t_solution_path);

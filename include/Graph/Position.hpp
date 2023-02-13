@@ -35,9 +35,7 @@ inline bool operator==(Position p1, Position p2)
 {
     return (
         p1.getLatitude() == p2.getLatitude() &&
-        p1.getLongitude() == p2.getLongitude() &&
-        p1.getX() == p2.getX() &&
-        p1.getY() == p2.getY());
+        p1.getLongitude() == p2.getLongitude());
 }
 
 #endif

@@ -1,10 +1,20 @@
 #include "Instance.hpp"
 #include <iostream>
 
+int find_depot_id(const Graph& graph, Position position)
+{
+    for(const Vertex& vertex : graph.getVertices())
+    {
+        if(vertex.getPos() == position)
+            return vertex.getGraphID();
+    }
+    throw std::invalid_argument("no depot");
+}
+
 Instance::Instance(Graph t_graph, std::string t_instanceName, 
                    std::vector<std::string> t_roadTypes, std::vector<double> t_roadSpeed, double t_droneSpeed)
     : graph(std::move(t_graph)), instanceName(std::move(t_instanceName)), roadTypes(std::move(t_roadTypes)), roadSpeed(std::move(t_roadSpeed)), droneSpeed(std::move(t_droneSpeed)) {
-        
+        depot_id = find_depot_id(graph, depot_location);
         if ((roadSpeed.size()-1)!=roadTypes.size()){
             std::cout << roadSpeed.size() << " " << roadTypes.size() << std::endl;
             throw std::invalid_argument("wrong road types/speeds size");
@@ -30,6 +40,16 @@ void Instance::addDemands(const std::vector<Demand>& demands){
 
 void Instance::addDemand(Demand d){
     graph.addDemand(d);
+}
+
+Position Instance::getDepotLocation() const
+{
+    return depot_location;
+}
+
+int Instance::getDepotId() const
+{
+    return depot_id;
 }
 
 int Instance::getTruckDeliveryTime() const{

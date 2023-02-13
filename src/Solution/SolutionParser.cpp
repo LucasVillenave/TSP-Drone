@@ -33,6 +33,15 @@ void SolutionParser::read_lines(std::ifstream &t_file)
             pos2 = get_localisation(tab[1].substr(35), tab[2]);
             pos1 = get_localisation(tab[3], tab[4]);
         }
+        else if(eventName == "LIVRAISON D")
+        {
+            eventType = 5;
+            std::string id = tab[1].substr(17, 1);
+            droneID = stoi(id);
+            id = split(tab[1], ':')[1];
+            id = id.substr(1, id.size()-2);
+            demandID = stoi(id);
+        }
         else
         {
             pos1 = get_localisation(tab[2], tab[3]);
@@ -60,15 +69,6 @@ void SolutionParser::read_lines(std::ifstream &t_file)
         {
             eventType = 4;
             std::string id = split(tab[1], ':')[1];
-            id = id.substr(1, id.size()-2);
-            demandID = stoi(id);
-        }
-        else if(eventName == "LIVRAISON D")
-        {
-            eventType = 5;
-            std::string id = tab[1].substr(17, 1);
-            droneID = stoi(id);
-            id = split(tab[1], ':')[1];
             id = id.substr(1, id.size()-2);
             demandID = stoi(id);
         }

@@ -2,9 +2,9 @@ import gurobipy as gp
 from gurobipy import GRB
 from TSPDData import *
 
-class TSPDMIPModel:
-    def __init__(self, instance):
-        self.instance = instance
+class TSPModelSPCase1:
+    def __init__(self, data):
+        self.instance = data
 
     def solve(self):
         dist = self.instance.distance_customers
