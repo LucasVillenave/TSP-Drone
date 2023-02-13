@@ -5,6 +5,7 @@
 #include "Graph/Graph.hpp"
 #include "Graph/GraphPreview.hpp"
 #include "utils.hpp"
+#include "ConstructiveSolve.hpp"
 
 int main(){
     
@@ -35,12 +36,12 @@ int main(){
     // Edge e4(2,5,euclidianDistance(p2,p5),"route de la soie");
     // Edge e5(3,5,euclidianDistance(p3,p5),"destination finale");
 
-    Edge e0(0,1,8,"route étoilé");
-    Edge e1(0,2,6,"route champi");
-    Edge e2(1,3,25,"route torillas");
-    Edge e3(3,4,1,"route de perlinpimpin");
-    Edge e4(2,5,3,"route de la soie");
-    Edge e5(3,5,12,"destination finale");
+    Edge e0(0,1,0.8,"route étoilé");
+    Edge e1(0,2,0.5,"route champi");
+    Edge e2(1,3,1,"route torillas");
+    Edge e3(3,4,0.4,"route de perlinpimpin");
+    Edge e4(2,5,0.01,"route de la soie");
+    Edge e5(3,5,0.9,"destination finale");
 
     std::vector<Edge> edges;
     edges.push_back(e0); edges.push_back(e1); edges.push_back(e2);
@@ -89,7 +90,7 @@ int main(){
 
     tourney = TSP2OPT(instance.getGraph().getTSPKernelTime(), tourney);
     std::vector<std::vector<std::vector<int>>> x(6,std::vector<std::vector<int>>(6,std::vector<int>(6,0)));
-    std::vector<std::vector<std::vector<int>>> z(6,std::vector<std::vector<int>>(instance.getGraph().getDemands().size(),std::vector<int>(2,0)));
+    std::vector<std::vector<std::vector<int>>> z(6,std::vector<std::vector<int>>(instance.getGraph().getUnitDemandGraph().getDemands().size(),std::vector<int>(2,0)));
 
     z[0][0][0] = 1;
 
@@ -105,4 +106,9 @@ int main(){
     std::cout << "after check, sol 2 case 0 is valid : " << sol2.getIsValid(0) << std::endl;
     std::cout << "after check, sol 2 case 1 is valid : " << sol2.getIsValid(1) << std::endl;
 
+    ConstructiveSolve CS;
+    Solution sol3 = CS.Solve(1,instance);
+
+    std::cout << "after check, sol 3 case 0 is valid : " << sol3.getIsValid(0) << std::endl;
+    std::cout << "after check, sol 3 case 1 is valid : " << sol3.getIsValid(1) << std::endl;
 }

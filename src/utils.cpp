@@ -182,32 +182,26 @@ void sortByTime(std::vector<Event>& eventList){
     for (int i=1; i<eventList.size();++i){
         Event e = eventList[i];
         double eTime = e.getTime();
-        if (eTime<1 && eTime>0){
-            std::cout << "yup yup" << std::endl;
-        }
         int asBeenPlaced = 0;
         if (times[0]>eTime){
             times.insert(times.begin(),eTime);
             sortedList.insert(sortedList.begin(),e);
         }else{
             for (int i=1; i<times.size(); ++i){
-                std::cout << times[i] << " " << eTime << std::endl;
-                if ((times[i]<(eTime + 0.0001))&&(times[i]>(eTime - 0.0001))){
-                    asBeenPlaced=1;
-                    std::cout << "comparing " << sortedList[i] << std::endl;
-                    std::cout << "and " << e << std::endl;
+                if ((times[i]<(eTime + 0.000001))&&(times[i]>(eTime - 0.000001))){
                     int toBePlacedBefore = isToBePlacedBefore(sortedList[i].getEventType(), e.getEventType());
-                    std::cout << "returned " << toBePlacedBefore << std::endl;
-                    times.insert(times.begin()+i+1-toBePlacedBefore, eTime);
-                    sortedList.insert(sortedList.begin()+i+1-toBePlacedBefore,e);
-                    break;
-                }else{
-                    if ((times[i-1]<eTime) && (times[i]>eTime)){
+                    if (toBePlacedBefore==1){
                         asBeenPlaced=1;
-                        times.insert(times.begin()+i,eTime);
+                        times.insert(times.begin()+i, eTime);
                         sortedList.insert(sortedList.begin()+i,e);
                         break;
                     }
+                }
+                if ((times[i-1] < (eTime + 0.000001)) && (times[i] > (eTime + 0.000001))){
+                    asBeenPlaced=1;
+                    times.insert(times.begin()+i,eTime);
+                    sortedList.insert(sortedList.begin()+i,e);
+                    break;
                 }
             }
         }
@@ -250,26 +244,27 @@ Solution convertCase01(const Instance& instance, const std::vector<int>& x, cons
     std::cout << "---> convertor from (x,z) to event solution" << std::endl;
     std::cout << "------> checking input" << std::endl;
 
-    int n = instance.getGraph().getVertices().size();
-    int m = instance.getGraph().getDemands().size();
+    int n = instance.getGraph().getUnitDemandGraph().getVertices().size();
+    int m = instance.getGraph().getUnitDemandGraph().getDemands().size();
 
     if (z.size() != x.size()){
-        throw std::invalid_argument("invalid sized arguments");
+        throw std::invalid_argument("invalid sized arguments z");
     }
 
     for (int i=0; i<z.size(); ++i){
         if (z[i].size()!=m){
-            throw std::invalid_argument("invalid sized arguments");
+            std::cout << "got " << z[i].size() << " instead of " << m << std::endl;
+            throw std::invalid_argument("invalid sized arguments z[i]");
         }
         for (int j=0; j<m; ++j){
             if (z[i][j].size()!=2){
-                throw std::invalid_argument("invalid sized arguments");
+                throw std::invalid_argument("invalid sized arguments z[i][j]");
             }
         }
     }
     
     const std::vector<Vertex>& vertices = instance.getGraph().getVertices();
-    std::vector<int> y = calculateTruckCouverture(z,instance.getGraph().getDemands());
+    std::vector<int> y = calculateTruckCouverture(z,instance.getGraph().getUnitDemandGraph().getDemands());
 
     std::cout << "------> generating events" << std::endl;
 
@@ -301,13 +296,13 @@ Solution convertCase01(const Instance& instance, const std::vector<int>& x, cons
 
         //we add all event of covered demands
         for (int d=0; d<m; ++d){
-            Demand demand = instance.getGraph().getDemand(d);
+            Demand demand = instance.getGraph().getUnitDemandGraph().getDemand(d);
             //by drones
             for (int a=0; a<2; ++a){
                 for (int k=0; k<zt[d][a]; ++k){
-                    eventList.push_back(Event(vertices[nextNode].getPos(),dronesTimes[a],2,demand.getNodePos(),d,a));
+                    eventList.push_back(Event(vertices[nextNode].getPos(),dronesTimes[a],2,demand.getNodePos(),demand.getID(),a));
                     dronesTimes[a] += euclidianDistance(vertices[nextNode].getPos(),demand.getNodePos())/instance.getDroneSpeed();
-                    eventList.push_back(Event(demand.getNodePos(),dronesTimes[a],5,Position(),d,a));
+                    eventList.push_back(Event(demand.getNodePos(),dronesTimes[a],5,Position(),demand.getID(),a));
                     dronesTimes[a] += euclidianDistance(vertices[nextNode].getPos(),demand.getNodePos())/instance.getDroneSpeed();
                     eventList.push_back(Event(vertices[nextNode].getPos(),dronesTimes[a],3,Position(),-1,a));
                     dronesTimes[a]+=instance.getDroneRechargingTime();
@@ -316,7 +311,7 @@ Solution convertCase01(const Instance& instance, const std::vector<int>& x, cons
             //by truck
             if (demand.getNodeGraphID()==nextNode){
                 for (int k=0; k<y[d]; ++k){
-                    eventList.push_back(Event(demand.getNodePos(),time,4,Position(),demand.getGraphID()));
+                    eventList.push_back(Event(demand.getNodePos(),time,4,Position(),demand.getID()));
                     time += instance.getTruckDeliveryTime();
                 }
             }
@@ -340,9 +335,13 @@ Solution convertCase01(const Instance& instance, const std::vector<int>& x, cons
 
     sortByTime(eventList);
 
+    std::cout << "-----> printing solution events" << std::endl << std::endl;
     for (Event e : eventList){
         std::cout << e << std::endl;
     }
+    std::cout << std::endl << "-----> conversion done" << std::endl;
+
+
 
     return Solution(instance,eventList);
 }

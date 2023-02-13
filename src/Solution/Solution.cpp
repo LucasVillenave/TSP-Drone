@@ -255,7 +255,7 @@ void Solution::checkScenarsSpecifics(){
 
             for (int j=i-1; j>0; --j){
                 if (eventList[j].getEventType()==1){
-                    std::cout << "arrival 0 " << j << std::endl;
+                    // std::cout << "arrival 0 " << j << std::endl;
                     arrivalTruckEvent[0] = eventList[j];
                     arrivalTime[0] = j;
                     break;
@@ -264,7 +264,7 @@ void Solution::checkScenarsSpecifics(){
 
             for (int j=i-1; j>=0; --j){
                 if (eventList[j].getEventType()==0){
-                    std::cout << "departure 0 " << j << std::endl;
+                    // std::cout << "departure 0 " << j << std::endl;
                     departureTruckEvent[0] = eventList[j];
                     isLastArrival[0] = (j<arrivalTime[0]);
                     break;
@@ -273,7 +273,7 @@ void Solution::checkScenarsSpecifics(){
 
             for (int j=arrivalDroneTime-1; j>0; --j){
                 if (eventList[j].getEventType()==1){
-                    std::cout << "arrival 1 " << j << std::endl;
+                    // std::cout << "arrival 1 " << j << std::endl;
                     arrivalTruckEvent[1] = eventList[j];
                     arrivalTime[1] = j;
                     break;
@@ -282,7 +282,7 @@ void Solution::checkScenarsSpecifics(){
 
             for (int j=arrivalDroneTime-1; j>=0; --j){
                 if (eventList[j].getEventType()==0){
-                    std::cout << "departure 1 " << j << std::endl;
+                    // std::cout << "departure 1 " << j << std::endl;
                     departureTruckEvent[1] = eventList[j];
                     isLastArrival[1] = (j<arrivalTime[1]);
                     break;
