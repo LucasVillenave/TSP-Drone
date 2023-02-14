@@ -31,10 +31,10 @@ def update_demand_without_duplicated(df_demands):
     df_demands['amount'] = df_demands.groupby(['lat', 'lon'])['amount'].transform('sum')
     df_demands.drop_duplicates(inplace=True)
     df_demands.reset_index(inplace=True)
-    df_demands.drop(columns = ['index'], inplace=True)
+    df_demands.rename(columns={'index':'demand_id'}, inplace=True)
 
 def merge_vertices_with_demand(df_vertices, df_demands):
-    df_vertices = df_vertices.merge(df_demands, left_on=['lat', 'lon'], right_on=['lat', 'lon'], how = 'left').reindex(columns=['index', 'lat', 'lon', 'amount'])
+    df_vertices = df_vertices.merge(df_demands, left_on=['lat', 'lon'], right_on=['lat', 'lon'], how = 'left').reindex(columns=['index', 'lat', 'lon', 'amount', 'demand_id'])
     return df_vertices
 
 def get_unit_vertices(df_vertices, df_customers):
@@ -68,10 +68,10 @@ def get_all_customers(df_vertices, df_depot=[]):
     """
     customers = df_vertices.dropna()
     customers = pd.concat([df_depot, customers], ignore_index=True)
-    customers.sort_index(inplace=True)
-    customers.reset_index(drop=True, inplace=True)
+    customers.sort_values('demand_id', ignore_index=True, inplace=True)
     customers.rename(columns={'index':'node_id'}, inplace=True)
     customers.reset_index(inplace=True)
+    customers.drop(columns=['demand_id'], inplace=True)
     return customers
 
 class TSPDData:
@@ -108,7 +108,7 @@ class TSPDData:
         self.df_vertices = merge_vertices_with_demand(df_vertices, df_demands)
 
         self.depot_id = self.find_depot()
-        df_depot = pd.DataFrame({'index':self.depot_id, 'lat':self.depot_location[0], 'lon':self.depot_location[1], 'amount':0}, index=[0])
+        df_depot = pd.DataFrame({'index':self.depot_id, 'lat':self.depot_location[0], 'lon':self.depot_location[1], 'amount':0, 'demand_id':-1}, index=[0])
 
         self.df_customers = get_all_customers(self.df_vertices, df_depot)
 
@@ -202,19 +202,19 @@ class TSPDData:
 
     def get_node_location(self, id):
         if id < 0 or id > self.road_graph.number_of_nodes():
-            return None
+            raise Exception(str(id) + " is not a node id")
         lat = self.df_vertices.loc[id].lat
         lon = self.df_vertices.loc[id].lon
         return lat, lon
 
     def get_edge_cost(self, id):
         if id < 0 or id > self.df_edges.index.size:
-            return None
+            raise Exception(str(id) + " is not an edge id")
         return self.df_edges.loc[id].costs
 
     def get_unit_edge_cost(self, id):
         if id < 0 or id > self.df_edges_unit.index.size:
-            return None
+            raise Exception(str(id) + " is not an edge id")
         return self.df_edges_unit.loc[id].costs
 
     def get_demand_nodes(self):
@@ -255,8 +255,15 @@ class TSPDData:
         return amount of corresponding id
         """
         if id < 0 or id > self.df_customers.index.size :
-            raise Exception(str(id) + " is not an demand id")
+            raise Exception(str(id) + " is not a demand id")
         return int(self.df_customers.loc[id].amount)
+
+    def get_demand_location(self, demand_id):
+        if demand_id < 0 or demand_id > self.df_customers.index.size :
+            raise Exception(str(demand_id) + " is not a demand id")
+        lat = self.df_customers.loc[demand_id].lat
+        lon = self.df_customers.loc[demand_id].lon
+        return lat, lon
 
     def get_total_demand(self):
         """
@@ -266,14 +273,23 @@ class TSPDData:
 
     def shortest_path(self, start, end):
         """
-        return the shortest path from start to end and its value
+        return the shortest path from start to end
         if star or end aren't a node then return None
         """
         if start < 0 or start > self.road_graph.number_of_nodes() or end < 0 or end > self.road_graph.number_of_nodes() :
             return None
         path = self.all_paths[start][end]
+        return path
+
+    def shortest_path_value(self, start, end):
+        """
+        return the shortest path value from start to end
+        if star or end aren't a node then return None
+        """
+        if start < 0 or start > self.road_graph.number_of_nodes() or end < 0 or end > self.road_graph.number_of_nodes() :
+            return None
         value = self.all_paths_length[start][end]
-        return path, value
+        return value
 
     def display(self, name="graph"):
         center = (self.df_vertices.lat.mean(), self.df_vertices.lon.mean())
@@ -285,4 +301,11 @@ class TSPDData:
             location_start = (self.df_vertices.loc[edge.start_id].lat, self.df_vertices.loc[edge.start_id].lon)
             location_end = (self.df_vertices.loc[edge.end_id].lat, self.df_vertices.loc[edge.end_id].lon)
             folium.PolyLine([location_start, location_end]).add_to(map)
+
+        for index, demand in self.df_customers.iterrows():
+            location = (demand["lat"], demand["lon"])
+            color = "red"
+            if demand["amount"] == 0:
+                color = "#00FFFF"
+            folium.Circle(radius=10, location=location, popup=index, color=color, fill=False).add_to(map)
         map.save(name + ".html")
