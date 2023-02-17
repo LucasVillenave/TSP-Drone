@@ -56,7 +56,7 @@ int Instance::getTruckDeliveryTime() const{
     return truckDeliveryTime;
 } 
 
-const Graph & Instance::getGraph() const {
+const Graph& Instance::getGraph() const {
     return graph;
 }
 

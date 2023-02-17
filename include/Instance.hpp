@@ -41,7 +41,7 @@ class Instance{
         int getDroneSpeed() const;
         double getDroneRechargingTime() const;
 
-        const Graph & getGraph() const;
+        const Graph& getGraph() const;
 };
 
 #endif

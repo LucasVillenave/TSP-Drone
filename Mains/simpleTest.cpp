@@ -10,7 +10,8 @@
 int main(){
     
     //Positions
-    Position p0, p1, p2, p3, p4, p5;
+    Position p0(44.8500102, 0.5370699);
+    Position p1(3,5),p2(4,12), p3(5,25), p4(12,32), p5(1,1);
     p0.setX(0); p0.setY(0);
     p1.setX(0); p1.setY(1);
     p2.setX(1); p2.setY(0);
@@ -90,7 +91,8 @@ int main(){
 
     tourney = TSP2OPT(instance.getGraph().getTSPKernelTime(), tourney);
     std::vector<std::vector<std::vector<int>>> x(6,std::vector<std::vector<int>>(6,std::vector<int>(6,0)));
-    std::vector<std::vector<std::vector<int>>> z(6,std::vector<std::vector<int>>(instance.getGraph().getUnitDemandGraph().getDemands().size(),std::vector<int>(2,0)));
+    Graph gc = instance.getGraph();
+    std::vector<std::vector<std::vector<int>>> z(6,std::vector<std::vector<int>>(gc.getUnitDemandGraph().getDemands().size(),std::vector<int>(2,0)));
 
     z[0][0][0] = 1;
 
@@ -111,4 +113,12 @@ int main(){
 
     std::cout << "after check, sol 3 case 0 is valid : " << sol3.getIsValid(0) << std::endl;
     std::cout << "after check, sol 3 case 1 is valid : " << sol3.getIsValid(1) << std::endl;
+
+    Instance instance2 = load("../Data/", "50");
+
+    CS = ConstructiveSolve();
+    Solution sol4 = CS.Solve(1,instance2);
+
+    std::cout << "after check, sol 4 case 0 is valid : " << sol4.getIsValid(0) << std::endl;
+    std::cout << "after check, sol 4 case 1 is valid : " << sol4.getIsValid(1) << std::endl;
 }

@@ -27,7 +27,7 @@ void Solution::check(){
 // the 4 first checks checks for flow conservation. the last two check if the truck is time coherent and on roads.
 int Solution::checkTruck(){
 
-    Event previousEvent(instance.getDepotLocation(),0,1);
+    Event previousEvent(instance.getGraph().getVertice(instance.getDepotId()).getPos(),0,1);
     int previousEventType = 1;
     for (int i=0; i<eventList.size();++i){
         const Event& actualEvent = eventList[i];
@@ -73,11 +73,22 @@ int Solution::checkTruck(){
 
                         //trucker warped space-time again (arriving before depart time + travel time)
                         if (actualEvent.getTime() < (previousEvent.getTime() + this->instance.getTravelTime(edge))){
-                            std::cout << "time necessary " << this->instance.getTravelTime(edge) << std::endl;
+                            std::cout << "time necessary " << this->instance.getTravelTime(edge) << " when " 
+                            << (actualEvent.getTime() - previousEvent.getTime()) << " was taken"<< std::endl;
+                            std::cout << actualEvent << std::endl;
+                            std::cout << previousEvent << std::endl;
+                            std::cout << edge << std::endl;
+                            std::cout << this->instance.getGraph().getVertice(edge.getStartID()) << std::endl;
+                            std::cout << this->instance.getGraph().getVertice(edge.getEndID()) << std::endl;
+                            std::cout << instance.getGraph().getTSPKernelTime(edge.getEndID(),edge.getStartID()) << std::endl;
+                            for (int karl=0; karl<instance.getGraph().getTSPKernelPath(edge.getEndID(),edge.getStartID()).size(); ++karl){
+                                std::cout << instance.getGraph().getTSPKernelPath(edge.getEndID(),edge.getStartID())[karl] << " ";
+                            }
+                            std::cout << std::endl;
                             isValid = std::vector<int>(4,-6);
                             return 0;
                         }
-                        break;
+                        // break;
                     }
                 }
 
@@ -137,8 +148,11 @@ int Solution::checkDrones(){
             }
 
             //Drone stolled (delivered from place different from planned)
-            Position pos2 = instance.getGraph().getDemand( previousEvent[droneID].getDemandID() ).getPos();
+            Position pos2 = instance.getGraph().getDemand(previousEvent[droneID].getDemandID()).getNodePos();
             if ((actualEventType==5) && ((actualEvent.getPos1()==pos2)!=1)){
+                std::cout << "incoherence, drone on demand " << previousEvent[droneID].getDemandID() << " should be going to " << pos2 << "---" << previousEvent[droneID].getPos2() << " gone to " << actualEvent.getPos1() << std::endl;
+                std::cout << previousEvent[droneID] << std::endl;
+                std::cout << actualEvent << std::endl;
                 isValid = std::vector<int>(4,-10);
                 return 0;
             }
@@ -210,12 +224,13 @@ int Solution::checkDemandSatisfaction(){
                 isValid = std::vector<int>(4,-25);
                 return 0;
             }
+
             deliveredDemandAmounts[event.getDemandID()] -= 1;
         }
     }
 
     for (int i = 0; i<deliveredDemandAmounts.size(); ++i){
-        int amountDelivered = deliveredDemandAmounts[i];
+        int amountDelivered = deliveredDemandAmounts[i];        
         //Delivered too much or not enought
         if (amountDelivered != 0){
             std::cout << "on demand " << i << " delivered " << (demands[i].getAmount()-amountDelivered) << " instead of " << demands[i].getAmount() << std::endl;
