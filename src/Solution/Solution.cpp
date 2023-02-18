@@ -313,22 +313,32 @@ void Solution::checkScenarsSpecifics(){
             }
 
             //Truck need to be here to lift off drones
-            if ((event.getPos1() == arrivalTruckEvent[0].getPos1())!=1){
-                isValid[1] = -16;
-                isValid[2] = -16;
-                if (isLastArrival[0]==1){
-                    isValid[3] = -17;
-                    std::cout << "lift off" << std::endl;
+            if (event.getTime()!=0){
+                if ((event.getPos1() == arrivalTruckEvent[0].getPos1())!=1){
+                    std::cout << arrivalTruckEvent[0] << std::endl;
+                    std::cout << event << std::endl;
+                    std::cout << departureTruckEvent[0] << std::endl;
+                    isValid[1] = -16;
+                    isValid[2] = -16;
+                    if (isLastArrival[0]==1){
+                        isValid[3] = -16;
+                        std::cout << "lift off" << std::endl;
+                    }
                 }
             }
 
             //Truck need to be here to pick up drones
-            if ((arrivalDroneEvent.getPos1() == arrivalTruckEvent[1].getPos1())!=1){
-                isValid[1] = -17;
-                isValid[2] = -17;
-                if (isLastArrival[1]==1){
-                    isValid[3] = -17;
-                    std::cout << "pick up" << std::endl;
+            if (arrivalDroneEvent.getTime()!=0){
+                if ((arrivalDroneEvent.getPos1() == arrivalTruckEvent[1].getPos1())!=1){
+                    std::cout << arrivalTruckEvent[0] << std::endl;
+                    std::cout << arrivalDroneEvent << std::endl;
+                    std::cout << departureTruckEvent[0] << std::endl;
+                    isValid[1] = -17;
+                    isValid[2] = -17;
+                    if (isLastArrival[1]==1){
+                        isValid[3] = -17;
+                        std::cout << "pick up" << std::endl;
+                    }
                 }
             }
 
