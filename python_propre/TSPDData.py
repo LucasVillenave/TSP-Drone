@@ -86,7 +86,7 @@ class TSPDData:
         self.depot_location = (44.8500102, 0.5370699)
         #self.depot_location = (44.8578271, 0.5968475)#for test
         #ROAD GRAPH : df_edges, df_vertices, df_customers
-        #UNIT GRAPH : df_edges_unit, df_vertices_unit, df_customers_unit = None
+        #UNIT GRAPH : df_edges_unit, df_vertices_unit, df_customers_unit
         self.parse_file(path)
         #ROAD GRAPH : road_graph(networkx), road_time(dict)
         #COMPACT GRAPH : truck_shortest_time(dict), truck_shortest_path(dict)
@@ -291,7 +291,7 @@ class TSPDData:
         value = self.all_paths_length[start][end]
         return value
 
-    def display(self, name="graph"):
+    def draw_graph(self, name="graph"):
         center = (self.df_vertices.lat.mean(), self.df_vertices.lon.mean())
         map = folium.Map(location=center, zoom_start=13, control_scale=True)
         for index, vertex in self.df_vertices.iterrows():
