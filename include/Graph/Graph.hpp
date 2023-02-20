@@ -21,6 +21,8 @@ class Graph{
 
         std::vector<std::vector<Edge>> adjacencyList;
 
+        std::vector<int> UnitaryToOriginalDemandID;
+
         //warning, the adjacency matrix keep -1 if m_vertices aren't adjacent and the length of it's edge otherwise
         std::vector<std::vector<int>> adjacencyMatrix;
 
@@ -35,10 +37,12 @@ class Graph{
 
         void kernelize(Instance instance);
 
+        const int getOriginalDemandID(int unitID);
+
         void addDemands(const std::vector<Demand>& t_demands);
         void addDemand(Demand d);
 
-        Graph getUnitDemandGraph() const;
+        Graph getUnitDemandGraph();
 
         int getNumberDemandNodes() const;
 

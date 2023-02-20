@@ -13,7 +13,7 @@ class Mod1V1{
 
         Mod1V1(int timeout){this->timeLimit = timeout;}
 
-        Solution solve(Instance instance);
+        Solution solve(Instance t_instance);
 };
 
 #endif
