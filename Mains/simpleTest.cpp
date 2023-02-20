@@ -6,6 +6,7 @@
 #include "Graph/GraphPreview.hpp"
 #include "utils.hpp"
 #include "ConstructiveSolve.hpp"
+#include <fstream>
 
 int main(){
     
@@ -121,4 +122,11 @@ int main(){
 
     std::cout << "after check, sol 4 case 0 is valid : " << sol4.getIsValid(0) << std::endl;
     std::cout << "after check, sol 4 case 1 is valid : " << sol4.getIsValid(1) << std::endl;
+
+    std::filebuf fb;
+    fb.open ("solution.txt",std::ios::out);
+    std::ostream os(&fb);
+    os << sol4;
+    fb.close();
+
 }

@@ -7,7 +7,7 @@ Il a pour but d'optimiser l'intégration de drones de livraison dans la flotte d
 ## Installation
 
 - You need a GUROBI license
-- You need python packages : numpy, pandas, folium, networkx
+- You need python packages : numpy, pandas, folium, networkx, geopy
 ```shell
 pip install numpy
 ```
