@@ -9,11 +9,11 @@ def get_coordinate_from_file(line):
     line = line.split(')')[0]
     return float(line)
 
-def file_to_map(solution_file, data, road_graph=True, truck_tour=True, drone_tour=[True,True]):
+def file_to_map(solution_file, data, road_graph_display, truck_tour_display, drone_tour_display):
     center = (data.df_vertices.lat.mean(), data.df_vertices.lon.mean())
     map = folium.Map(location=center, zoom_start=13, control_scale=True)
 
-    if road_graph:
+    if road_graph_display:
         for index, edge in data.df_edges.iterrows():
             location_start = data.get_node_location(edge.start_id)
             location_end = data.get_node_location(edge.end_id)
@@ -26,12 +26,12 @@ def file_to_map(solution_file, data, road_graph=True, truck_tour=True, drone_tou
     for index, demand in data.df_customers.iterrows():
         location = (demand["lat"], demand["lon"])
         if demand["amount"] == 0:
-            folium.Circle(radius=10, location=location, popup=index, color="#00FFFF", fill=False).add_to(map)
+            folium.Circle(radius=11, location=location, popup=index, color="#00FFFF", fill=False).add_to(map)
         for i in range(ceil(demand["amount"])):
-            folium.Circle(radius=10+2*i, location=location, popup=index, color="red", fill=False).add_to(map)
+            folium.Circle(radius=11+2*i, location=location, popup=index, color="red", fill=False).add_to(map)
 
-    color_drone = ["green", "yellow"]
-    color_truck = "#FF00FF"
+    color_drone = ["darkgreen", "gray"]
+    color_truck = "purple"
     demand_amount = data.df_customers.amount.tolist()
     drone_on_truck = [True, True]
 
@@ -61,28 +61,28 @@ def file_to_map(solution_file, data, road_graph=True, truck_tour=True, drone_tou
                 lat = get_coordinate_from_file(tab[size-2])
                 lon = get_coordinate_from_file(tab[size-1])
                 location = (lat, lon)
-            if eventName == "ARRIVEE VEH" and truck_tour:
+            if eventName == "ARRIVEE VEH" and truck_tour_display:
                 folium.Circle(radius=10, location=location, popup=index, color=color_truck, fill=False).add_to(map)
             if eventName == "DEPLACEMENT":
                 lat = get_coordinate_from_file(tab[1].split('(')[1])
                 lon = get_coordinate_from_file(tab[2])
                 destination = (lat, lon)
-                if drone_tour[0] and drone_on_truck[0]:
+                if drone_tour_display[0] and drone_on_truck[0]:
                     folium.PolyLine([location, destination], color=color_drone[0]).add_to(map)
-                if drone_tour[1] and drone_on_truck[1]:
+                if drone_tour_display[1] and drone_on_truck[1]:
                     folium.PolyLine([location, destination], color=color_drone[1]).add_to(map)
-                if truck_tour:
+                if truck_tour_display:
                     folium.PolyLine([location, destination], color=color_truck).add_to(map)
             elif eventName == "LARGAGE DRO":
                 droneID = int(tab[1][15:16])
-                if drone_tour[droneID]:
+                if drone_tour_display[droneID]:
                     demandID = int(tab[1].split(':')[1]) + 1
                     location_drone[droneID] = data.get_demand_location(demandID)
                     folium.PolyLine([location, location_drone[droneID]], color=color_drone[droneID], dash_array='20', dash_offset='2').add_to(map)
                     drone_on_truck[droneID] = False
             elif eventName == "RECUPERATIO":
                 droneID = int(tab[1][20:21])
-                if drone_tour[droneID]:
+                if drone_tour_display[droneID]:
                     folium.PolyLine([location_drone[droneID], location], color=color_drone[droneID], dash_array='20', dash_offset='2').add_to(map)
                     drone_on_truck[droneID] = True
             elif eventName == "LIVRAISON C":
@@ -90,11 +90,28 @@ def file_to_map(solution_file, data, road_graph=True, truck_tour=True, drone_tou
                 folium.Circle(radius=10-2*demand_amount[demandID], location=data.get_demand_location(demandID), popup=index, color=color_truck, fill=True).add_to(map)
                 demand_amount[demandID] -= 1
     fd.close()
-    map.save("test.html")
+    name = solution_file.split('/')[-1][:-4]
+    name += ".html"
+    map.save(name)
+    print(name + " has been saved")
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("Usage: python3 draw_solution.py <instance_file> <solution_file>")
+    n_arg = len(sys.argv)
+    if n_arg < 3:
+        print("Usage: python3 draw_solution.py <instance_file> <solution_file> (road_graph_display) (truck_tour_display) (drone0_tour_display) (drone1_tour_display)")
 
     data = TSPDData(sys.argv[1])
-    file_to_map(sys.argv[2], data, road_graph=False, truck_tour=True, drone_tour=[True, True])
+    road_graph_display=True
+    truck_tour_display=True
+    drone_tour_display=[True, True]
+
+    if n_arg > 3:
+        road_graph_display = int(sys.argv[3])
+    if n_arg > 4:
+        truck_tour_display = int(sys.argv[4])
+    if n_arg > 5:
+        drone_tour_display[0] = int(sys.argv[5])
+    if n_arg > 6:
+        drone_tour_display[1] = int(sys.argv[6])
+
+    file_to_map(sys.argv[2], data, road_graph_display, truck_tour_display, drone_tour_display)
