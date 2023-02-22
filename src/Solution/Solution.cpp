@@ -1,5 +1,6 @@
 #include "Solution/Solution.hpp"
 #include "utils.hpp"
+#include <math.h>
 
 Solution::Solution(Instance t_instance, const std::vector<Event>& t_eventList)
     : instance(std::move(t_instance)), eventList(t_eventList)
@@ -72,9 +73,10 @@ int Solution::checkTruck(){
                         isEdgeExisting = 1;
 
                         //trucker warped space-time again (arriving before depart time + travel time)
-                        if (actualEvent.getTime() < (previousEvent.getTime() + this->instance.getTravelTime(edge))){
-                            std::cout << "time necessary " << this->instance.getTravelTime(edge) << " when " 
-                            << (actualEvent.getTime() - previousEvent.getTime()) << " was taken"<< std::endl;
+                        if ( (actualEvent.getTime() - floor(previousEvent.getTime()*100)/100) < floor(this->instance.getTravelTime(edge)*100)/100)
+                        {
+                            std::cout << "time necessary " << floor(this->instance.getTravelTime(edge)*100)/100 << " when "
+                            << (actualEvent.getTime() - floor(previousEvent.getTime()*100)/100) << " was taken"<< std::endl;
                             std::cout << actualEvent << std::endl;
                             std::cout << previousEvent << std::endl;
                             std::cout << edge << std::endl;
@@ -159,13 +161,12 @@ int Solution::checkDrones(){
 
             if (actualEventType!=2){
                 //Drone warped space-time again (arriving before previous time + travel time)
-                if (actualEvent.getTime() < 
-                (previousEvent[droneID].getTime() + (euclidianDistance(previousEvent[droneID].getPos1(),actualEvent.getPos1())/this->instance.getDroneSpeed()))){
+                if (actualEvent.getTime() - previousEvent[droneID].getTime() < distance(previousEvent[droneID].getPos1(),actualEvent.getPos1())/this->instance.getDroneSpeed()){
                     std::cout << previousEvent[droneID].getTime() << std::endl;
                     std::cout << previousEvent[droneID] << std::endl;
                     std::cout << actualEvent << std::endl;
                     std::cout << actualEvent.getTime() << " " <<  
-                    (previousEvent[droneID].getTime() + (euclidianDistance(previousEvent[droneID].getPos1(),actualEvent.getPos1())/this->instance.getDroneSpeed())) 
+                    (previousEvent[droneID].getTime() + (distance(previousEvent[droneID].getPos1(),actualEvent.getPos1())/this->instance.getDroneSpeed()))
                     << std::endl;
                     isValid = std::vector<int>(4,-11);
                     return 0;
@@ -206,8 +207,8 @@ int Solution::checkDemandSatisfaction(){
                     }
                 }
 
-                //truck don't go before demand is delvered, lazy fucker !
-                if (departureTruckEvent.getTime() < event.getTime() + instance.getTruckDeliveryTime()){
+                //truck don't go before demand is delivered, lazy fucker !
+                if (departureTruckEvent.getTime() - floor(event.getTime()*1000)/1000 < instance.getTruckDeliveryTime() && departureTruckEvent.getEventType() != -1){
                     isValid = std::vector<int>(4,-27);
                     return 0;
                 }
