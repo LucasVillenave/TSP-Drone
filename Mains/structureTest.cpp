@@ -1,11 +1,9 @@
 #include <iostream>
+#include <math.h>
 #include "parser.hpp"
 #include "Solution/Solution.hpp"
-#include "Solution/SolutionPreview.hpp"
 #include "Solution/SolutionParser.hpp"
-#include "Solution/SolutionConverter.hpp"
 #include "Graph/Graph.hpp"
-#include "Graph/GraphPreview.hpp"
 #include "utils.hpp"
 #include "gurobi_c++.h"
 
@@ -168,9 +166,9 @@ std::vector<Event> getEventCase1(const Instance& instance)
     events.emplace_back(p18, time, 1);
     //drone 0
     events.emplace_back(p18, time, 2, Position(), 4, 0);
-    time += euclidianDistanceBis(p18.getLongitude(), p18.getLongitude(), p15.getLongitude(), p15.getLatitude()) / instance.getDroneSpeed() + 100;
+    time += distance(p18, p15) / instance.getDroneSpeed() + 100;
     events.emplace_back(p15, time, 5, Position(), 4, 0);
-    time += euclidianDistanceBis(p18.getLongitude(), p18.getLongitude(), p15.getLongitude(), p15.getLatitude()) / instance.getDroneSpeed() + 100;
+    time += distance(p18, p15) / instance.getDroneSpeed() + 100;
     events.emplace_back(p18, time, 3, Position(), -1, 0);
     //move
     events.emplace_back(p18, time, 0, p13);
@@ -220,9 +218,9 @@ std::vector<Event> getEventCase2(const Instance& instance)
     events.emplace_back(p5, time, 1);
     //drone 0
     events.emplace_back(p5, time, 2, Position(), 3, 0);
-    time += euclidianDistanceBis(p5.getLongitude(), p5.getLongitude(), p3.getLongitude(), p3.getLatitude()) / instance.getDroneSpeed();
+    time += distance(p5, p3) / instance.getDroneSpeed();
     events.emplace_back(p3, time, 5, Position(), 3, 0);
-    time += euclidianDistanceBis(p3.getLongitude(), p3.getLongitude(), p5.getLongitude(), p5.getLatitude()) / instance.getDroneSpeed();
+    time += distance(p3, p5) / instance.getDroneSpeed();
     events.emplace_back(p5, time, 3, Position(), -1, 0);
     //truck
     events.emplace_back(p5, time, 0, p4);
@@ -270,16 +268,16 @@ std::vector<Event> getEventCase2(const Instance& instance)
     time += instance.getTravelTime(graph.getEdge(16))+1;
     events.emplace_back(p1, time, 1);
     //livraison drone 1
-    time_drone_1 += euclidianDistanceBis(p18.getLongitude(), p18.getLongitude(), p3.getLongitude(), p3.getLatitude()) / instance.getDroneSpeed();
+    time_drone_1 += distance(p18, p3) / instance.getDroneSpeed();
     events.emplace_back(p3, time_drone_1, 5, Position(), 3, 1);
     //livraison drone 2
-    time_drone_0 += euclidianDistanceBis(p18.getLongitude(), p18.getLongitude(), p12.getLongitude(), p12.getLatitude()) / instance.getDroneSpeed();
+    time_drone_0 += distance(p18, p12) / instance.getDroneSpeed();
     events.emplace_back(p12, time_drone_0, 5, Position(), 0, 0);
     //retour drone
-    time_drone_1 += euclidianDistanceBis(p3.getLongitude(), p3.getLongitude(), p1.getLongitude(), p1.getLatitude()) / instance.getDroneSpeed();
+    time_drone_1 += distance(p3, p1) / instance.getDroneSpeed();
     events.emplace_back(p1, time_drone_1, 3, Position(), -1, 1);
-    time_drone_0 += euclidianDistanceBis(p12.getLongitude(), p12.getLongitude(), p1.getLongitude(), p1.getLatitude()) / instance.getDroneSpeed();
-    events.emplace_back(p18, time_drone_0, 3, Position(), -1, 0);
+    time_drone_0 += distance(p12, p1) / instance.getDroneSpeed();
+    events.emplace_back(p1, time_drone_0, 3, Position(), -1, 0);
     //truck
     time += std::max(time_drone_0, time_drone_1);
     events.emplace_back(p1, time, 0, p0);
@@ -312,55 +310,111 @@ std::vector<Event> getEventCase3(const Instance& instance)
     Position p17 = graph.getVertice(17).getPos();
     Position p18 = graph.getVertice(18).getPos();
     double time = 0;
-
+    events.emplace_back(p0, time, 0, p5);
+    time += instance.getTravelTime(graph.getEdge(15))+1;
+    events.emplace_back(p5, time, 1);
+    //drone 0
+    events.emplace_back(p5, time, 2, Position(), 3, 0);
+    time += distance(p5, p3) / instance.getDroneSpeed();
+    events.emplace_back(p3, time, 5, Position(), 3, 0);
+    time += distance(p3, p5) / instance.getDroneSpeed();
+    events.emplace_back(p5, time, 3, Position(), -1, 0);
+    //truck
+    events.emplace_back(p5, time, 0, p4);
+    time += instance.getTravelTime(graph.getEdge(2))+1;
+    events.emplace_back(p4, time, 1);
+    //delivery
+    events.emplace_back(p4, time, 4, Position(), 2, -1);
+    time += instance.getTruckDeliveryTime()+100;
+    events.emplace_back(p4, time, 0, p8);
+    time += instance.getTravelTime(graph.getEdge(17))+1;
+    events.emplace_back(p8, time, 1);
+    events.emplace_back(p8, time, 0, p7);
+    time += instance.getTravelTime(graph.getEdge(4))+1;
+    events.emplace_back(p7, time, 1);
+    //delivery
+    events.emplace_back(p7, time, 4, Position(), 1, -1);
+    time += instance.getTruckDeliveryTime()+100;
+    events.emplace_back(p7, time, 0, p9);
+    time += instance.getTravelTime(graph.getEdge(5))+1;
+    events.emplace_back(p9, time, 1);
+    events.emplace_back(p9, time, 0, p16);
+    time += instance.getTravelTime(graph.getEdge(19))+1;
+    events.emplace_back(p16, time, 1);
+    events.emplace_back(p16, time, 0, p14);
+    time += instance.getTravelTime(graph.getEdge(20))+1;
+    events.emplace_back(p14, time, 1);
+    events.emplace_back(p14, time, 0, p15);
+    time += instance.getTravelTime(graph.getEdge(9))+1;
+    events.emplace_back(p15, time, 1);
+    //delivery
+    events.emplace_back(p15, time, 4, Position(), 4, -1);
+    time += instance.getTruckDeliveryTime()+100;
+    events.emplace_back(p15, time, 0, p17);
+    time += instance.getTravelTime(graph.getEdge(11))+1;
+    events.emplace_back(p17, time, 1);
+    events.emplace_back(p17, time, 0, p18);
+    time += instance.getTravelTime(graph.getEdge(12))+1;
+    events.emplace_back(p18, time, 1);
+    //drones
+    double time_drone_1 = time, time_drone_0 = time;
+    events.emplace_back(p18, time_drone_0, 2, Position(), 0, 0);
+    events.emplace_back(p18, time_drone_1, 2, Position(), 3, 1);
+    //truck
+    events.emplace_back(p18, time, 0, p1);
+    time += instance.getTravelTime(graph.getEdge(16))+1;
+    events.emplace_back(p1, time, 1);
+    //livraison drone 1
+    time_drone_1 += distance(p18, p3) / instance.getDroneSpeed();
+    events.emplace_back(p3, time_drone_1, 5, Position(), 3, 1);
+    //livraison drone 2
+    time_drone_0 += distance(p18, p12) / instance.getDroneSpeed();
+    events.emplace_back(p12, time_drone_0, 5, Position(), 0, 0);
+    //retour drone
+    time_drone_1 += distance(p3, p1) / instance.getDroneSpeed();
+    events.emplace_back(p1, time_drone_1, 3, Position(), -1, 1);
+    time_drone_0 += distance(p12, p1) / instance.getDroneSpeed();
+    events.emplace_back(p1, time_drone_0, 3, Position(), -1, 0);
+    //truck
+    time += std::max(time_drone_0, time_drone_1);
+    events.emplace_back(p1, time, 0, p0);
+    time += instance.getTravelTime(graph.getEdge(0))+1;
+    events.emplace_back(p0, time, 1);
     return events;
 }
 
 int main(){
-    std::vector<std::string> filename = {"init", "30", "50", "80", "100"};
-    for(std::string name : filename)
-    {
-        //Instance instance = load("../Data/",name);
-        //std::cout << instance.getGraph().getEdges().size() << std::endl;
+    //Solution solution = solution_parse("../Data/", "init", "../sol.txt");
+    //std::cout << solution << std::endl;
 
-        Solution solution = solution_convert("../Data/", name, "../results_tsp_"+name+".txt");
-        for(unsigned int i = 0, n = solution.getIsValid().size(); i < n; ++i)
-            std::cout << solution.getIsValid(i) << std::endl;
-        //solutionPreview(solution, "sol"+name);
-        std::filebuf fb;
-        fb.open ("solution"+name+".txt",std::ios::out);
-        std::ostream os(&fb);
-        os << solution;
-        fb.close();
-    }
-    //system("pdflatex sol50.tex");
-    //system("xdg-open sol50.pdf");
+    Instance instance = load("../Data/", "30");
+    const Graph& graph = instance.getGraph();
 
-    exit(1);
-
-    //Instance instance = load("../Data/","test");
-    //const Graph& graph = instance.getGraph();
-/*
     //COMPARAISON DES DISTANCES
-    for(const auto& edge : instance.getGraph().getEdges())
-    {
-        std::cout << std::endl << edge.getID() << std::endl;
-        std::cout << "length=" << edge.getLength() << std::endl;
-        std::cout << "distance =" << euclidianDistance(graph.getVertice(edge.getStartID()).getPos(), graph.getVertice(edge.getEndID()).getPos()) << std::endl;
-        std::cout << "distance bis =" << euclidianDistanceBis(graph.getVertice(edge.getStartID()).getLongitude(),
-                                                              graph.getVertice(edge.getStartID()).getLatitude(),
-                                                              graph.getVertice(edge.getEndID()).getLongitude(),
-                                                              graph.getVertice(edge.getEndID()).getLatitude()) << std::endl;
-        std::cout << "time=" << instance.getTravelTime(edge) << std::endl;
-    }
-*/
+    //std::filebuf fb;
+    //fb.open ("../distanceTruck.txt",std::ios::out);
+    //std::ostream os(&fb);
+    //os << "Lat_start;Lon_start;Lat_end;Lon_end;Longueur;type;time" << std::endl;
+    //for(const Edge& edge : graph.getEdges())
+    //{
+    //    const Position& start = graph.getVertice(edge.getStartID()).getPos(),
+    //        end = graph.getVertice(edge.getEndID()).getPos();
+    //    const double time = instance.getTravelTime(edge);
+    //    os << std::setprecision(10) << start.getLatitude() <<  ";" << start.getLongitude() <<  ";" << end.getLatitude() <<  ";" << end.getLongitude() <<  ";" << edge.getCost() <<  ";" << edge.getRoadType() << ";" << time << std::endl;
+    //}
+    //fb.close();
 
-/*
+
+    //CHECKER
+    //Solution solution = solution_parse("../Data/", "30", "../results/sol.txt");
+    //for(unsigned int i = 0, n = solution.getIsValid().size(); i < n; ++i)
+    //    std::cout << solution.getIsValid(i) << std::endl;
+
     //ÉCRITURE DE LA SOLUTION DANS UN FICHIER
-    std::filebuf fb;
-    fb.open ("solution.txt",std::ios::out);
-    std::ostream os(&fb);
-    os << solution;
-    fb.close();
-*/
+    //std::filebuf fb;
+    //fb.open ("../results/solution.txt",std::ios::out);
+    //std::ostream os(&fb);
+    //os << solution;
+    //fb.close();
+
 }

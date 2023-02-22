@@ -18,8 +18,6 @@ class Vertex{
 
         double getLatitude() const;
         double getLongitude() const;
-        void setLongitude(double longitude);
-        void setLatitude(double latitude);
 
         Position getPos() const;
         void setPos(Position t_pos);

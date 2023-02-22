@@ -1,7 +1,7 @@
 #include "utils.hpp"
-#include <tgmath.h>
 #include <climits>
 #include <iostream>
+#include <cmath>
 
 double degree_to_meter(double x)
 {
@@ -14,7 +14,7 @@ int closest(std::vector<Vertex> vertices, Position pos){
     int returnID = -1;
     for (int i = 0; i<vertices.size(); ++i){
         Vertex v = vertices[i];
-        double dist = euclidianDistance(v.getPos(), pos);
+        double dist = distance(v.getPos(), pos);
         if (dist < min){
             min = dist;
             returnID = i;
@@ -23,23 +23,20 @@ int closest(std::vector<Vertex> vertices, Position pos){
     return returnID;
 }
 
-double euclidianDistance(Position p1,Position p2){
-    double deltaLon = (p1.getX()-p2.getX());
-    deltaLon = deltaLon*deltaLon;
-    double deltaLat = (p1.getY()-p2.getY());
-    deltaLat = deltaLat*deltaLat;
-    return std::sqrt(
-           deltaLat+deltaLon
-           );
-}
-
-double euclidianDistanceBis(double t_x_first, double t_y_first, double t_x_second, double t_y_second)
+double distance(Position t_first, Position t_second)
 {
-    double delta_lon = degree_to_meter(t_x_first - t_x_second),
-            delta_lat = degree_to_meter(t_y_first - t_y_second);
-    delta_lon = delta_lon*delta_lon;
-    delta_lat = delta_lat*delta_lat;
-    return std::sqrt(delta_lon + delta_lat);
+    double radius_of_earth = 6372.8*1000; //m
+
+    double lat1 = t_first.getLatitude() * (M_PI/180),
+            lon1 = t_first.getLongitude() * (M_PI/180),
+            lat2 = t_second.getLatitude() * (M_PI/180),
+            lon2 = t_second.getLongitude() * (M_PI/180); //rd
+
+    double delta_lon = (lon2 - lon1),
+            delta_lat = (lat2 - lat1);
+    double computation = asin(sqrt(sin(delta_lat / 2) * sin(delta_lat / 2) + cos(lat1) * cos(lat2) * sin(delta_lon / 2) * sin(delta_lon / 2))),
+        result = 2 * radius_of_earth * computation;
+    return result;
 }
 
 int getNextVertex(const std::vector<double>& optimalDist, const std::vector<int>& isOpt){
@@ -175,7 +172,7 @@ int isToBePlacedBefore(int eventType, int toPlaceEventType){
 void sortByTime(std::vector<Event>& eventList){
     std::vector<double> times;
     std::vector<Event> sortedList;
-    if (eventList.size()!=0){
+    if (!eventList.empty()){
         times.push_back(eventList[0].getTime());
         sortedList.push_back(eventList[0]);
     }
@@ -286,9 +283,9 @@ Solution convertCase01(const Instance& instance, const std::vector<int>& x, cons
             for(int k=1; k<path.size(); k++){
                 // std::cout << "from " << path[k-1] << " to " << path[k] << " : " << vertices[path[k-1]].getPos() << " -> " << vertices[path[k]].getPos() << std::endl;
                 // std::cout << instance.getGraph().getTSPKernelTime(path[k-1],path[k]) << std::endl << std::endl;
-                eventList.push_back(Event(vertices[path[k-1]].getPos(),time,0,vertices[path[k]].getPos()));
+                eventList.emplace_back(vertices[path[k-1]].getPos(),time,0,vertices[path[k]].getPos());
                 time += instance.getGraph().getTSPKernelTime(path[k-1],path[k]);
-                eventList.push_back(Event(vertices[path[k]].getPos(),time,1));
+                eventList.emplace_back(vertices[path[k]].getPos(),time,1);
             }
         }
 
@@ -311,11 +308,11 @@ Solution convertCase01(const Instance& instance, const std::vector<int>& x, cons
                     //     std::cout << "hey " << d << " " << a << std::endl;
                     //     std::cout << demand.getNodePos() << std::endl;
                     // }
-                    eventList.push_back(Event(vertices[nextNode].getPos(),dronesTimes[a],2,demand.getNodePos(),gc.getOriginalDemandID(d),a));
-                    dronesTimes[a] += euclidianDistance(vertices[nextNode].getPos(),demand.getNodePos())/instance.getDroneSpeed();
-                    eventList.push_back(Event(demand.getNodePos(),dronesTimes[a],5,Position(),gc.getOriginalDemandID(d),a));
-                    dronesTimes[a] += euclidianDistance(vertices[nextNode].getPos(),demand.getNodePos())/instance.getDroneSpeed();
-                    eventList.push_back(Event(vertices[nextNode].getPos(),dronesTimes[a],3,Position(),-1,a));
+                    eventList.emplace_back(vertices[nextNode].getPos(),dronesTimes[a],2,demand.getNodePos(),gc.getOriginalDemandID(d),a);
+                    dronesTimes[a] += distance(vertices[nextNode].getPos(),demand.getNodePos())/instance.getDroneSpeed();
+                    eventList.emplace_back(demand.getNodePos(),dronesTimes[a],5,Position(),gc.getOriginalDemandID(d),a);
+                    dronesTimes[a] += distance(vertices[nextNode].getPos(),demand.getNodePos())/instance.getDroneSpeed();
+                    eventList.emplace_back(vertices[nextNode].getPos(),dronesTimes[a],3,Position(),-1,a);
                     dronesTimes[a]+=instance.getDroneRechargingTime();
                     da[d]-=1;
                 }
@@ -326,7 +323,7 @@ Solution convertCase01(const Instance& instance, const std::vector<int>& x, cons
                     // if (gc.getOriginalDemandID(d)==1){
                     //     std::cout << "hoy " << d << std::endl;
                     // }
-                    eventList.push_back(Event(demand.getNodePos(),time,4,Position(),gc.getOriginalDemandID(d)));
+                    eventList.emplace_back(demand.getNodePos(),time,4,Position(),gc.getOriginalDemandID(d));
                     time += instance.getTruckDeliveryTime();
                     da[d]--;
                 }
@@ -344,9 +341,9 @@ Solution convertCase01(const Instance& instance, const std::vector<int>& x, cons
 
     std::vector<int> path = instance.getGraph().getTSPKernelPath(x[x.size()-1],x[0]);
     for(int k=1; k<path.size(); k++){
-        eventList.push_back(Event(vertices[path[k-1]].getPos(),time,0,vertices[path[k]].getPos()));
+        eventList.emplace_back(vertices[path[k-1]].getPos(),time,0,vertices[path[k]].getPos());
         time += instance.getGraph().getTSPKernelTime(path[k-1],path[k]);
-        eventList.push_back(Event(vertices[path[k]].getPos(),time,1));
+        eventList.emplace_back(vertices[path[k]].getPos(),time,1);
     }
 
     for (int d=0; d<m; ++d){

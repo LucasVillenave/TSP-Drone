@@ -12,7 +12,7 @@ Solution ConstructiveSolve::Solve(int scenario,Instance instance){
     droneDists = std::vector<std::vector<double>>(n,std::vector<double>(n,-1));
     for (int i=0; i<n; ++i){
         for (int j=0; j<n; ++j){
-            droneDists[i][j]=euclidianDistance(vertices[i].getPos(),vertices[j].getPos());
+            droneDists[i][j]=distance(vertices[i].getPos(),vertices[j].getPos());
         }
     }
 

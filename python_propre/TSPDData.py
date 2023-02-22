@@ -2,7 +2,26 @@ import pandas as pd
 import numpy as np
 import folium
 import networkx as nx
-import geopy.distance
+import math
+
+def distance(origin, destination):
+    """
+    Calculate the Haversine distance
+    """
+    lat1, lon1 = origin
+    lat2, lon2 = destination
+    radius = 6372.8 * 1000  #m
+
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+
+    a = (math.sin(dlat / 2) * math.sin(dlat / 2) +
+         math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) *
+         math.sin(dlon / 2) * math.sin(dlon / 2))
+    #c = math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    c = math.asin(math.sqrt(a))
+    d = 2 * radius * c
+    return d
 
 def get_vertices_from_edges(df_edges):
     col_arrivees = pd.DataFrame({'lat' : df_edges['lat_max'], 'lon' : df_edges['lon_max']})
@@ -74,12 +93,22 @@ def get_all_customers(df_vertices, df_depot=[]):
     customers.drop(columns=['demand_id'], inplace=True)
     return customers
 
+def keep_one_of_double_road(df_edges):
+    df_edges['min'] = df_edges[['start_id', 'end_id']].min(axis=1)
+    df_edges['max'] = df_edges[['start_id', 'end_id']].max(axis=1)
+    df_edges.drop(columns = ['start_id', 'end_id'], inplace=True)
+    df_edges.rename(columns={'min': 'start_id', 'max' : 'end_id'}, inplace = True)
+    df_edges = df_edges.reindex(columns=['start_id','end_id', 'costs'])
+    df_edges.sort_values(['start_id', 'end_id', 'costs'], ignore_index=True, inplace=True)
+    df_edges.drop_duplicates(['start_id', 'end_id'], keep='first', inplace=True)
+    return df_edges
+
 class TSPDData:
     def __init__(self, path):
         #speed of drone (0) and truck on primary (1), secondary (2) and other (3) type road
-        self.speed = [50/3.6, 65/3.6, 45/3.6, 30/3.6]
+        self.speed = [50/3.6, 60/3.6, 45/3.6, 30/3.6]
         #data, int
-        self.truck_delivery_time = 60
+        self.truck_delivery_time = 60.0001
         self.drone_delivery_time = 0
         self.recharge_time = 30
         #fixed location of depot, tuble of double
@@ -118,6 +147,9 @@ class TSPDData:
         update_edges_with_same_vertices(self.df_edges_unit, to_add_new_edge)
         self.df_customers_unit = get_all_customers(self.df_vertices_unit, df_depot)
 
+        self.df_edges = keep_one_of_double_road(self.df_edges)
+        self.df_edges_unit = keep_one_of_double_road(self.df_edges_unit)
+
 
     def find_depot(self):
         for id in self.df_vertices.index[self.df_vertices['lat'] == self.depot_location[0]].to_list():
@@ -154,7 +186,7 @@ class TSPDData:
     def create_drone_graph(self):
         nb_vertices = self.road_graph.number_of_nodes()
         self.drone_time = {u:{ v:
-                                geopy.distance.geodesic((self.df_vertices.at[u,'lat'],self.df_vertices.at[u,'lon']), (self.df_vertices.at[v,'lat'],self.df_vertices.at[v,'lon'])).m / self.speed[0]
+                                distance((self.df_vertices.at[u,'lat'],self.df_vertices.at[u,'lon']), (self.df_vertices.at[v,'lat'],self.df_vertices.at[v,'lon'])).m / self.speed[0]
                                 for v in range(nb_vertices)}
                                 for u in range(nb_vertices)}
 
@@ -248,6 +280,8 @@ class TSPDData:
         demandID = self.df_customers['index'].loc[self.df_customers['node_id']==node_id]
         if len(demandID) == 0:
             raise Exception(str(node_id) + " is not a demand node")
+        if len(demandID) == 2:
+            return int(self.df_customers['index'].loc[(self.df_customers['node_id']==node_id) & (self.df_customers['amount']>0)])
         return int(demandID)
 
     def get_demand_amount(self, id):

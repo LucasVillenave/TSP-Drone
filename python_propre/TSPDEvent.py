@@ -1,14 +1,16 @@
+from math import floor
+
 class TSPDEvent:
     def __init__(self, time, location=(-1,-1), destination=(-1,-1), droneID=-1, demandID=-1):
-        self.time = time
+        self.time = floor(time * 10000)/10000
         self.location = location
         self.destination = destination
         self.droneID = droneID
         self.demandID = demandID
 
     def display(self):
-        location = "(LAT : " + str(self.location[0]) + " ; LON : " + str(self.location[1]) + ")"
-        destination = "(LAT : " + str(self.destination[0]) + " ; LON : " + str(self.destination[1]) + ")"
+        location = "(LAT : " + str(round(self.location[0], 7)) + " ; LON : " + str(round(self.location[1], 7)) + ")"
+        destination = "(LAT : " + str(round(self.destination[0], 7)) + " ; LON : " + str(round(self.destination[1], 7)) + ")"
         result = str(self.time) + " ; "
         if self.location != (-1,-1) and self.destination != (-1,-1):
             return result + "DEPLACEMENT VEHICULE DESTINATION : " + destination + " ; " + location + "\n"
