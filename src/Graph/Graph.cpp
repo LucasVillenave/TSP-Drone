@@ -8,7 +8,7 @@ Graph::Graph(const std::vector<Vertex>& t_vertices, std::vector<Edge> t_edges) :
 {
     const unsigned int size_v = m_vertices.size();
     adjacencyList = std::vector<std::vector<Edge>>(size_v, std::vector<Edge>());
-    adjacencyMatrix = std::vector<std::vector<int>>(size_v, std::vector<int>(size_v, -1));
+    adjacencyMatrix = std::vector<std::vector<double>>(size_v, std::vector<double>(size_v, -1));
     TSPKernelTime = std::vector<std::vector<double>>(size_v, std::vector<double>(size_v, -1));
     m_number_of_demand_nodes = 0;
 
@@ -21,23 +21,37 @@ Graph::Graph(const std::vector<Vertex>& t_vertices, std::vector<Edge> t_edges) :
                 m_demands.emplace_back(demand);
         }
     }
-
     for (int i=0; i < t_edges.size(); ++i){
-        t_edges[i].setGraphID(i);
+        int isEdgeAlreadyExisting = 0;
+        for (int j=0; j<m_edges.size(); ++j){
+            if (((m_edges[j].getEndID() == t_edges[i].getEndID()) && (m_edges[j].getStartID() == t_edges[i].getStartID()))
+            ||
+            ((m_edges[j].getStartID() == t_edges[i].getEndID()) && (m_edges[j].getEndID() == t_edges[i].getStartID()))){
+                isEdgeAlreadyExisting=1;
+                if(t_edges[i].getCost() < m_edges[j].getCost())
+                {
+                    t_edges[i].setGraphID(m_edges[j].getGraphID());
+                    m_edges[j] = t_edges[i];
+                }
+            }
+        }
 
-        if (adjacencyMatrix[t_edges[i].getStartID()][t_edges[i].getEndID()] == -1){
-            adjacencyMatrix[t_edges[i].getStartID()][t_edges[i].getEndID()] = t_edges[i].getLength();
+        if (isEdgeAlreadyExisting==0){
+            t_edges[i].setGraphID(m_edges.size());
 
-            adjacencyList[t_edges[i].getStartID()].push_back(t_edges[i]);
-            adjacencyList[t_edges[i].getEndID()].push_back(t_edges[i]);
+            if ((t_edges[i].getStartID() < 0 || t_edges[i].getStartID() >= t_vertices.size() ||
+                t_edges[i].getEndID() < 0 || t_edges[i].getEndID() >= t_vertices.size())){
+                throw std::invalid_argument("Bad vertices index on edges");
+            }
 
             m_edges.push_back(t_edges[i]);
         }
-
-        if ((t_edges[i].getStartID() < 0 || t_edges[i].getStartID() >= t_vertices.size() ||
-             t_edges[i].getEndID() < 0 || t_edges[i].getEndID() >= t_vertices.size())){
-            throw std::invalid_argument("Bad t_vertices index on t_edges");
-        }
+    }
+    for (const Edge& edge : m_edges)
+    {
+        adjacencyMatrix[edge.getStartID()][edge.getEndID()] = edge.getCost();
+        adjacencyList[edge.getStartID()].push_back(edge);
+        adjacencyList[edge.getEndID()].push_back(edge);
     }
 }
 
@@ -63,81 +77,7 @@ int Graph::getNumberDemandNodes() const{
     return m_number_of_demand_nodes;
 }
 
-// Graph Graph::getUnitDemandGraph() const
-// {
-//     std::vector<Vertex> vertices;
-//     const unsigned int n = m_vertices.size();
-//     std::vector<std::vector<unsigned int>> id_vertices = std::vector<std::vector<unsigned int>>(n, std::vector<unsigned int>());
-//     Vertex current_vertex;
-//     unsigned int current_id;
-//     Position current_position;
-//     std::vector<Demand> demands;
-//     Demand current_demand;
-//     std::vector<Edge> edges;
-//     double current_lenght;
-//     std::string current_roadType;
-//     int demand_id = 0, node_id = 0, edge_id = 0;
-
-//     for(unsigned int v = 0; v < n; ++v)
-//     {
-//         current_vertex = m_vertices[v];
-//         current_position = current_vertex.getPos();
-//         current_id = current_vertex.getGraphID();
-//         if(current_vertex.getTDA() == 0)
-//         {
-//             vertices.emplace_back(current_position, current_vertex.getDemands(), node_id);
-//             id_vertices[current_id].emplace_back(node_id);
-//             ++node_id;
-//         }
-//         for(unsigned int d = 0; d < current_vertex.getTDA(); ++d)
-//         {
-//             //demand
-//             current_demand = Demand(current_position, 1, demand_id);
-//             current_demand.setGraphID(demand_id);
-//             ++demand_id;
-//             current_demand.setNodeGraphID(node_id);
-//             demands.emplace_back(current_demand);
-//             //vertex
-//             vertices.emplace_back(current_position, demands, node_id);
-//             demands.pop_back();
-//             id_vertices[current_id].emplace_back(node_id);
-//             ++node_id;
-//         }
-//     }
-//     for(const Edge& edge : m_edges)
-//     {
-//         current_lenght = edge.getLength();
-//         current_roadType = edge.getRoadType();
-//         for(unsigned int start : id_vertices[edge.getStartID()])
-//         {
-//             for(unsigned int end : id_vertices[edge.getEndID()])
-//             {
-//                 edges.emplace_back(start, end, current_lenght, current_roadType, edge_id);
-//                 ++edge_id;
-//             }
-//         }
-//     }
-//     for(const auto& id : id_vertices)
-//     {
-//         unsigned int size = id.size();
-//         if(size <= 1)
-//             continue;
-//         for(int i = 0; i < size; ++i)
-//         {
-//             for(int j = i + 1; j < size; ++j)
-//             {
-//                 if(i == j)
-//                     continue;
-//                 edges.emplace_back(i, j, 0, " ", edge_id);
-//                 ++edge_id;
-//             }
-//         }
-//     }
-
-//     return {vertices, edges};
-// }
-
-Graph Graph::getUnitDemandGraph() const
+Graph Graph::getUnitDemandGraph()
 {
     std::vector<Vertex> unitVertices;
     for (Vertex v : m_vertices){
@@ -149,6 +89,7 @@ Graph Graph::getUnitDemandGraph() const
     std::vector<Demand> unitDemands;
     for (Demand d : m_demands){
         for (int i=0; i<d.getAmount(); ++i){
+            UnitaryToOriginalDemandID.push_back(d.getGraphID());
             Demand ud(d.getInitPos(),1,d.getGraphID());
             ud.setGraphID(unitDemands.size());
             ud.setNodeGraphID(d.getNodeGraphID());
@@ -160,6 +101,11 @@ Graph Graph::getUnitDemandGraph() const
     }
     unitDemandGraph.addDemands(unitDemands);
     return unitDemandGraph;
+}
+
+const int Graph::getOriginalDemandID(int unitID){
+    getUnitDemandGraph();
+    return UnitaryToOriginalDemandID[unitID];
 }
 
 const std::vector<Vertex>& Graph::getVertices() const{
@@ -226,10 +172,10 @@ const std::vector<Edge>& Graph::getAdjacencyList(int vertexID) const{
     return adjacencyList[vertexID];
 }
 
-const std::vector<std::vector<int>>& Graph::getAdjacencyMatrix() const{
+const std::vector<std::vector<double>>& Graph::getAdjacencyMatrix() const{
     return adjacencyMatrix;
 }
 
-const std::vector<int>& Graph::getAdjacencyMatrix(int vertexID) const{
+const std::vector<double>& Graph::getAdjacencyMatrix(int vertexID) const{
     return adjacencyMatrix[vertexID];
 }

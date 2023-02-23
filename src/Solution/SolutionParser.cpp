@@ -18,14 +18,15 @@ void SolutionParser::read_lines(std::ifstream &t_file)
 {
     std::string line, eventName;
     std::vector<std::string> tab;
-    int time, eventType = -1, demandID = -1, droneID = -1;
+    double time;
+    int eventType = -1, demandID = -1, droneID = -1;
     Position pos1, pos2;
 
     getline(t_file, line);
     while(getline(t_file, line))
     {
         tab = split(line, ';');
-        time = stoi(tab[0]);
+        time = stod(tab[0]);
         eventName = tab[1].substr(1, 11);
         if(eventName == "DEPLACEMENT")
         {

@@ -16,14 +16,6 @@ double Vertex::getLongitude() const{
     return pos.getLongitude();
 }
 
-void Vertex::setLongitude(double longitude){
-    pos.setX(longitude);
-}
-
-void Vertex::setLatitude(double latitude){
-    pos.setY(latitude);
-}
-
 Position Vertex::getPos() const{
     return pos;
 }

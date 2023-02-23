@@ -11,26 +11,15 @@ int find_depot_id(const Graph& graph, Position position)
     throw std::invalid_argument("no depot");
 }
 
-Instance::Instance(Graph t_graph, std::string t_instanceName, 
-                   std::vector<std::string> t_roadTypes, std::vector<double> t_roadSpeed, double t_droneSpeed)
-    : graph(std::move(t_graph)), instanceName(std::move(t_instanceName)), roadTypes(std::move(t_roadTypes)), roadSpeed(std::move(t_roadSpeed)), droneSpeed(std::move(t_droneSpeed)) {
+Instance::Instance(Graph t_graph, std::string t_instanceName)
+    : graph(std::move(t_graph)), instanceName(std::move(t_instanceName)) {
         depot_id = find_depot_id(graph, depot_location);
-        if ((roadSpeed.size()-1)!=roadTypes.size()){
-            std::cout << roadSpeed.size() << " " << roadTypes.size() << std::endl;
-            throw std::invalid_argument("wrong road types/speeds size");
-        }
         graph.kernelize(*this);
     }
 
-Instance::Instance(std::vector<Vertex> t_vertices, std::vector<Edge> t_edges, std::string t_instanceName,
-                   std::vector<std::string> t_roadTypes, std::vector<double> t_roadSpeed, double t_droneSpeed)
-    : graph(Graph(std::move(t_vertices), std::move(t_edges))), instanceName(std::move(t_instanceName)), roadTypes(std::move(t_roadTypes)), roadSpeed(std::move(t_roadSpeed)), droneSpeed(std::move(t_droneSpeed)) {
-        
-        if ((roadSpeed.size()-1)!=roadTypes.size()){
-            std::cout << roadSpeed.size() << " " << roadTypes.size() << std::endl;
-            throw std::invalid_argument("wrong road types/speeds size");
-        }
-        
+Instance::Instance(const std::vector<Vertex>& t_vertices, const std::vector<Edge>& t_edges, std::string t_instanceName)
+    : graph(Graph(t_vertices, t_edges)), instanceName(std::move(t_instanceName)) {
+        depot_id = find_depot_id(graph, depot_location);
         graph.kernelize(*this);
     }
 
@@ -56,22 +45,16 @@ int Instance::getTruckDeliveryTime() const{
     return truckDeliveryTime;
 } 
 
-const Graph & Instance::getGraph() const {
+const Graph& Instance::getGraph() const {
     return graph;
 }
 
-int Instance::getDroneSpeed() const {
+double Instance::getDroneSpeed() const {
     return droneSpeed;
 }
 
-double Instance::getTravelTime(Edge e) const{
-    for (int i=0; i<roadTypes.size();++i){
-        std::string roadType = roadTypes[i];
-        if (roadType==e.getRoadType()){
-            return (e.getLength()/roadSpeed[i]);
-        }
-    }
-    return e.getLength()/roadSpeed[roadSpeed.size()-1];
+double Instance::getTravelTime(const Edge& e) {
+    return e.getCost();
 }
 
 double Instance::getDroneRechargingTime() const{

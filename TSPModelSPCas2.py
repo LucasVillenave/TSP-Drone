@@ -3,7 +3,7 @@ from gurobipy import GRB
 from TSPDData import *
 from math import floor
 
-class TSPDModelSPCas1:
+class TSPDModelSPCas2:
     def __init__(self, data):
         self.data = data
         self.list_customers = self.data.get_demand_nodes()
@@ -11,9 +11,10 @@ class TSPDModelSPCas1:
         self.demands.at[0,'amount'] = 1
         self.intersections = self.get_possible_intersections()
         self.nb_neighbors_to_visit = floor(len(self.list_customers)  /3  )
-        self.nb_neighbors_to_visit_drone = floor(len(self.list_customers)  /1  )
+        self.nb_neighbors_to_visit_drone = floor(len(self.list_customers)  /2  )
         self.closest_neighbors, self.closest_clients_drone = self.get_closest_neighbors()
         self.nb_periods = floor(len(self.data.truck_shortest_time)  /3  )
+        self.nb_periods_return_drones = 3
 
         self.dict_customers = {}
         for i in range(len(self.list_customers)):
@@ -191,11 +192,11 @@ class TSPDModelSPCas1:
 
 
         #DEPART TRAJET DRONE SUR NOEUD VISITE PAR TRUCK
-
-        #model.addConstrs(gp.quicksum(x[l,k,t] for l in range(nb_clients) for k in range(nb_clients) if i in compact_graph_path[l][k]) >= w[a,i,j,t]
-        #                                    for a in range(2)
-        #                                    for i in range(nb_nodes)
-        #                                    for j in range(nb_clients)
+        
+        #model.addConstrs(gp.quicksum(x[l,k,t] for l in range(nb_clients) for k in range(nb_clients) if i in compact_graph_path[l][k]) >= w[a,i,j,t] 
+        #                                    for a in range(2) 
+        #                                    for i in range(nb_nodes) 
+        #                                    for j in range(nb_clients) 
         #                                    for t in range(nb_clients))
 
         model.addConstrs(2*nb_clients*gp.quicksum(x[l,k,t] for l in range(nb_clients) for k in range(nb_clients) if (self.intersections[i] in compact_graph_path[l][k] and (self.intersections[i] != self.list_customers[l] or self.intersections[i] == self.data.depot_id))) >= gp.quicksum(w[0,i,j,t] + w[1,i,j,t] for j in range(nb_clients))
@@ -230,12 +231,12 @@ class TSPDModelSPCas1:
 
         #model.setObjective(WAZAI[nb_periods-1], GRB.MINIMIZE)
 
-
-        model.Params.LazyConstraints = 1
         model.setParam('TimeLimit', 10*60)
-        model.optimize(subtourelim)
 
-        #model.optimize()
+        #model.Params.LazyConstraints = 1
+        #model.optimize(subtourelim)
+
+        model.optimize()
 
         print("obj : ", model.ObjVal)
 

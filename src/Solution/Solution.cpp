@@ -1,5 +1,6 @@
 #include "Solution/Solution.hpp"
 #include "utils.hpp"
+#include <math.h>
 
 Solution::Solution(Instance t_instance, const std::vector<Event>& t_eventList)
     : instance(std::move(t_instance)), eventList(t_eventList)
@@ -27,7 +28,7 @@ void Solution::check(){
 // the 4 first checks checks for flow conservation. the last two check if the truck is time coherent and on roads.
 int Solution::checkTruck(){
 
-    Event previousEvent(instance.getDepotLocation(),0,1);
+    Event previousEvent(instance.getGraph().getVertice(instance.getDepotId()).getPos(),0,1);
     int previousEventType = 1;
     for (int i=0; i<eventList.size();++i){
         const Event& actualEvent = eventList[i];
@@ -72,12 +73,24 @@ int Solution::checkTruck(){
                         isEdgeExisting = 1;
 
                         //trucker warped space-time again (arriving before depart time + travel time)
-                        if (actualEvent.getTime() < (previousEvent.getTime() + this->instance.getTravelTime(edge))){
-                            std::cout << "time necessary " << this->instance.getTravelTime(edge) << std::endl;
+                        if ( (actualEvent.getTime() - floor(previousEvent.getTime()*100)/100) < floor(this->instance.getTravelTime(edge)*100)/100)
+                        {
+                            std::cout << "time necessary " << floor(this->instance.getTravelTime(edge)*100)/100 << " when "
+                            << (actualEvent.getTime() - floor(previousEvent.getTime()*100)/100) << " was taken"<< std::endl;
+                            std::cout << actualEvent << std::endl;
+                            std::cout << previousEvent << std::endl;
+                            std::cout << edge << std::endl;
+                            std::cout << this->instance.getGraph().getVertice(edge.getStartID()) << std::endl;
+                            std::cout << this->instance.getGraph().getVertice(edge.getEndID()) << std::endl;
+                            std::cout << instance.getGraph().getTSPKernelTime(edge.getEndID(),edge.getStartID()) << std::endl;
+                            for (int karl=0; karl<instance.getGraph().getTSPKernelPath(edge.getEndID(),edge.getStartID()).size(); ++karl){
+                                std::cout << instance.getGraph().getTSPKernelPath(edge.getEndID(),edge.getStartID())[karl] << " ";
+                            }
+                            std::cout << std::endl;
                             isValid = std::vector<int>(4,-6);
                             return 0;
                         }
-                        break;
+                        // break;
                     }
                 }
 
@@ -137,21 +150,23 @@ int Solution::checkDrones(){
             }
 
             //Drone stolled (delivered from place different from planned)
-            Position pos2 = instance.getGraph().getDemand( previousEvent[droneID].getDemandID() ).getPos();
+            Position pos2 = instance.getGraph().getDemand(previousEvent[droneID].getDemandID()).getNodePos();
             if ((actualEventType==5) && ((actualEvent.getPos1()==pos2)!=1)){
+                std::cout << "incoherence, drone on demand " << previousEvent[droneID].getDemandID() << " should be going to " << pos2 << "---" << previousEvent[droneID].getPos2() << " gone to " << actualEvent.getPos1() << std::endl;
+                std::cout << previousEvent[droneID] << std::endl;
+                std::cout << actualEvent << std::endl;
                 isValid = std::vector<int>(4,-10);
                 return 0;
             }
 
             if (actualEventType!=2){
                 //Drone warped space-time again (arriving before previous time + travel time)
-                if (actualEvent.getTime() < 
-                (previousEvent[droneID].getTime() + (euclidianDistance(previousEvent[droneID].getPos1(),actualEvent.getPos1())/this->instance.getDroneSpeed()))){
+                if (actualEvent.getTime() - previousEvent[droneID].getTime() < distance(previousEvent[droneID].getPos1(),actualEvent.getPos1())/this->instance.getDroneSpeed()){
                     std::cout << previousEvent[droneID].getTime() << std::endl;
                     std::cout << previousEvent[droneID] << std::endl;
                     std::cout << actualEvent << std::endl;
                     std::cout << actualEvent.getTime() << " " <<  
-                    (previousEvent[droneID].getTime() + (euclidianDistance(previousEvent[droneID].getPos1(),actualEvent.getPos1())/this->instance.getDroneSpeed())) 
+                    (previousEvent[droneID].getTime() + (distance(previousEvent[droneID].getPos1(),actualEvent.getPos1())/this->instance.getDroneSpeed()))
                     << std::endl;
                     isValid = std::vector<int>(4,-11);
                     return 0;
@@ -192,8 +207,8 @@ int Solution::checkDemandSatisfaction(){
                     }
                 }
 
-                //truck don't go before demand is delvered, lazy fucker !
-                if (departureTruckEvent.getTime() < event.getTime() + instance.getTruckDeliveryTime()){
+                //truck don't go before demand is delivered, lazy fucker !
+                if (departureTruckEvent.getTime() - floor(event.getTime()*1000)/1000 < instance.getTruckDeliveryTime() && departureTruckEvent.getEventType() != -1){
                     isValid = std::vector<int>(4,-27);
                     return 0;
                 }
@@ -210,12 +225,13 @@ int Solution::checkDemandSatisfaction(){
                 isValid = std::vector<int>(4,-25);
                 return 0;
             }
+
             deliveredDemandAmounts[event.getDemandID()] -= 1;
         }
     }
 
     for (int i = 0; i<deliveredDemandAmounts.size(); ++i){
-        int amountDelivered = deliveredDemandAmounts[i];
+        int amountDelivered = deliveredDemandAmounts[i];        
         //Delivered too much or not enought
         if (amountDelivered != 0){
             std::cout << "on demand " << i << " delivered " << (demands[i].getAmount()-amountDelivered) << " instead of " << demands[i].getAmount() << std::endl;
@@ -298,22 +314,32 @@ void Solution::checkScenarsSpecifics(){
             }
 
             //Truck need to be here to lift off drones
-            if ((event.getPos1() == arrivalTruckEvent[0].getPos1())!=1){
-                isValid[1] = -16;
-                isValid[2] = -16;
-                if (isLastArrival[0]==1){
-                    isValid[3] = -17;
-                    std::cout << "lift off" << std::endl;
+            if (event.getTime()!=0){
+                if ((event.getPos1() == arrivalTruckEvent[0].getPos1())!=1){
+                    std::cout << arrivalTruckEvent[0] << std::endl;
+                    std::cout << event << std::endl;
+                    std::cout << departureTruckEvent[0] << std::endl;
+                    isValid[1] = -16;
+                    isValid[2] = -16;
+                    if (isLastArrival[0]==1){
+                        isValid[3] = -16;
+                        std::cout << "lift off" << std::endl;
+                    }
                 }
             }
 
             //Truck need to be here to pick up drones
-            if ((arrivalDroneEvent.getPos1() == arrivalTruckEvent[1].getPos1())!=1){
-                isValid[1] = -17;
-                isValid[2] = -17;
-                if (isLastArrival[1]==1){
-                    isValid[3] = -17;
-                    std::cout << "pick up" << std::endl;
+            if (arrivalDroneEvent.getTime()!=0){
+                if ((arrivalDroneEvent.getPos1() == arrivalTruckEvent[1].getPos1())!=1){
+                    std::cout << arrivalTruckEvent[0] << std::endl;
+                    std::cout << arrivalDroneEvent << std::endl;
+                    std::cout << departureTruckEvent[0] << std::endl;
+                    isValid[1] = -17;
+                    isValid[2] = -17;
+                    if (isLastArrival[1]==1){
+                        isValid[3] = -17;
+                        std::cout << "pick up" << std::endl;
+                    }
                 }
             }
 

@@ -1,9 +1,11 @@
+import folium
 import python_propre.TSPDData
 from python_propre.TSPDEvent import TSPDEvent
 
 def get_coordinate_from_file(line):
     line = line.split(':')[1]
     line = line.split('(')[0]
+    line = line.split(')')[0]
     return float(line)
 
 class TSPDSolution:
@@ -11,21 +13,28 @@ class TSPDSolution:
         self.data = data
         self.value = -1
         #truck tour must be in the form : depot, each node visited, depot
-        self.truck_tour = [] #{time : node_id, time : node_id}
+        self.truck_tour = {} #{time : node_id, time : node_id}
+        self.truck_delivery = {} #{time : node_id, time : node_id}
         #drone tour must be in the form : {time : [lift off node, delivery node, pick up node], time : ...}
         self.drone_tour = [{}, {}]
+        #self.drone_delivery = [{}, {}] #{time : delivery node, time : delivery node}
         self.list_events = []
 
     def import_TSP(self, obj, tour):
         self.value = obj
         if len(tour) < 1 :
             return
+        time = 0
         node_id = self.data.df_customers.loc[tour[0]].node_id
-        self.truck_tour.append(node_id)
+        self.truck_tour[time] = node_id
         for t in range(0, len(tour)-1):
+            if t != 0:
+                self.truck_delivery[time] = node_id
+                time += self.data.truck_delivery_time
             for j in self.data.truck_shortest_path.get(tour[t]).get(tour[t+1])[1:]:
-                if j != self.truck_tour[len(self.truck_tour)-1]:
-                    self.truck_tour.append(j)
+                time += self.data.shortest_path_value(node_id, j)
+                self.truck_tour[time] = j
+                node_id = j
 
     def import_H1(self, obj, x, y):
         return None
@@ -69,28 +78,31 @@ class TSPDSolution:
         fd.close()
 
     def update_from_x_to_event(self):
-        is_delivery = [False] * self.data.get_number_demand_nodes()
-        time = 0
+        is_delivery = [self.data.get_demand_amount(i) for i in range(self.data.get_number_demand_nodes())]
         if len(self.truck_tour) > 0:
-            previous_vertex = self.truck_tour[0]
+            time = 0
+            previous_vertex = self.truck_tour.get(time)
             location = self.data.get_node_location(previous_vertex)
-        for vertex in self.truck_tour:
+        for key in self.truck_tour.keys():
+            vertex = self.truck_tour.get(key)
+            if key == 0:
+                continue
             destination = self.data.get_node_location(vertex)
             #movement
+            time = key - self.data.shortest_path_value(previous_vertex, vertex)
             self.list_events.append(TSPDEvent(time, location=location, destination=destination))
-            time += 1
             #arrival
-            self.list_events.append(TSPDEvent(time, location=destination))
-            #delivery
-            if vertex in self.data.get_demand_nodes():
-                demandID = self.data.get_demand_id(vertex)
-                if not is_delivery[demandID-1]:
-                    for demand in range(self.data.get_demand_amount(demandID)):
-                        self.list_events.append(TSPDEvent(time, location=destination, demandID=demandID))
-                        time += 1
-                    is_delivery[demandID-1] = True
+            self.list_events.append(TSPDEvent(key, location=destination))
             previous_vertex = vertex
             location = destination
+            #time = key
+        #delivery
+        for time in self.truck_delivery.keys():
+            vertex = self.truck_delivery.get(time)
+            location = self.data.get_node_location(vertex)
+            demandID = self.data.get_demand_id(vertex)
+            for i in range(self.data.get_demand_amount(demandID)):
+                self.list_events.append(TSPDEvent(time, location=location, demandID=demandID-1))
 
         for droneID in range(2):
             dict = self.drone_tour[droneID]
@@ -102,11 +114,11 @@ class TSPDSolution:
                 end = self.data.get_node_location(tab[2])
                 #lift off
                 self.list_events.append(TSPDEvent(time, location=start, droneID=droneID, demandID=demandID))
-                time += 2
+                time += self.data.get_drone_graph().get(start).get(step)
                 #delivery
                 self.list_events.append(TSPDEvent(time, droneID=droneID, demandID=demandID))
                 #pick up
-                time += 2
+                time += self.data.get_drone_graph().get(step).get(end)
                 self.list_events.append(TSPDEvent(time, location=start, droneID=droneID))
 
         self.list_events.sort(key=lambda x: x.destination[0])
@@ -157,7 +169,11 @@ class TSPDSolution:
 
     def display(self):
         print("Value = ", self.value, "s")
-        print("Truck tour :", self.truck_tour)
+        print("Truck tour :")
+        for t in self.truck_tour.keys():
+            print("\ttime : ", t, ", node :", self.truck_tour.get(t))
+        print("Truck delivery :")
+        print(self.truck_delivery)
         print("Drone 0 :")
         for d in self.drone_tour[0].keys():
             print("\ttime : ", d, ", tour :", self.drone_tour[0].get(d))

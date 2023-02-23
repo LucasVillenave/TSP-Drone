@@ -18,7 +18,7 @@ vector<string> split(string s, char delim) {
 }
 
 double getLatMin(std::vector<Position> & positions){
-    double lat_min = 91;
+    double lat_min = 90;
 
     for (Position p : positions){
         if (p.getLatitude()<lat_min){
@@ -30,7 +30,7 @@ double getLatMin(std::vector<Position> & positions){
 }
 
 double getLonMin(std::vector<Position> & positions){
-    double lon_min = 91;
+    double lon_min = 180;
 
     for (Position p : positions){
         if (p.getLongitude()<lon_min){
@@ -65,7 +65,7 @@ int addPosition(Position pos, vector<Position>& positions){
     return trigger;
 }
 
-Graph loadGraph(string instancePath, string instanceName){
+Graph loadGraph(const string& instancePath, const string& instanceName){
     string line;
     fstream f;
     vector<string> arcs;
@@ -79,7 +79,7 @@ Graph loadGraph(string instancePath, string instanceName){
     cout << "trying to load : " << instancePath << instanceName << "/Graph.txt" << endl;
     f.open(instancePath + instanceName + "/Graph.txt");
     if (!f){
-        cout<<"\ncouldn't load\n"<<endl;
+        throw std::invalid_argument("Couldn't load Graph.txt");
     }else{
         cout<<"\nsuccessful load\n"<<endl;
     }
@@ -117,7 +117,6 @@ Graph loadGraph(string instancePath, string instanceName){
                         string ndParameterName = parameterNames[j];
                         if (ndParameterName == "lon_max"){
                             Position pos(stod(value[i]),stod(value[j]));
-                            int actualSize = positions.size();
                             maxIndex = addPosition(pos,positions);
                         }
                     }
@@ -128,7 +127,6 @@ Graph loadGraph(string instancePath, string instanceName){
                         string ndParameterName = parameterNames[j];
                         if (ndParameterName == "lon_min"){
                             Position pos(stod(value[i]),stod(value[j]));
-                            int actualSize = positions.size();
                             minIndex = addPosition(pos,positions);
                         }
                     }
@@ -144,10 +142,9 @@ Graph loadGraph(string instancePath, string instanceName){
                 }
             }
 
-            edges.push_back(Edge(minIndex,maxIndex,length,roadType,ID));
+            edges.emplace_back(minIndex,maxIndex,length,roadType,ID);
         }
     }
-
     for (int i=0; i<edges.size();++i){
         edges[i].setID(i);
     }
@@ -155,7 +152,6 @@ Graph loadGraph(string instancePath, string instanceName){
     for (int i=0; i<positions.size();++i){
         vertices.emplace_back(positions[i],std::vector<Demand>(),i);
     }
-
     return {vertices,edges};
 }
 
@@ -167,7 +163,7 @@ vector<Demand> loadDemands(const string& instancePath, const string& instanceNam
     cout << "trying to load : " << instancePath << instanceName << "/Demand.txt" << endl;
     f.open(instancePath + instanceName + "/Demand.txt");
     if (!f){
-        cout<<"\ncouldn't load\n"<<endl;
+        throw std::invalid_argument("Couldn't load Demand.txt");
     }else{
         cout<<"\nsuccessful load\n"<<endl;
     }
@@ -203,7 +199,17 @@ vector<Demand> loadDemands(const string& instancePath, const string& instanceNam
                 longitude = stod(value[i]);
             }
         }
-        demands.push_back(Demand(Position(latitude,longitude),amount));
+        bool alreadyExisting = false;
+        for(Demand& demand : demands)
+        {
+            if(demand.getLatitude() == latitude && demand.getLongitude() == longitude)
+            {
+                alreadyExisting = true;
+                demand.setAmount(demand.getAmount() + amount);
+            }
+        }
+        if(!alreadyExisting)
+            demands.emplace_back(Position(latitude,longitude),amount);
 
         getline(f,line);
     }
@@ -219,7 +225,7 @@ Instance load(const string& instancePath, const string& instanceName){
     
     Graph g = loadGraph(instancePath, instanceName);
     vector<Demand> demands = loadDemands(instancePath, instanceName);
-    
+
     std::vector<Position> verticesPos;
     std::vector<Position> demandPos;
 
@@ -243,25 +249,14 @@ Instance load(const string& instancePath, const string& instanceName){
 
     std::vector<Vertex> vertices;
     for (int i=0; i<g.getVertices().size();++i){
-        vertices.push_back(
-            Vertex(
+        vertices.emplace_back(
                 verticesPos[i],
-                std::vector<Demand>(),i
-                )
+                std::vector<Demand>(),
+                i
             );
     }
-
     g = Graph(vertices,g.getEdges());
     g.addDemands(demands);
 
-    std::vector<std::string> roadTypes;
-    roadTypes.push_back("primary");
-    roadTypes.push_back("secondary");
-
-    std::vector<double> roadSpeed;
-    roadSpeed.push_back(60);
-    roadSpeed.push_back(45);
-    roadSpeed.push_back(30);
-
-    return Instance(g,instanceName,roadTypes,roadSpeed);
+    return {g,instanceName};
 }
