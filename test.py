@@ -1,7 +1,6 @@
 from TSPDModelSPCas1 import *
-import collections
 
-instance = TSPDData("Data/init")
+instance = TSPDData("Data/50")
 
 cas1 = TSPDModelSPCas1(instance)
 

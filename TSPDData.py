@@ -156,16 +156,21 @@ class TSPDData:
         """
         return self.df_vertices['amount'].sum()
 
-    def shortest_path(self, start, end):
+    def shortest_path(self, start, end, get_path = False):
         """
         return the shortest path from start to end and its value
         if star or end aren't a node then return None
         """
         if start < 0 or start > self.road_graph.number_of_nodes() or end < 0 or end > self.road_graph.number_of_nodes() :
             return None
-        path = self.all_paths[start][end]
-        value = self.all_paths_length[start][end]
-        return path, value
+        if get_path == True:
+            path = self.all_paths[start][end]
+            value = self.all_paths_length[start][end]
+            return path, value
+        else: 
+            value = self.all_paths_length[start][end]
+            return value
+
 
     def display(self, name="graph"):
         center = (self.df_vertices.lat.mean(), self.df_vertices.lon.mean())
