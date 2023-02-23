@@ -7,7 +7,7 @@ Il a pour but d'optimiser l'intégration de drones de livraison dans la flotte d
 ## Installation
 
 - You need a GUROBI license
-- You need python packages : numpy, pandas, folium, networkx, geopy
+- You need python packages : numpy, pandas, folium, networkx
 ```shell
 pip install numpy
 ```
@@ -52,3 +52,8 @@ Légende de la carte dynamique créée :
    droite gris          Trajet du drone 1 dans le véhicule
    pointillé gris       Trajet du drone 1 en vol
    cercle plein gris    Livraison par le drone 1 sur le sommet
+
+## Checker de solution
+```shell
+./toCheck.sh <instance_file> <solution_file>
+```
