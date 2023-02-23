@@ -4,6 +4,7 @@
 #include "Graph/GraphPreview.hpp"
 #include <iostream>
 #include "Mod1V1.hpp"
+#include "Heur_Cas1_leP.hpp"
 
 int main(){
     Instance instance = load("../Data/","init");
@@ -30,12 +31,16 @@ int main(){
     //     std::cout << std::endl; 
     // }
 
-    std::cout << g.getNumberDemandNodes() << std::endl;
-    // std::cout << g.getNbr_demandes_unitaires() << std::endl;
-    std::cout << g.getDemandsUnit().size() << std::endl;
+    // std::cout << g.getNumberDemandNodes() << std::endl;
+    // // std::cout << g.getNbr_demandes_unitaires() << std::endl;
+    // std::cout << g.getDemandsUnit().size() << std::endl;
 
     // Mod1V1 Model(600);
     // Model.solve(instance);
+
+
+    Heur_Cas1_leP heuris({0});
+    heuris.solve(instance);
 
     
 }
