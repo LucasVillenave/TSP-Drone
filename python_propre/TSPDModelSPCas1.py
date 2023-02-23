@@ -191,11 +191,11 @@ class TSPDModelSPCas1:
 
 
         #DEPART TRAJET DRONE SUR NOEUD VISITE PAR TRUCK
-        
-        #model.addConstrs(gp.quicksum(x[l,k,t] for l in range(nb_clients) for k in range(nb_clients) if i in compact_graph_path[l][k]) >= w[a,i,j,t] 
-        #                                    for a in range(2) 
-        #                                    for i in range(nb_nodes) 
-        #                                    for j in range(nb_clients) 
+
+        #model.addConstrs(gp.quicksum(x[l,k,t] for l in range(nb_clients) for k in range(nb_clients) if i in compact_graph_path[l][k]) >= w[a,i,j,t]
+        #                                    for a in range(2)
+        #                                    for i in range(nb_nodes)
+        #                                    for j in range(nb_clients)
         #                                    for t in range(nb_clients))
 
         model.addConstrs(2*nb_clients*gp.quicksum(x[l,k,t] for l in range(nb_clients) for k in range(nb_clients) if (self.intersections[i] in compact_graph_path[l][k] and (self.intersections[i] != self.list_customers[l] or self.intersections[i] == self.data.depot_id))) >= gp.quicksum(w[0,i,j,t] + w[1,i,j,t] for j in range(nb_clients))

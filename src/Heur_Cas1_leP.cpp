@@ -5,55 +5,88 @@
 
 // i supose everything is well loaded and the graph is kernilised
 Solution Mod1V1::solve(Instance t_instance){
+
     
+    // initialisation des valeurs fixes
+    int CardDU = t_instance.getGraph().getDemands().size();
+    int CardV = instance.getGraph().getVertices().size();
+    int nbr_dep_autor = 3;
+
+    
+    // initialisation de la solution
     Solution returnSol(t_instance,{});
 
-    try{
+    std::vector<int> X_sol={0};     // chemin du camion (node / node)
+    std::vector<int> Z1_sol={0};    // chemin du drone1 (node / node)
+    std::vector<int> Z2_sol={0};    // chemin du drone2 (node / node)
+    std::vector<int> affec_demandes.size(CardDU);    // affectation des demandes ( 0 = camion ; 1 = drone1 ; 2 = drone2 )
+    int temps_cumullé = 0;
 
-        int CardDU = 10;
-        // int CardDU = t_instance.getGraph().getDemands().size();
 
-        int CardV = t_instance.getGraph().getVertices().size();
-        std::stringstream name;
+    std::cout << "---> début heuristique cas 1 (leP)" << std::endl;
 
-        int nbr_dep_autor = CardDU;
 
-        /////////////////////////////////////////////////////////////////////////////
-        std::vector<int> m_ordre_clients;
-        m_ordre_clients.resize(CardDU);
+    // initialisation des repères
+    if (m_ordre_clients.empty()){
+        m_ordre_clients.resize(CardDU)
         for (int d=0; d<CardDU; ++d){
             m_ordre_clients[d] = d;
         }
-        int demande_deb_actuelle = 0;
-        int id_node_deb_actuelle = 0;
-        int demande_fin_actuelle = CardDU;
-        int id_node_fin_actuelle = 0;
-        int nbr_demandes_actuelles = CardDU;
-        std::vector<int> sommets_actuels;
-        sommets_actuels.resize(CardV);
-        for (int i=0; i<CardV; ++i){
-            sommets_actuels[i] = i;
-        }
-        std::vector<double> variation_temps_cam_d;
-        variation_temps_cam_d.resize(2);
-        for (int a=0; a<=1; ++a){
-            variation_temps_cam_d[a] = 0;
-        }
-        /////////////////////////////////////////////////////////////////////////////
+    }
+    int demande_deb_actuelle = 0;
+    int id_node_deb_actuelle = 0;
+    int demande_fin_actuelle;
+    if (2 < CardDU){
+        demande_fin_actuelle = 2;
+    }
+    else {
+        demande_fin_actuelle = CardDU;
+    }
+    int id_node_fin_actuelle;
+    if (demande_fin_actuelle + 1 < CardDU){
+        id_node_fin_actuelle = t_instance.getGraph().getDemand(demande_fin_actuelle + 1).getNodeGraphID();
+    }
+    else {
+        id_node_fin_actuelle = 0;
+    }
+    int nbr_demandes_actuelles;
+    vector<int> sommets_actuels;
+    sommets_actuels.resize(CardV);
+    for (int i=0; i<CardV; ++i){
+        sommets_actuels[i] = i;
+    }
+    vector<double> variation_temps_cam_d;
+    variation_temps_cam_d.resise(2);
+    for (int a=0; a<variation_temps_cam_d.size(); ++a){
+        variation_temps_cam_d[a] = 0;
+    }
+    std::stringstream name;
 
 
-        std::cout << "--> Creating the Gurobi environment" << std::endl;
+    // tant que l'on a pas finit de livrer les clients
+    while (demande_fin_actuelle < CardDU){
+
+
+        // actualisations des repères
+        id_node_fin_actuelle = t_instance.getGraph().getDemand(demande_fin_actuelle).getNodeGraphID();
+        nbr_demandes_actuelles = demande_fin_actuelle - demande_deb_actuelle;
+
+
+        // résolution modèle restraint avec 3 déplacements possibles ( le dernier correspond à aller au noeud de demande_fin_actuelle )
+        // si on doit restraindre , on peut simplifier au 50 noeuds les plus proches pour le drone à chaque fois 
+
+
+        // std::cout << "--> Creating the Gurobi environment" << std::endl;
         GRBEnv env(true);
         env.start();
 
 
-        std::cout << "--> Creating the Gurobi model" << std::endl;
+        // std::cout << "--> Creating the Gurobi model" << std::endl;
         GRBModel model(env);
 
 
         // création variables
-        std::cout << "--> Creating the Gurobi variables" << std::endl;
-
+        // std::cout << "--> Creating the Gurobi variables" << std::endl;
         GRBVar * Omega = new GRBVar[nbr_dep_autor+1];
         for (int t=0; t<nbr_dep_autor+1; ++t){
             name << "Omega[" << t << "]";
@@ -157,16 +190,16 @@ Solution Mod1V1::solve(Instance t_instance){
         }
 
         // création objectif
-        std::cout << "--> Creating the Objective" << std::endl;
+        // std::cout << "--> Creating the Objective" << std::endl;
         GRBLinExpr obj = Omega[nbr_dep_autor];
         model.setObjective(obj, GRB_MINIMIZE);
 
 
         // création contraintes
-        std::cout << "--> Creating Constraints : " << std::endl;
+        // std::cout << "--> Creating Constraints : " << std::endl;
 
         // -> flot
-        std::cout << "                           - flot" << std::endl;
+        // std::cout << "                           - flot" << std::endl;
         // debut
         GRBLinExpr expdu = 0;
         for (int j=1; j<sommets_actuels.size()+1; ++j){
@@ -249,7 +282,7 @@ Solution Mod1V1::solve(Instance t_instance){
 
 
         // X / Y
-        std::cout << "                           - X / Y" << std::endl;
+        // std::cout << "                           - X / Y" << std::endl;
         for (int d=0; d<nbr_demandes_actuelles; ++d){
             if (id_node_deb_actuelle != t_instance.getGraph().getDemand(m_ordre_clients[demande_deb_actuelle+d]).getNodeGraphID()){
                 GRBLinExpr exp = 0;
@@ -288,7 +321,7 @@ Solution Mod1V1::solve(Instance t_instance){
 
 
         // X / Z
-        std::cout << "                           - X / Z" << std::endl;
+        // std::cout << "                           - X / Z" << std::endl;
         for (int a=0; a<=1; ++a){
             for (int i=0; i<sommets_actuels.size(); ++i){
                 for (int t=1; t<nbr_dep_autor-1; ++t){
@@ -325,7 +358,7 @@ Solution Mod1V1::solve(Instance t_instance){
         }
 
         // Z / Zeta
-        std::cout << "                           - Z / Zeta" << std::endl;
+        // std::cout << "                           - Z / Zeta" << std::endl;
         for (int a=0; a<=1; ++a){
             for (int d=0; d<nbr_demandes_actuelles; ++d){
                 for (int eps=0; eps<t_instance.getGraph().getDemand(m_ordre_clients[demande_deb_actuelle+d]).getAmount(); ++eps){
@@ -356,7 +389,7 @@ Solution Mod1V1::solve(Instance t_instance){
         }
 
         // Omega / Y
-        std::cout << "                           - Omega / Y" << std::endl;
+        // std::cout << "                           - Omega / Y" << std::endl;
         GRBLinExpr expOY0 = 0;
         expOY0 += Omega[0];
         expOY0 -= Omega[1];
@@ -403,7 +436,7 @@ Solution Mod1V1::solve(Instance t_instance){
         name.str("");
 
         // Omega / Z
-        std::cout << "                           - Omega / Z" << std::endl;
+        // std::cout << "                           - Omega / Z" << std::endl;
         for (int a=0; a<=1; ++a){
             GRBLinExpr exp = 0;
             exp += Omega[0];
@@ -472,7 +505,7 @@ Solution Mod1V1::solve(Instance t_instance){
         }
 
         // Delta / Zeta
-        std::cout << "                           - Delta / Zeta" << std::endl;
+        // std::cout << "                           - Delta / Zeta" << std::endl;
         for (int a=0; a<=1; ++a){
             for (int t_plus=0; t_plus<nbr_dep_autor; ++t_plus){
                 GRBLinExpr exp = 0;
@@ -523,7 +556,7 @@ Solution Mod1V1::solve(Instance t_instance){
         }
 
         // Demande
-        std::cout << "                           - Demande" << std::endl;
+        // std::cout << "                           - Demande" << std::endl;
         for (int d=0; d<nbr_demandes_actuelles; ++d){
             for (int eps=0; eps<t_instance.getGraph().getDemand(m_ordre_clients[demande_deb_actuelle+d]).getAmount(); ++eps){
                 GRBLinExpr exp = 0;
@@ -545,49 +578,37 @@ Solution Mod1V1::solve(Instance t_instance){
         }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-        std::cout <<"----> setting model" << std::endl;
-        model.set(GRB_DoubleParam_TimeLimit, this->timeLimit);
-
-
-        std::cout <<"----> model solving"<< std::endl;
+        // resolution
         model.optimize();
 
 
-        int status = model.get(GRB_IntAttr_Status);
-        if (status == GRB_OPTIMAL || (status== GRB_TIME_LIMIT && model.get(GRB_IntAttr_SolCount)>0)){
-            std::cout << "Succes! (Status: " << model.get(GRB_IntAttr_Status) << ")" << std::endl;
-            std::cout<<"--> Printing results "<< std::endl;
-            std::cout << "Runtime : " << model.get(GRB_DoubleAttr_Runtime) << " seconds"<< std::endl;
-
+        // si seulement deux déplacements : on ajoute la demande suivante et on rerésoud
+        if (X[nbr_dep_autor-1][sommets_actuels.size()][0].get(GRB_DoubleAttr_X)>0.5){
+            demande_fin_actuelle += 1;
         }
 
 
+        // sinon : on extrait les informations du premier déplacement , on fait avancer "demande_deb_actuelle"
+        // demande_fin_actuelle <- min ( max ( demande_deb_actuelle + 2 ; demande_fin_actuelle ) ; nbr_demandes_unitaires )
+        else {
+            
+        }
 
-
-
-
-    }catch (GRBException e)
-    {
-        std::cout << "Error code = " << e.getErrorCode() << std::endl;
-        std::cout << e.getMessage() << std::endl;
     }
-    catch (...)
-    {
-        std::cout << "Exception during optimization" << std::endl;
-    } 
+
+    // on oublie pas le retour au dépot
+    X_sol.push_back(0);
+
+
+
+
+
+
+
+
+
+
+
 
     return returnSol;
-
 }

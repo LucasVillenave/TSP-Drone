@@ -1,0 +1,31 @@
+## From c++ structure to python structure
+
+accès c++       =       accès Python                            type
+
+Graph.getVertices() = TSPDData.get_road_graph().nodes()         liste d'id
+Vertex.getPostion() = TSPDData.get_node_location(id)            tuple (lat, lon) si id correspond à un sommet, None sinon
+Graph.getEdges() = TSPDData.get_road_graph().edges()            liste de tuple d'id
+Instance.getTravelTime(edge) = TSPDData.get_edge_cost(id)       entier si id correspond à une arête, None sinon
+Graph.getDemands() = TSPDData.df_customers                      DataFrame avec id_demand, node_id, lat, lon, amount
+                    TSPDData.get_demand_nodes()                 liste des noeuds de demande
+                    TSPDDataget.get_number_demand_nodes()       nombre de noeuds de demande
+                    TSPDData.get_total_demand()                 nombre total des demandes
+
+                    TSPDData.get_road_graph()                   graphe networkx correspondant au graphe routier pour les calculs
+                    TSPDData.get_road_graph().number_of_nodes() entier
+                    TSPDData.get_road_graph().number_of_edges() entier
+Graph.AdjacencyList() = TSPDData.get_road_graph().adjacency_iter() :
+      Exemple d'utilisation :
+        for start_id, list in FG.adjacency_iter():
+          for end_id, attr in list.items():
+            cost = attr['costs']
+            print('(%d, %d, %.3f)' % (start_id, end_id, cost))
+
+Graph.kernelize -> path = TSPDData.shortest_path(start, end)     liste d'id de node
+Graph.kernelize -> time = TSPDData.shortest_path_value(start, end)  entier
+
+Graph.getUnitDemandGraph() = TSPDData.get_unit_graph()          graphe networkx
+                           = TSPDDataUnit.get_road_graph()
+
+                    TSPDData.depot_id                           entier naturel, id du depot
+previewGraph(graph) = TSPDData.draw_graph()                     affichage du graphe

@@ -8,7 +8,8 @@ class ConstructiveSolve{
     private :
         std::vector<std::vector<double>> droneDists;
         std::vector<int> x; 
-        std::vector<std::vector<int>> z;
+        std::vector<int> fullX;
+        std::vector<std::vector<std::vector<int>>> z;
 
         //savings are an approximation of wether a node would be worth to add to truck tourney
         std::vector<double> savings;
@@ -20,16 +21,17 @@ class ConstructiveSolve{
         std::vector<std::vector<double>> nodeDroneCost;
         double totalCost;
 
-        void updateSavings(const Instance& instance);
+        // void updateSavings(const Instance& instance);
         void greedyDemandAffectation(const Instance& instance);
         void calculateTotalCosts(const Instance& instance);
-        int getCost(std::vector<std::vector<std::vector<int>>> x, std::vector<std::vector<std::vector<int>>> z, const Instance& instance);
+        void computeFullX(const Instance& instance);
+        // void computeNodeDroneCosts(const Instance& instance);
 
         Solution SolveCase1(Instance instance);
         Solution SolveCase2(Instance instance);
         Solution SolveCase3(Instance instance);
 
-        Solution convertToSolutionCase1(Instance instance);
+        Solution convertToSolutionCase01(Instance instance);
 
     public :
         ConstructiveSolve();

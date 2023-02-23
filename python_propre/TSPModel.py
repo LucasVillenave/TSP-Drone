@@ -1,6 +1,6 @@
 import gurobipy as gp
 from gurobipy import GRB
-from TSPDData import *
+import python_propre.TSPDData
 from itertools import combinations
 
 class TSPModel:
@@ -87,10 +87,10 @@ class TSPModel:
         tour = subtour(vals)
         assert len(tour) == n
 
-        print('')
-        print('Optimal tour: %s' % str(tour))
-        print('Optimal cost: %g' % m.ObjVal)
-        print('')
         tour.append(0)
         obj = m.ObjVal + self.data.get_number_demand_nodes()*self.data.truck_delivery_time
+        print('')
+        print('Optimal tour: %s' % str(tour))
+        print('Optimal cost: %g' % obj)
+        print('')
         return obj, tour

@@ -16,20 +16,16 @@ class Instance{
         Position depot_location = Position(44.8500102, 0.5370699);
         int depot_id = -1;
 
-        std::vector<std::string> roadTypes;
-        std::vector<double> roadSpeed = std::vector<double>(1,1);
         int truckDeliveryTime = 60;
 
-        double droneSpeed;
+        double droneSpeed = 50/3.6;
         double droneRechargingTime = 30;
 
     public :
         Instance()=default;
-        Instance(Graph t_graph, std::string t_instanceName, 
-                 std::vector<std::string> t_roadTypes = std::vector<std::string>(), std::vector<double> t_roadSpeed = std::vector<double>(1,1), double t_droneSpeed = (50/3.6));
+        Instance(Graph t_graph, std::string t_instanceName);
 
-        Instance(std::vector<Vertex> t_vertices, std::vector<Edge> t_edges, std::string t_instanceName,
-                 std::vector<std::string> t_roadTypes = std::vector<std::string>(), std::vector<double> t_roadSpeed = std::vector<double>(1,1), double t_droneSpeed = (50/3.6));
+        Instance(const std::vector<Vertex>& t_vertices, const std::vector<Edge>& t_edges, std::string t_instanceName);
 
         void addDemands(const std::vector<Demand>& demands);
         void addDemand(Demand d);
@@ -37,11 +33,11 @@ class Instance{
         Position getDepotLocation() const;
         int getDepotId() const;
         int getTruckDeliveryTime() const;
-        double getTravelTime(Edge e) const;
-        int getDroneSpeed() const;
+        static double getTravelTime(const Edge& e) ;
+        double getDroneSpeed() const;
         double getDroneRechargingTime() const;
 
-        const Graph & getGraph() const;
+        const Graph& getGraph() const;
 };
 
 #endif

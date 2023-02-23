@@ -18,20 +18,30 @@ void SolutionParser::read_lines(std::ifstream &t_file)
 {
     std::string line, eventName;
     std::vector<std::string> tab;
-    int time, eventType = -1, demandID = -1, droneID = -1;
+    double time;
+    int eventType = -1, demandID = -1, droneID = -1;
     Position pos1, pos2;
 
     getline(t_file, line);
     while(getline(t_file, line))
     {
         tab = split(line, ';');
-        time = stoi(tab[0]);
+        time = stod(tab[0]);
         eventName = tab[1].substr(1, 11);
         if(eventName == "DEPLACEMENT")
         {
             eventType = 0;
             pos2 = get_localisation(tab[1].substr(35), tab[2]);
             pos1 = get_localisation(tab[3], tab[4]);
+        }
+        else if(eventName == "LIVRAISON D")
+        {
+            eventType = 5;
+            std::string id = tab[1].substr(17, 1);
+            droneID = stoi(id);
+            id = split(tab[1], ':')[1];
+            id = id.substr(1, id.size()-2);
+            demandID = stoi(id);
         }
         else
         {
@@ -60,15 +70,6 @@ void SolutionParser::read_lines(std::ifstream &t_file)
         {
             eventType = 4;
             std::string id = split(tab[1], ':')[1];
-            id = id.substr(1, id.size()-2);
-            demandID = stoi(id);
-        }
-        else if(eventName == "LIVRAISON D")
-        {
-            eventType = 5;
-            std::string id = tab[1].substr(17, 1);
-            droneID = stoi(id);
-            id = split(tab[1], ':')[1];
             id = id.substr(1, id.size()-2);
             demandID = stoi(id);
         }

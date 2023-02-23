@@ -21,8 +21,10 @@ class Graph{
 
         std::vector<std::vector<Edge>> adjacencyList;
 
+        std::vector<int> UnitaryToOriginalDemandID;
+
         //warning, the adjacency matrix keep -1 if m_vertices aren't adjacent and the length of it's edge otherwise
-        std::vector<std::vector<int>> adjacencyMatrix;
+        std::vector<std::vector<double>> adjacencyMatrix;
 
         std::vector<std::vector<double>> TSPKernelTime;
         std::vector<std::vector<std::vector<int>>> TSPKernelPath;
@@ -35,18 +37,20 @@ class Graph{
 
         void kernelize(Instance instance);
 
+        const int getOriginalDemandID(int unitID);
+
         void addDemands(const std::vector<Demand>& t_demands);
         void addDemand(Demand d);
 
-        Graph getUnitDemandGraph() const;
+        Graph getUnitDemandGraph();
 
         int getNumberDemandNodes() const;
 
         const std::vector<std::vector<Edge>>& getAdjacencyList() const;
         const std::vector<Edge>& getAdjacencyList(int vertexID) const;
 
-        const std::vector<std::vector<int>>& getAdjacencyMatrix() const;
-        const std::vector<int>& getAdjacencyMatrix(int vertexID) const;
+        const std::vector<std::vector<double>>& getAdjacencyMatrix() const;
+        const std::vector<double>& getAdjacencyMatrix(int vertexID) const;
 
         const std::vector<Vertex>& getVertices() const;
         const Vertex& getVertice(int GraphID) const;

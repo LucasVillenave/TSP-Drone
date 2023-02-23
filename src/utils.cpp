@@ -1,7 +1,7 @@
 #include "utils.hpp"
-#include <tgmath.h>
 #include <climits>
 #include <iostream>
+#include <cmath>
 
 double degree_to_meter(double x)
 {
@@ -14,7 +14,7 @@ int closest(std::vector<Vertex> vertices, Position pos){
     int returnID = -1;
     for (int i = 0; i<vertices.size(); ++i){
         Vertex v = vertices[i];
-        double dist = euclidianDistance(v.getPos(), pos);
+        double dist = distance(v.getPos(), pos);
         if (dist < min){
             min = dist;
             returnID = i;
@@ -23,23 +23,20 @@ int closest(std::vector<Vertex> vertices, Position pos){
     return returnID;
 }
 
-double euclidianDistance(Position p1,Position p2){
-    double deltaLon = (p1.getX()-p2.getX());
-    deltaLon = deltaLon*deltaLon;
-    double deltaLat = (p1.getY()-p2.getY());
-    deltaLat = deltaLat*deltaLat;
-    return std::sqrt(
-           deltaLat+deltaLon
-           );
-}
-
-double euclidianDistanceBis(double t_x_first, double t_y_first, double t_x_second, double t_y_second)
+double distance(Position t_first, Position t_second)
 {
-    double delta_lon = degree_to_meter(t_x_first - t_x_second),
-            delta_lat = degree_to_meter(t_y_first - t_y_second);
-    delta_lon = delta_lon*delta_lon;
-    delta_lat = delta_lat*delta_lat;
-    return std::sqrt(delta_lon + delta_lat);
+    double radius_of_earth = 6372.8*1000; //m
+
+    double lat1 = t_first.getLatitude() * (M_PI/180),
+            lon1 = t_first.getLongitude() * (M_PI/180),
+            lat2 = t_second.getLatitude() * (M_PI/180),
+            lon2 = t_second.getLongitude() * (M_PI/180); //rd
+
+    double delta_lon = (lon2 - lon1),
+            delta_lat = (lat2 - lat1);
+    double computation = asin(sqrt(sin(delta_lat / 2) * sin(delta_lat / 2) + cos(lat1) * cos(lat2) * sin(delta_lon / 2) * sin(delta_lon / 2))),
+        result = 2 * radius_of_earth * computation;
+    return result;
 }
 
 int getNextVertex(const std::vector<double>& optimalDist, const std::vector<int>& isOpt){
@@ -175,39 +172,33 @@ int isToBePlacedBefore(int eventType, int toPlaceEventType){
 void sortByTime(std::vector<Event>& eventList){
     std::vector<double> times;
     std::vector<Event> sortedList;
-    if (eventList.size()!=0){
+    if (!eventList.empty()){
         times.push_back(eventList[0].getTime());
         sortedList.push_back(eventList[0]);
     }
     for (int i=1; i<eventList.size();++i){
         Event e = eventList[i];
         double eTime = e.getTime();
-        if (eTime<1 && eTime>0){
-            std::cout << "yup yup" << std::endl;
-        }
         int asBeenPlaced = 0;
         if (times[0]>eTime){
             times.insert(times.begin(),eTime);
             sortedList.insert(sortedList.begin(),e);
         }else{
             for (int i=1; i<times.size(); ++i){
-                std::cout << times[i] << " " << eTime << std::endl;
-                if ((times[i]<(eTime + 0.0001))&&(times[i]>(eTime - 0.0001))){
-                    asBeenPlaced=1;
-                    std::cout << "comparing " << sortedList[i] << std::endl;
-                    std::cout << "and " << e << std::endl;
+                if ((times[i]<(eTime + 0.000001))&&(times[i]>(eTime - 0.000001))){
                     int toBePlacedBefore = isToBePlacedBefore(sortedList[i].getEventType(), e.getEventType());
-                    std::cout << "returned " << toBePlacedBefore << std::endl;
-                    times.insert(times.begin()+i+1-toBePlacedBefore, eTime);
-                    sortedList.insert(sortedList.begin()+i+1-toBePlacedBefore,e);
-                    break;
-                }else{
-                    if ((times[i-1]<eTime) && (times[i]>eTime)){
+                    if (toBePlacedBefore==1){
                         asBeenPlaced=1;
-                        times.insert(times.begin()+i,eTime);
+                        times.insert(times.begin()+i, eTime);
                         sortedList.insert(sortedList.begin()+i,e);
                         break;
                     }
+                }
+                if ((times[i-1] < (eTime + 0.000001)) && (times[i] > (eTime + 0.000001))){
+                    asBeenPlaced=1;
+                    times.insert(times.begin()+i,eTime);
+                    sortedList.insert(sortedList.begin()+i,e);
+                    break;
                 }
             }
         }
@@ -235,6 +226,7 @@ std::vector<int> calculateTruckCouverture(const std::vector<std::vector<std::vec
 
     for (int d=0; d<y.size(); ++d){
         if (y[d]<0){
+            std::cout << "demand affected " << (demands[d].getAmount() - y[d]) << " times " << std::endl;
             throw std::invalid_argument("invalid z");
         }
     }
@@ -250,30 +242,35 @@ Solution convertCase01(const Instance& instance, const std::vector<int>& x, cons
     std::cout << "---> convertor from (x,z) to event solution" << std::endl;
     std::cout << "------> checking input" << std::endl;
 
-    int n = instance.getGraph().getVertices().size();
-    int m = instance.getGraph().getDemands().size();
+    Graph gc = instance.getGraph();
+
+    int n = gc.getUnitDemandGraph().getVertices().size();
+    int m = gc.getUnitDemandGraph().getDemands().size();
 
     if (z.size() != x.size()){
-        throw std::invalid_argument("invalid sized arguments");
+        throw std::invalid_argument("invalid sized arguments z");
     }
 
     for (int i=0; i<z.size(); ++i){
         if (z[i].size()!=m){
-            throw std::invalid_argument("invalid sized arguments");
+            std::cout << "got " << z[i].size() << " instead of " << m << std::endl;
+            throw std::invalid_argument("invalid sized arguments z[i]");
         }
         for (int j=0; j<m; ++j){
             if (z[i][j].size()!=2){
-                throw std::invalid_argument("invalid sized arguments");
+                throw std::invalid_argument("invalid sized arguments z[i][j]");
             }
         }
     }
     
     const std::vector<Vertex>& vertices = instance.getGraph().getVertices();
-    std::vector<int> y = calculateTruckCouverture(z,instance.getGraph().getDemands());
+    std::vector<int> y = calculateTruckCouverture(z,gc.getUnitDemandGraph().getDemands());
+    std::vector<int> da(y.size(),1);
 
     std::cout << "------> generating events" << std::endl;
 
     for (int t=0; t<x.size(); ++t){
+        std::cout << "---------> time " << t << " over " << x.size() << std::endl;
         int nextNode = x[t];
         std::vector<std::vector<int>> zt = z[t];
 
@@ -285,9 +282,10 @@ Solution convertCase01(const Instance& instance, const std::vector<int>& x, cons
             //add the events of the implicit passing of the truck (possibly just i->j)
             for(int k=1; k<path.size(); k++){
                 // std::cout << "from " << path[k-1] << " to " << path[k] << " : " << vertices[path[k-1]].getPos() << " -> " << vertices[path[k]].getPos() << std::endl;
-                eventList.push_back(Event(vertices[path[k-1]].getPos(),time,0,vertices[path[k]].getPos()));
+                // std::cout << instance.getGraph().getTSPKernelTime(path[k-1],path[k]) << std::endl << std::endl;
+                eventList.emplace_back(vertices[path[k-1]].getPos(),time,0,vertices[path[k]].getPos());
                 time += instance.getGraph().getTSPKernelTime(path[k-1],path[k]);
-                eventList.push_back(Event(vertices[path[k]].getPos(),time,1));
+                eventList.emplace_back(vertices[path[k]].getPos(),time,1);
             }
         }
 
@@ -301,23 +299,33 @@ Solution convertCase01(const Instance& instance, const std::vector<int>& x, cons
 
         //we add all event of covered demands
         for (int d=0; d<m; ++d){
-            Demand demand = instance.getGraph().getDemand(d);
+            Demand demand = gc.getUnitDemandGraph().getDemand(d);
+
             //by drones
             for (int a=0; a<2; ++a){
                 for (int k=0; k<zt[d][a]; ++k){
-                    eventList.push_back(Event(vertices[nextNode].getPos(),dronesTimes[a],2,demand.getNodePos(),d,a));
-                    dronesTimes[a] += euclidianDistance(vertices[nextNode].getPos(),demand.getNodePos())/instance.getDroneSpeed();
-                    eventList.push_back(Event(demand.getNodePos(),dronesTimes[a],5,Position(),d,a));
-                    dronesTimes[a] += euclidianDistance(vertices[nextNode].getPos(),demand.getNodePos())/instance.getDroneSpeed();
-                    eventList.push_back(Event(vertices[nextNode].getPos(),dronesTimes[a],3,Position(),-1,a));
+                    // if (gc.getOriginalDemandID(d)==18){
+                    //     std::cout << "hey " << d << " " << a << std::endl;
+                    //     std::cout << demand.getNodePos() << std::endl;
+                    // }
+                    eventList.emplace_back(vertices[nextNode].getPos(),dronesTimes[a],2,demand.getNodePos(),gc.getOriginalDemandID(d),a);
+                    dronesTimes[a] += distance(vertices[nextNode].getPos(),demand.getNodePos())/instance.getDroneSpeed();
+                    eventList.emplace_back(demand.getNodePos(),dronesTimes[a],5,Position(),gc.getOriginalDemandID(d),a);
+                    dronesTimes[a] += distance(vertices[nextNode].getPos(),demand.getNodePos())/instance.getDroneSpeed();
+                    eventList.emplace_back(vertices[nextNode].getPos(),dronesTimes[a],3,Position(),-1,a);
                     dronesTimes[a]+=instance.getDroneRechargingTime();
+                    da[d]-=1;
                 }
             }
             //by truck
             if (demand.getNodeGraphID()==nextNode){
                 for (int k=0; k<y[d]; ++k){
-                    eventList.push_back(Event(demand.getNodePos(),time,4,Position(),demand.getGraphID()));
+                    // if (gc.getOriginalDemandID(d)==1){
+                    //     std::cout << "hoy " << d << std::endl;
+                    // }
+                    eventList.emplace_back(demand.getNodePos(),time,4,Position(),gc.getOriginalDemandID(d));
                     time += instance.getTruckDeliveryTime();
+                    da[d]--;
                 }
             }
         }
@@ -333,16 +341,26 @@ Solution convertCase01(const Instance& instance, const std::vector<int>& x, cons
 
     std::vector<int> path = instance.getGraph().getTSPKernelPath(x[x.size()-1],x[0]);
     for(int k=1; k<path.size(); k++){
-        eventList.push_back(Event(vertices[path[k-1]].getPos(),time,0,vertices[path[k]].getPos()));
+        eventList.emplace_back(vertices[path[k-1]].getPos(),time,0,vertices[path[k]].getPos());
         time += instance.getGraph().getTSPKernelTime(path[k-1],path[k]);
-        eventList.push_back(Event(vertices[path[k]].getPos(),time,1));
+        eventList.emplace_back(vertices[path[k]].getPos(),time,1);
+    }
+
+    for (int d=0; d<m; ++d){
+        if (da[d]!=0){
+            std::cout << "on demand " << d << " covered " << (1-da[d]) << " times" << std::endl;
+        }
     }
 
     sortByTime(eventList);
 
-    for (Event e : eventList){
-        std::cout << e << std::endl;
-    }
+    std::cout << "-----> printing solution events" << std::endl << std::endl;
+    // for (int i=0; i<eventList.size(); ++i){
+    //     std::cout << eventList[i] << std::endl;
+    // }
+    // std::cout << std::endl
+    std::cout << "-----> conversion done" << std::endl;
+    std::cout << "total time after conversion : " << eventList[eventList.size()-1].getTime() << std::endl;
 
     return Solution(instance,eventList);
 }

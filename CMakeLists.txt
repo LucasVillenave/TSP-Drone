@@ -25,6 +25,8 @@ add_executable(main.exe Mains/main.cpp ${SRCS})
 
 add_executable(simpleTest.exe Mains/simpleTest.cpp ${SRCS})
 
+add_executable(toCheck.exe Mains/toCheck.cpp ${SRCS})
+
 target_link_libraries(StructureTest.exe ${GUROBI_LIBRARIES})
 target_link_libraries(simpleTest.exe ${GUROBI_LIBRARIES})
 target_link_libraries(main.exe ${GUROBI_LIBRARIES})
