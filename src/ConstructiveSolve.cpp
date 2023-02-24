@@ -51,6 +51,7 @@ Solution ConstructiveSolve::SolveCase1(Instance instance){
             std::cout << x[i] << " ";
         }
         std::cout << std::endl;
+        std::cout << "total time " << totalCost << std::endl;
 
         //save temporarilly actual state
         actualX = x;
@@ -83,6 +84,9 @@ Solution ConstructiveSolve::SolveCase1(Instance instance){
         calculateTotalCosts(instance);
     }
 
+    greedyDemandAffectation(instance);
+    calculateTotalCosts(instance);
+
     return convertToSolutionCase01(instance);
 }
 
@@ -108,6 +112,7 @@ void ConstructiveSolve::greedyDemandAffectation(const Instance& instance){
 
     std::vector<std::vector<int>> affectationNodeDrone(fullX.size(),std::vector<int>(2,0));
     std::vector<double> nodeTruckDemandCost(fullX.size(),0);
+    std::vector<double> truckCovering(fullX.size(),0);
     nodeDroneCost = std::vector<std::vector<double>>(fullX.size(),std::vector<double>(2,0));
     nodeDemandCost = std::vector<double>(fullX.size(),0);
     z = std::vector<std::vector<std::vector<int>>>(m,std::vector<std::vector<int>>(fullX.size(),std::vector<int>(2,0)));
@@ -152,11 +157,21 @@ void ConstructiveSolve::greedyDemandAffectation(const Instance& instance){
                     }
                 }
 
-                if ((j==demandNode) && (minAffectTime > (instance.getTruckDeliveryTime()+nodeTruckDemandCost[j]-nodeDemandCost[j]))){
-                    minAffectTime = instance.getTruckDeliveryTime();
-                    fastestDemandToAffect = i;
-                    fastestPointToAffect = j;
-                    affectationType = 2;
+                if (truckCovering[j]==0){
+                    if ((fullX[j]==demandNode) && (minAffectTime > (instance.getTruckDeliveryTime()+nodeTruckDemandCost[j]-nodeDemandCost[j]))){
+                        minAffectTime = instance.getTruckDeliveryTime();
+                        fastestDemandToAffect = i;
+                        fastestPointToAffect = j;
+                        affectationType = 2;
+                    }
+                }else{
+                    if (fullX[j]==demandNode){
+                        minAffectTime = 0;
+                        fastestDemandToAffect = i;
+                        fastestPointToAffect = j;
+                        affectationType = 2;
+                        break;
+                    }
                 }
             }
         }
@@ -168,6 +183,7 @@ void ConstructiveSolve::greedyDemandAffectation(const Instance& instance){
             affectationNodeDrone[fastestPointToAffect][affectationType] = 1;
         }else{
             nodeTruckDemandCost[fastestPointToAffect] += instance.getTruckDeliveryTime();
+            truckCovering[fastestPointToAffect] = 1;
         }
 
         nodeDemandCost[fastestPointToAffect] = nodeTruckDemandCost[fastestPointToAffect];
@@ -206,66 +222,6 @@ void ConstructiveSolve::computeFullX(const Instance& instance){
     }
 }
 
-
-// !!! vestiges of the past, keep out !!!
-
-// void ConstructiveSolve::computeNodeDroneCosts(const Instance& instance){
-//     computeFullX(instance);
-//     nodeDroneCost = std::vector<std::vector<double>>(n,std::vector<double>(2,0));
-//     for (int node : fullX){
-//         for (int i = 0; i<instance.getGraph().getUnitDemandGraph().getDemands().size(); ++i){
-//             if (z[i][node][0] == 1){
-//                 nodeDroneCost[node][0] += 2*droneDists[node][instance.getGraph().getUnitDemandGraph().getDemand(i).getNodeGraphID()];
-//             }
-
-//             if (z[i][node][1] == 1){
-//                 nodeDroneCost[node][1] += 2*droneDists[node][instance.getGraph().getUnitDemandGraph().getDemand(i).getNodeGraphID()];
-//             }
-//         }
-//     }
-// }
-
-// void ConstructiveSolve::updateSavings(const Instance& instance){
-//     for (int node=0; node<n; ++node){
-//         int isNodeInTourney = 0;
-
-//         // we don't consider nodes in the tourney
-//         for (int j : x){
-//            if (node==j){
-//                 savings[node] = INT_MAX;
-//                 isNodeInTourney = 1;
-//                 break;
-//            } 
-//         }
-
-//         // we aproximate the cost of adding the node to the tourney
-//         if (isNodeInTourney==0){
-//             // this part is the truck travel cost of adding node to the tourney
-//             savings[node] = - truckTravelCost;
-//             std::vector<int> newTravel = x;
-//             newTravel.push_back(node);
-//             newTravel = TSP2OPT(instance.getGraph().getTSPKernelTime(),newTravel);
-//             for (int j=1; j<newTravel.size(); ++j){
-//                 savings[node] += instance.getGraph().getTSPKernelTime(newTravel[j-1],newTravel[j]);
-//             }
-//             savings[node] += instance.getGraph().getTSPKernelTime(newTravel[0],newTravel[newTravel.size()-1]);
-
-//             // but then we have to consider the potential lowering cost of new drones affectations
-//             // if a demand is affected to a point further than node, then we deduce the difference to the savings
-//             const std::vector<Demand> demands = instance.getGraph().getUnitDemandGraph().getDemands();
-//             for (int demand=0; demand<m; ++demand){
-//                 for (int k=0; k<n; ++k){
-//                     if (z[demand][k][0]==1 || z[demand][k][1]==1){
-//                         if (droneDists[demands[demand].getNodeGraphID()][k] > droneDists[demands[demand].getNodeGraphID()][node]){
-//                             savings[node] -= (droneDists[demands[demand].getNodeGraphID()][k] - droneDists[demands[demand].getNodeGraphID()][node]);
-//                         }
-//                     }
-//                 }
-//             } 
-//         }
-//     }
-// }
-
 void ConstructiveSolve::calculateTotalCosts(const Instance& instance){
     totalCost = 0;
     computeFullX(instance);
@@ -276,12 +232,16 @@ void ConstructiveSolve::calculateTotalCosts(const Instance& instance){
     // std::cout << "hey" << std::endl;
 
     for (int node = 0; node<fullX.size(); ++node){
+        // std::cout << "cost of demands of node " << fullX[node] << " : " << nodeDemandCost[node] << std::endl;
 
         totalCost += nodeDemandCost[node];
 
         if (node != fullX.size()-1){
-            totalCost += instance.getGraph().getTSPKernelTime(fullX[node+1],fullX[node+1]);
+            // std::cout << "travel between " << fullX[node] << " and " << fullX[node+1] << " : " << instance.getGraph().getTSPKernelTime(fullX[node+1],fullX[node+1]) << std::endl;
+            // std::cout << "travel between " << 25 << " and " << 31 << " : " << instance.getGraph().getTSPKernelTime(25,31) << " : " << instance.getGraph().getTSPKernelTime(31,25) << std::endl;
+            totalCost += instance.getGraph().getTSPKernelTime(fullX[node+1],fullX[node]);
         }else{
+            // std::cout << "travel between " << fullX[fullX.size()-1] << " and " << fullX[0] << " : " << instance.getGraph().getTSPKernelTime(fullX[fullX.size()-1],fullX[0]) << std::endl;
             totalCost += instance.getGraph().getTSPKernelTime(fullX[fullX.size()-1],fullX[0]);
         }
 
@@ -295,7 +255,7 @@ void ConstructiveSolve::calculateTotalCosts(const Instance& instance){
                         if ((nodeDemandCost[futureNode] + travelTime) 
                                 <
                                 (nodeDroneCost[futureNode][droneID] + instance.getDroneRechargingTime())){
-                                nodeDroneCost[futureNode+1][droneID] 
+                                nodeDemandCost[futureNode+1]
                                 += 
                                 (nodeDroneCost[futureNode][droneID] + instance.getDroneRechargingTime())
                                 - 
@@ -329,5 +289,10 @@ Solution ConstructiveSolve::convertToSolutionCase01(Instance instance){
             std::cout << "in demand " << d << " affected " << nb << " times with drones when " << instance.getGraph().getDemand(d).getAmount() << " is it's amount" << std::endl; 
         }
     }
+    // std::cout << "fullX : " << std::endl;
+    // for (int i=0; i<t; ++i){
+    //     std::cout << fullX[i] << " ";
+    // }
+    std::cout << std::endl;
     return convertCase01(instance,fullX,convertorZ);
 }

@@ -189,44 +189,58 @@ int Solution::checkDemandSatisfaction(){
 
     for (int i=0; i<eventList.size(); ++i){
         Event event = eventList[i];
-        if (event.getEventType()>=4){
-            if (event.getEventType()==4){
-                Event arrivalTruckEvent(instance.getDepotLocation(),0,1);
-                Event departureTruckEvent;
-                for (int j=0; j<i; ++j){
-                    Event newSuperPlusEvent = eventList[j];
-                    if (newSuperPlusEvent.getEventType()==1){
-                        arrivalTruckEvent = newSuperPlusEvent;
-                    }
-                }
-                for (int j=i+1; (j<eventList.size()) && (departureTruckEvent.getEventType()==-1); ++j){
-                    Event newSuperPlusEvent = eventList[j];
-                    if (newSuperPlusEvent.getEventType()==0){
-                        departureTruckEvent = newSuperPlusEvent;
-                        break;
-                    }
-                }
+        if (event.getEventType()==5){
+            deliveredDemandAmounts[event.getDemandID()] -= 1;
+        }
+    }
 
-                //truck don't go before demand is delivered, lazy fucker !
-                if (departureTruckEvent.getTime() - floor(event.getTime()*1000)/1000 < instance.getTruckDeliveryTime() && departureTruckEvent.getEventType() != -1){
-                    isValid = std::vector<int>(4,-27);
-                    return 0;
-                }
+    for (int i = 0; i<deliveredDemandAmounts.size(); ++i){
+        int amountDelivered = deliveredDemandAmounts[i];        
+        //Delivered too much or not enought
+        if (amountDelivered < 0){
+            std::cout << "on demand " << i << " delivered too much (" << (demands[i].getAmount()-amountDelivered) << " instead of " << demands[i].getAmount() << ")" << std::endl;
+            isValid = std::vector<int>(4,-13);
+            return 0;
+        }
+    }
 
-                //truck must be where he deliver
-                if ((event.getPos1()==arrivalTruckEvent.getPos1())!=1){
-                    isValid = std::vector<int>(4,-26);
-                    return 0;
+    for (int i=0; i<eventList.size(); ++i){
+        Event event = eventList[i];
+        if (event.getEventType()==4){
+            Event arrivalTruckEvent(instance.getDepotLocation(),0,1);
+            Event departureTruckEvent;
+            for (int j=0; j<i; ++j){
+                Event newSuperPlusEvent = eventList[j];
+                if (newSuperPlusEvent.getEventType()==1){
+                    arrivalTruckEvent = newSuperPlusEvent;
+                }
+            }
+            for (int j=i+1; (j<eventList.size()) && (departureTruckEvent.getEventType()==-1); ++j){
+                Event newSuperPlusEvent = eventList[j];
+                if (newSuperPlusEvent.getEventType()==0){
+                    departureTruckEvent = newSuperPlusEvent;
+                    break;
                 }
             }
 
-            // invalid event DemandID
-            if (event.getDemandID()<0 || event.getDemandID() > instance.getGraph().getDemands().size()){
-                isValid = std::vector<int>(4,-25);
+            //truck don't go before demand is delivered, lazy trucker !
+            if (departureTruckEvent.getTime() - floor(event.getTime()*1000)/1000 < instance.getTruckDeliveryTime() && departureTruckEvent.getEventType() != -1){
+                isValid = std::vector<int>(4,-27);
                 return 0;
             }
 
-            deliveredDemandAmounts[event.getDemandID()] -= 1;
+            //truck must be where he deliver
+            if ((event.getPos1()==arrivalTruckEvent.getPos1())!=1){
+                isValid = std::vector<int>(4,-26);
+                return 0;
+            }
+
+            for (int di=0; di<demands.size(); ++di){
+                if (instance.getGraph().getVertice(demands[di].getNodeGraphID()).getPos() == event.getPos1()){
+                    std::cout << "node " << demands[di].getNodeGraphID() << " covered by truck" << std::endl;
+                    deliveredDemandAmounts[di] = 0;
+                }
+            }
         }
     }
 
@@ -329,7 +343,7 @@ void Solution::checkScenarsSpecifics(){
             }
 
             //Truck need to be here to pick up drones
-            if (arrivalDroneEvent.getTime()!=0){
+            if (arrivalTime[0]==-1){
                 if ((arrivalDroneEvent.getPos1() == arrivalTruckEvent[1].getPos1())!=1){
                     std::cout << arrivalTruckEvent[0] << std::endl;
                     std::cout << arrivalDroneEvent << std::endl;
@@ -344,7 +358,7 @@ void Solution::checkScenarsSpecifics(){
             }
 
             //Truck need to be here to drop off drones (3rd scenario)
-            if (isLastArrival[0]==0){
+            if (isLastArrival[1]==0){
                 // truck moving when drones are to be dropped
                 isValid[1] = -18;
                 isValid[2] = -18;
@@ -379,39 +393,41 @@ void Solution::checkScenarsSpecifics(){
                 }
             }
 
-            //Truck need to be here to pick up drones (3rd scenario)
-            if (isLastArrival[1]==0){
-                // truck moving when drones are to be picked up
-                isValid[1] = -18;
-                isValid[2] = -18;
+            if (arrivalTime[1]!=-1){
+                //Truck need to be here to pick up drones (3rd scenario)
+                if (isLastArrival[1]==0){
+                    // truck moving when drones are to be picked up
+                    isValid[1] = -18;
+                    isValid[2] = -18;
 
-                double edgeTravelTime;
-                Position EventP1 = departureTruckEvent[1].getPos1();
-                Position EventP2 = departureTruckEvent[1].getPos2();
-                for (Edge edge : this->instance.getGraph().getEdges()){
-                    Position EdgeP1 = this->instance.getGraph().getVertice(edge.getStartID()).getPos();
-                    Position EdgeP2 = this->instance.getGraph().getVertice(edge.getEndID()).getPos();
-                    if ( ((EventP1 == EdgeP1) && (EventP2 == EdgeP2)) || ((EventP1 == EdgeP2) && (EventP2 == EdgeP1))){
-                        edgeTravelTime = this->instance.getTravelTime(edge);
-                        break;
+                    double edgeTravelTime;
+                    Position EventP1 = departureTruckEvent[1].getPos1();
+                    Position EventP2 = departureTruckEvent[1].getPos2();
+                    for (Edge edge : this->instance.getGraph().getEdges()){
+                        Position EdgeP1 = this->instance.getGraph().getVertice(edge.getStartID()).getPos();
+                        Position EdgeP2 = this->instance.getGraph().getVertice(edge.getEndID()).getPos();
+                        if ( ((EventP1 == EdgeP1) && (EventP2 == EdgeP2)) || ((EventP1 == EdgeP2) && (EventP2 == EdgeP1))){
+                            edgeTravelTime = this->instance.getTravelTime(edge);
+                            break;
+                        }
                     }
-                }
 
-                double coef = (EventP1.getY()-EventP2.getY())/(EventP1.getX()-EventP2.getX());
-                double distanceToEdge = arrivalDroneEvent.getPos1().getX()*coef - arrivalDroneEvent.getPos1().getY();
+                    double coef = (EventP1.getY()-EventP2.getY())/(EventP1.getX()-EventP2.getX());
+                    double distanceToEdge = arrivalDroneEvent.getPos1().getX()*coef - arrivalDroneEvent.getPos1().getY();
 
-                // drop off not on the edge the truck is on
-                if (distanceToEdge>=0.1 || distanceToEdge<=-0.1){
-                    isValid[3] = -19;
-                }
+                    // drop off not on the edge the truck is on
+                    if (distanceToEdge>=0.1 || distanceToEdge<=-0.1){
+                        isValid[3] = -19;
+                    }
 
-                double ratio = (arrivalDroneEvent.getPos1().getX()-EventP2.getX())/(EventP1.getX()-EventP2.getX());
+                    double ratio = (arrivalDroneEvent.getPos1().getX()-EventP2.getX())/(EventP1.getX()-EventP2.getX());
 
-                double arrivalTruckTime = departureTruckEvent[0].getTime() + ratio*edgeTravelTime;
+                    double arrivalTruckTime = departureTruckEvent[0].getTime() + ratio*edgeTravelTime;
 
-                // drop off timing not coinciding with truck speed
-                if ( ((arrivalTruckTime-arrivalDroneEvent.getTime()) < -0.1) || ((arrivalTruckTime-arrivalDroneEvent.getTime()) > 0.1)){
-                    isValid[3] = -20;
+                    // drop off timing not coinciding with truck speed
+                    if ( ((arrivalTruckTime-arrivalDroneEvent.getTime()) < -0.1) || ((arrivalTruckTime-arrivalDroneEvent.getTime()) > 0.1)){
+                        isValid[3] = -20;
+                    }
                 }
             }
         }
