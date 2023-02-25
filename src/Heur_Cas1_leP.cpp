@@ -1,5 +1,5 @@
-// #include "gurobi_c++.h"
-// #include "Heur_Cas1_leP.hpp"
+#include "gurobi_c++.h"
+#include "Heur_Cas1_leP.hpp"
 
 
 
@@ -1534,18 +1534,18 @@ Solution Heur_Cas1_leP::solve(Instance t_instance){
                 }
 
 
-//                 // on actualise la solution de Y
-//                 Y_sol.resize(Y_sol.size()+1);
-//                 Y_sol[Y_sol.size()-1].resize(CardD);
-//                 for (int d=0; d<CardD; ++d){
-//                     Y_sol[Y_sol.size()-1][d] = 0;
-//                 }
-//                 for (int d=0; d<demandes_actuelles.size(); ++d){
-//                     if (Y[2][d].get(GRB_DoubleAttr_X)>0.5){
-//                         Y_sol[Y_sol.size()-1][demandes_actuelles[d]] = 1;
-//                         client_satisfait[demandes_actuelles[d]] = true;
-//                     } 
-//                 }
+                // on actualise la solution de Y
+                Y_sol.resize(Y_sol.size()+1);
+                Y_sol[Y_sol.size()-1].resize(CardD);
+                for (int d=0; d<CardD; ++d){
+                    Y_sol[Y_sol.size()-1][d] = 0;
+                }
+                for (int d=0; d<demandes_actuelles.size(); ++d){
+                    if (Y[2][d].get(GRB_DoubleAttr_X)>0.5){
+                        Y_sol[Y_sol.size()-1][demandes_actuelles[d]] = 1;
+                        client_satisfait[demandes_actuelles[d]] = true;
+                    } 
+                }
 
 
                 // on oublie pas le retour au dépot
@@ -1553,7 +1553,7 @@ Solution Heur_Cas1_leP::solve(Instance t_instance){
                     X_sol.push_back(0);
                 }
 
-//             }
+            }
 
         }
 
@@ -1920,5 +1920,5 @@ Solution Heur_Cas1_leP::solve(Instance t_instance){
     returnSol = convertCase01(I, X_sol, Z_sol_conv);
     returnSol.check();
 
-//     return returnSol;
-// }
+    return returnSol;
+}
