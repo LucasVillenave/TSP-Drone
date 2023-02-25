@@ -56,6 +56,45 @@ Solution Mod1V1::solve(Instance t_instance){
                 demandes_actuelles.push_back(d);
             }
         }
+
+        sommets_actuels.clear();
+        for (int d1=0; d1<demandes_actuelles.size(); ++d1){
+            for (int d2=d1+1; d2<demandes_actuelles.size(); ++d2){
+                for (int i=0; i<t_instance.getGraph().getTSPKernelPath()[t_instance.getGraph().getDemand(demandes_actuelles[d1]).getNodeGraphID()][t_instance.getGraph().getDemand(demandes_actuelles[d2]).getNodeGraphID()].size(); ++i){
+                    bool onleprend = true;
+                    for (int j=0; j<sommets_actuels.size(); j++){
+                        if (t_instance.getGraph().getTSPKernelPath()[t_instance.getGraph().getDemand(demandes_actuelles[d1]).getNodeGraphID()][t_instance.getGraph().getDemand(demandes_actuelles[d2]).getNodeGraphID()][i] == sommets_actuels[j]){
+                            onleprend = false;
+                        }
+                    }
+                    if (onleprend){
+                        sommets_actuels.push_back(t_instance.getGraph().getTSPKernelPath()[t_instance.getGraph().getDemand(demandes_actuelles[d1]).getNodeGraphID()][t_instance.getGraph().getDemand(demandes_actuelles[d2]).getNodeGraphID()][i]);
+                    }
+                }
+            }
+            for (int i=0; i<t_instance.getGraph().getTSPKernelPath()[t_instance.getGraph().getDemand(demandes_actuelles[d1]).getNodeGraphID()][id_node_deb_actuelle].size(); ++i){
+                bool onleprend = true;
+                for (int j=0; j<sommets_actuels.size(); j++){
+                    if (t_instance.getGraph().getTSPKernelPath()[t_instance.getGraph().getDemand(demandes_actuelles[d1]).getNodeGraphID()][id_node_deb_actuelle][i] == sommets_actuels[j]){
+                        onleprend = false;
+                    }
+                }
+                if (onleprend){
+                    sommets_actuels.push_back(t_instance.getGraph().getTSPKernelPath()[t_instance.getGraph().getDemand(demandes_actuelles[d1]).getNodeGraphID()][id_node_deb_actuelle][i]);
+                }
+            }
+            for (int i=0; i<t_instance.getGraph().getTSPKernelPath()[t_instance.getGraph().getDemand(demandes_actuelles[d1]).getNodeGraphID()][id_node_fin_actuelle].size(); ++i){
+                bool onleprend = true;
+                for (int j=0; j<sommets_actuels.size(); j++){
+                    if (t_instance.getGraph().getTSPKernelPath()[t_instance.getGraph().getDemand(demandes_actuelles[d1]).getNodeGraphID()][id_node_fin_actuelle][i] == sommets_actuels[j]){
+                        onleprend = false;
+                    }
+                }
+                if (onleprend){
+                    sommets_actuels.push_back(t_instance.getGraph().getTSPKernelPath()[t_instance.getGraph().getDemand(demandes_actuelles[d1]).getNodeGraphID()][id_node_fin_actuelle][i]);
+                }
+            }
+        }
         /////////////////////////////////////////////////////////////////////////////
 
 
@@ -173,7 +212,7 @@ Solution Mod1V1::solve(Instance t_instance){
         }
 
         // création objectif
-        std::cout << "--> Creating the Objective" << std::endl;
+        // std::cout << "--> Creating the Objective" << std::endl;
         GRBLinExpr obj = Omega[nbr_dep_autor];
         model.setObjective(obj, GRB_MINIMIZE);
 
@@ -283,29 +322,29 @@ Solution Mod1V1::solve(Instance t_instance){
                 GRBLinExpr exp = 0;
                 exp += Y[t][d];
                 for (int i=0; i<sommets_actuels.size(); ++i){
-                    if (sommets_actuels[i] != t_instance.getGraph().getDemand(demandes_actuelles[d]).getNodeGraphID()){
-                        for (int j=0; j<sommets_actuels.size(); ++j){
+                    if (sommets_actuels[i] == t_instance.getGraph().getDemand(demandes_actuelles[d]).getNodeGraphID()){
+                        for (int j=0; j<sommets_actuels.size()+1; ++j){
                             if (i != j){
-                                exp += X[t][i][j];
+                                exp -= X[t][i][j];
                             }
                         }
                     }
                 }
                 name << "X / Y " << t << " , " << d;
-                model.addConstr(exp<=1,name.str());
+                model.addConstr(exp<=0,name.str());
                 name.str("");
             }
         }
         for (int d=0; d<demandes_actuelles.size(); ++d){
             GRBLinExpr exp = 0;
             exp += Y[nbr_dep_autor-1][d];
-            for (int i=0; i<sommets_actuels.size(); ++i){
-                if (sommets_actuels[i] != t_instance.getGraph().getDemand(demandes_actuelles[d]).getNodeGraphID()){
-                    exp += X[nbr_dep_autor-1][i][0];
+            for (int i=0; i<sommets_actuels.size()+1; ++i){
+                if (sommets_actuels[i] == t_instance.getGraph().getDemand(demandes_actuelles[d]).getNodeGraphID()){
+                    exp -= X[nbr_dep_autor-1][i][0];
                 }
             }
             name << "X / Y " << nbr_dep_autor-1 << " , " << d;
-            model.addConstr(exp<=1,name.str());
+            model.addConstr(exp<=0,name.str());
             name.str("");
         }
 
@@ -319,7 +358,7 @@ Solution Mod1V1::solve(Instance t_instance){
                         for (int eps=0; eps<t_instance.getGraph().getDemand(demandes_actuelles[d]).getAmount() - quantite_client_satisfait[demandes_actuelles[d]]; ++eps){
                             GRBLinExpr exp = 0;
                             exp += Z[t][a][d][eps][i];
-                            for (int j=0; j<sommets_actuels.size(); ++j){
+                            for (int j=0; j<sommets_actuels.size()+1; ++j){
                                 if (i != j){
                                     exp -= X[t][i][j];
                                 }
@@ -396,10 +435,10 @@ Solution Mod1V1::solve(Instance t_instance){
             for (int i=0; i<sommets_actuels.size(); ++i){
                 for (int j=0; j<sommets_actuels.size(); ++j){
                     if (i!=j){
-                        exp += X[t][i][j] * t_instance.getGraph().getTSPKernelTime(sommets_actuels[i],sommets_actuels[j]);
+                        exp += X[t][i][j] * (t_instance.getGraph().getTSPKernelTime(sommets_actuels[i],sommets_actuels[j]) + t);
                     }
                 }
-                exp += X[t][i][sommets_actuels.size()] * t_instance.getGraph().getTSPKernelTime(sommets_actuels[i],id_node_fin_actuelle);
+                exp += X[t][i][sommets_actuels.size()] * (t_instance.getGraph().getTSPKernelTime(sommets_actuels[i],id_node_fin_actuelle) + t);
             }
             for (int d=0; d<demandes_actuelles.size(); ++d){
                 exp += Y[t][d] * t_instance.getTruckDeliveryTime();
@@ -412,7 +451,7 @@ Solution Mod1V1::solve(Instance t_instance){
         expOYf += Omega[nbr_dep_autor-1];
         expOYf -= Omega[nbr_dep_autor];
         for (int i=0; i<sommets_actuels.size(); ++i){
-            expOYf += X[nbr_dep_autor-1][i][0] * t_instance.getGraph().getTSPKernelTime(sommets_actuels[i],id_node_fin_actuelle);
+            expOYf += X[nbr_dep_autor-1][i][0] * (t_instance.getGraph().getTSPKernelTime(sommets_actuels[i],id_node_fin_actuelle) + nbr_dep_autor);
         }
         for (int d=0; d<demandes_actuelles.size(); ++d){
             expOYf += Y[nbr_dep_autor-1][d] * t_instance.getTruckDeliveryTime();
@@ -433,7 +472,7 @@ Solution Mod1V1::solve(Instance t_instance){
             exp += X[0][0][sommets_actuels.size()] * t_instance.getGraph().getTSPKernelTime(id_node_deb_actuelle,id_node_fin_actuelle);
             for (int d=0; d<demandes_actuelles.size(); ++d){
                 for (int eps=0; eps<t_instance.getGraph().getDemand(demandes_actuelles[d]).getAmount() - quantite_client_satisfait[demandes_actuelles[d]]; ++eps){
-                    exp += Z[0][a][d][eps][0] * ( 2 * euclidianDistance(t_instance.getGraph().getVertice(id_node_deb_actuelle).getPos(), t_instance.getGraph().getVertice(t_instance.getGraph().getDemand(demandes_actuelles[d]).getNodeGraphID()).getPos()) / t_instance.getDroneSpeed() );
+                    exp += Z[0][a][d][eps][0] * ( 2 * distance(t_instance.getGraph().getVertice(id_node_deb_actuelle).getPos(), t_instance.getGraph().getVertice(t_instance.getGraph().getDemand(demandes_actuelles[d]).getNodeGraphID()).getPos()) / t_instance.getDroneSpeed() );
                     exp += Z[0][a][d][eps][0] * 30;
                 }
             }
@@ -450,15 +489,15 @@ Solution Mod1V1::solve(Instance t_instance){
                 for (int i=0; i<sommets_actuels.size(); ++i){
                     for (int j=0; j<sommets_actuels.size(); ++j){
                         if (i!=j){
-                            exp += X[t][i][j] * t_instance.getGraph().getTSPKernelTime(sommets_actuels[i],sommets_actuels[j]);
+                            exp += X[t][i][j] * (t_instance.getGraph().getTSPKernelTime(sommets_actuels[i],sommets_actuels[j]) + t);
                         }
                     }
-                    exp += X[t][i][sommets_actuels.size()] * t_instance.getGraph().getTSPKernelTime(sommets_actuels[i],id_node_fin_actuelle);
+                    exp += X[t][i][sommets_actuels.size()] * (t_instance.getGraph().getTSPKernelTime(sommets_actuels[i],id_node_fin_actuelle) + t);
                 }
                 for (int d=0; d<demandes_actuelles.size(); ++d){
                     for (int eps=0; eps<t_instance.getGraph().getDemand(demandes_actuelles[d]).getAmount() - quantite_client_satisfait[demandes_actuelles[d]]; ++eps){
                         for (int i=0; i<sommets_actuels.size(); ++i){
-                            exp += Z[t][a][d][eps][i] * ( 2 * euclidianDistance(t_instance.getGraph().getVertice(sommets_actuels[i]).getPos(), t_instance.getGraph().getVertice(t_instance.getGraph().getDemand(demandes_actuelles[d]).getNodeGraphID()).getPos()) / t_instance.getDroneSpeed() );
+                            exp += Z[t][a][d][eps][i] * ( 2 * distance(t_instance.getGraph().getVertice(sommets_actuels[i]).getPos(), t_instance.getGraph().getVertice(t_instance.getGraph().getDemand(demandes_actuelles[d]).getNodeGraphID()).getPos()) / t_instance.getDroneSpeed() );
                             exp += Z[t][a][d][eps][i] * 30;
                         }
                     }
@@ -474,12 +513,12 @@ Solution Mod1V1::solve(Instance t_instance){
             exp += Omega[nbr_dep_autor-1];
             exp -= Omega[nbr_dep_autor];
             for (int i=0; i<sommets_actuels.size(); ++i){
-                exp += X[nbr_dep_autor-1][i][0] * t_instance.getGraph().getTSPKernelTime(sommets_actuels[i],id_node_fin_actuelle);
+                exp += X[nbr_dep_autor-1][i][0] * ( t_instance.getGraph().getTSPKernelTime(sommets_actuels[i],id_node_fin_actuelle) + nbr_dep_autor);
             }
             for (int d=0; d<demandes_actuelles.size(); ++d){
                 for (int eps=0; eps<t_instance.getGraph().getDemand(demandes_actuelles[d]).getAmount() - quantite_client_satisfait[demandes_actuelles[d]]; ++eps){
                     for (int i=0; i<sommets_actuels.size(); ++i){
-                        exp += Z[nbr_dep_autor-1][a][d][eps][i] * ( 2 * euclidianDistance(t_instance.getGraph().getVertice(sommets_actuels[i]).getPos(), t_instance.getGraph().getVertice(t_instance.getGraph().getDemand(demandes_actuelles[d]).getNodeGraphID()).getPos()) / t_instance.getDroneSpeed() );
+                        exp += Z[nbr_dep_autor-1][a][d][eps][i] * ( 2 * distance(t_instance.getGraph().getVertice(sommets_actuels[i]).getPos(), t_instance.getGraph().getVertice(t_instance.getGraph().getDemand(demandes_actuelles[d]).getNodeGraphID()).getPos()) / t_instance.getDroneSpeed() );
                         exp += Z[nbr_dep_autor-1][a][d][eps][i] * 30;
                     }
                 }
