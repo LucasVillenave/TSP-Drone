@@ -115,18 +115,21 @@ int main(){
     // std::cout << "after check, sol 3 case 0 is valid : " << sol3.getIsValid(0) << std::endl;
     // std::cout << "after check, sol 3 case 1 is valid : " << sol3.getIsValid(1) << std::endl;
 
-    Instance instance2 = load("../Data/", "50");
+    Instance instance2 = load("../Data/", "init");
 
-    CS = ConstructiveSolve();
-    Solution sol4 = CS.Solve(1,instance2);
+    // std::cout << "ici " << instance2.getGraph().getTSPKernelTime(25,31)<< std::endl;
+    // std::cout << "ici " << instance2.getGraph().getTSPKernelTime(31,25)<< std::endl;
 
-    std::cout << "after check, sol 4 case 0 is valid : " << sol4.getIsValid(0) << std::endl;
-    std::cout << "after check, sol 4 case 1 is valid : " << sol4.getIsValid(1) << std::endl;
+    // CS = ConstructiveSolve();
+    // Solution sol4 = CS.Solve(1,instance2);
 
-    std::filebuf fb;
-    fb.open ("solution.txt",std::ios::out);
-    std::ostream os(&fb);
-    os << sol4;
-    fb.close();
+    // std::cout << "after check, sol 4 case 0 is valid : " << sol4.getIsValid(0) << std::endl;
+    // std::cout << "after check, sol 4 case 1 is valid : " << sol4.getIsValid(1) << std::endl;
+
+    // std::filebuf fb;
+    // fb.open ("../results/ConstructiveSolInit.txt",std::ios::out);
+    // std::ostream os(&fb);
+    // os << sol4;
+    // fb.close();
 
 }

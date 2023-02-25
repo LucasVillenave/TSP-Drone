@@ -228,6 +228,10 @@ std::vector<int> calculateTruckCouverture(const std::vector<std::vector<std::vec
         if (y[d]<0){
             std::cout << "demand affected " << (demands[d].getAmount() - y[d]) << " times " << std::endl;
             throw std::invalid_argument("invalid z");
+        }else{
+            if (y[d]>0){
+                std::cout << "demand " << d << " should be covered by truck on node " << demands[d].getNodeGraphID() << std::endl; 
+            }
         }
     }
 
@@ -267,10 +271,14 @@ Solution convertCase01(const Instance& instance, const std::vector<int>& x, cons
     std::vector<int> y = calculateTruckCouverture(z,gc.getUnitDemandGraph().getDemands());
     std::vector<int> da(y.size(),1);
 
+    std::vector<int> coveredByTruckList;
+
     std::cout << "------> generating events" << std::endl;
 
     for (int t=0; t<x.size(); ++t){
-        std::cout << "---------> time " << t << " over " << x.size() << std::endl;
+        if (t%10==0){
+            std::cout << "---------> time " << t << " over " << x.size() << std::endl;
+        }
         int nextNode = x[t];
         std::vector<std::vector<int>> zt = z[t];
 
@@ -319,13 +327,22 @@ Solution convertCase01(const Instance& instance, const std::vector<int>& x, cons
             }
             //by truck
             if (demand.getNodeGraphID()==nextNode){
-                for (int k=0; k<y[d]; ++k){
-                    // if (gc.getOriginalDemandID(d)==1){
-                    //     std::cout << "hoy " << d << std::endl;
-                    // }
-                    eventList.emplace_back(demand.getNodePos(),time,4,Position(),gc.getOriginalDemandID(d));
-                    time += instance.getTruckDeliveryTime();
-                    da[d]--;
+                int isAlreadyCovered=0;
+                for (int co=0; co<coveredByTruckList.size(); ++co){
+                    if (coveredByTruckList[co]==nextNode){
+                        isAlreadyCovered=1;
+                    }
+                }
+                if (isAlreadyCovered==0){
+                    coveredByTruckList.push_back(nextNode);
+                    for (int k=0; k<y[d]; ++k){
+                        // if (gc.getOriginalDemandID(d)==1){
+                        //     std::cout << "hoy " << d << std::endl;
+                        // }
+                        eventList.emplace_back(demand.getNodePos(),time,4,Position(),gc.getOriginalDemandID(d));
+                        time += instance.getTruckDeliveryTime();
+                        da[d]--;
+                    }
                 }
             }
         }
@@ -355,10 +372,12 @@ Solution convertCase01(const Instance& instance, const std::vector<int>& x, cons
     sortByTime(eventList);
 
     std::cout << "-----> printing solution events" << std::endl << std::endl;
-    // for (int i=0; i<eventList.size(); ++i){
-    //     std::cout << eventList[i] << std::endl;
-    // }
-    // std::cout << std::endl
+    for (int i=0; i<eventList.size(); ++i){
+        if (eventList[i].getEventType()==4){
+            std::cout << eventList[i] << std::endl;
+        }
+    }
+    std::cout << std::endl;
     std::cout << "-----> conversion done" << std::endl;
     std::cout << "total time after conversion : " << eventList[eventList.size()-1].getTime() << std::endl;
 
