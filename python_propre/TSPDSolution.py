@@ -16,7 +16,7 @@ class TSPDSolution:
         self.truck_tour = {} #{time : node_id, time : node_id}
         self.truck_delivery = {} #{time : node_id, time : node_id}
         #drone tour must be in the form : {time : [lift off node, delivery node, pick up node], time : ...}
-        self.drone_tour = [{}, {}]
+        #self.drone_tour = [{}, {}]
         #self.drone_delivery = [{}, {}] #{time : delivery node, time : delivery node}
         self.list_events = []
 
@@ -35,8 +35,28 @@ class TSPDSolution:
                 time += self.data.shortest_path_value(node_id, j)
                 self.truck_tour[time] = j
                 node_id = j
+        self.update_from_x_to_event()
 
-    def import_H1(self, obj, x, y):
+    def import_H1(self, x, y):
+        """
+        DEPLACEMENT VEHICULE
+        self.list_events.append(TSPDEvent(time, location, destination))
+
+        ARRIVEE VEHICULE
+        self.list_events.append(TSPDEvent(time, location))
+
+        LARGAGE DRONE
+        self.list_events.append(TSPDEvent(time, location, droneID, demandID))
+
+        RECUPERATION DRONE
+        self.list_events.append(TSPDEvent(time, location, droneID))
+
+        LIVRAISON VEHICULE
+        self.list_events.append(TSPDEvent(time, location, demandID))
+
+        LIVRAISON DRONE
+        self.list_events.append(TSPDEvent(time, droneID, demandID))
+        """
         return None
 
     def import_file(self, file):
@@ -103,7 +123,7 @@ class TSPDSolution:
             demandID = self.data.get_demand_id(vertex)
             for i in range(self.data.get_demand_amount(demandID)):
                 self.list_events.append(TSPDEvent(time, location=location, demandID=demandID-1))
-
+        """
         for droneID in range(2):
             dict = self.drone_tour[droneID]
             for time in dict.keys():
@@ -118,9 +138,10 @@ class TSPDSolution:
                 #delivery
                 self.list_events.append(TSPDEvent(time, droneID=droneID, demandID=demandID))
                 #pick up
+                #!!! time must be greater than time
                 time += self.data.get_drone_graph().get(step).get(end)
                 self.list_events.append(TSPDEvent(time, location=start, droneID=droneID))
-
+        """
         self.list_events.sort(key=lambda x: x.destination[0])
         self.list_events.sort(key=lambda x: x.time)
 
@@ -131,12 +152,12 @@ class TSPDSolution:
         """
 
     def export(self, name="solution"):
-        self.update_from_x_to_event()
         with open(name + ".txt", 'w') as fd:
             fd.write("TEMPS ; EVENEMENT ; LOCALISATION\n")
             for event in self.list_events:
                 fd.write(event.display())
         fd.close()
+        print(name + ".txt has been saved")
 
     def to_map(self, verbose=True, name="solution"):
         center = (self.data.df_vertices.lat.mean(), self.data.df_vertices.lon.mean())

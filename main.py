@@ -2,6 +2,8 @@ from python_propre.TSPDData import TSPDData
 from python_propre.TSPModel import TSPModel
 from python_propre.TSPDSolution import TSPDSolution
 from python_propre.TSPDModelSPCas1 import TSPDModelSPCas1
+from python_propre.TSPDModelSPCas1V2 import TSPDModelSPCas1V2
+from python_propre.TSPDModelSPCas1V3 import TSPDModelSPCas1V3
 import time
 import collections
 
@@ -25,12 +27,48 @@ def tsp(data, filename="solTSP"):
     solution.export(name="results/"+filename)
 
 if __name__ == "__main__":
+    filename = "30"
+    data = TSPDData("Data/" + filename)
+    instance = TSPDModelSPCas1V3(data,2, 2, 2, 1)
+    instance.solve(name_path = "initV3.txt", time_max = 30)
+    a
+    filename = "50"
+    data = TSPDData("Data/" + filename)
+    instance = TSPDModelSPCas1V2(data,2, 2, 2, 1)
+    instance.solve(name_path = "50_1V2.txt", time_max = 30)
+    filename = "30"
+    data = TSPDData("Data/" + filename)
+    instance = TSPDModelSPCas1V2(data,2, 2, 2, 1)
+    instance.solve(name_path = "30_1V2.txt", time_max = 30)
+    filename = "80"
+    data = TSPDData("Data/" + filename)
+    instance = TSPDModelSPCas1V2(data)
+    instance.solve(name_path = "80_1V2.txt", time_max = 30, do_callbacks = False)
     filename = "100"
     data = TSPDData("Data/" + filename)
+    instance = TSPDModelSPCas1V2(data)
+    instance.solve(name_path = "100_1V2.txt", time_max = 30, do_callbacks = False)
+    
+    filename = "30"
+    data = TSPDData("Data/" + filename)
+    instance = TSPDModelSPCas1V2(data,2, 2, 4, 1)
+    instance.solve(name_path = "30_2V2.txt", time_max = 30)
+    filename = "50"
+    data = TSPDData("Data/" + filename)
+    instance = TSPDModelSPCas1V2(data,2, 2, 5, 1)
+    instance.solve(name_path = "50_2V2.txt", time_max = 30)
+    filename = "80"
+    data = TSPDData("Data/" + filename)
+    instance = TSPDModelSPCas1V2(data)
+    instance.solve(name_path = "80_2V2.txt", time_max = 60)
+    filename = "100"
+    data = TSPDData("Data/" + filename)
+    instance = TSPDModelSPCas1V2(data)
+    instance.solve(name_path = "100_2V2.txt", time_max = 60)
     #data.draw_graph()
     #print(data.df_edges.loc[(data.df_edges['start_id']==2) | (data.df_edges['end_id']==2)])
 
-    tsp(data, "solTSP"+filename)
+    #tsp(data, "solTSP"+filename)
 
 
     #solution = TSPDSolution(data)
