@@ -186,7 +186,7 @@ class TSPDData:
     def create_drone_graph(self):
         nb_vertices = self.road_graph.number_of_nodes()
         self.drone_time = {u:{ v:
-                                distance((self.df_vertices.at[u,'lat'],self.df_vertices.at[u,'lon']), (self.df_vertices.at[v,'lat'],self.df_vertices.at[v,'lon'])).m / self.speed[0]
+                                distance((self.df_vertices.at[u,'lat'],self.df_vertices.at[u,'lon']), (self.df_vertices.at[v,'lat'],self.df_vertices.at[v,'lon'])) / self.speed[0]
                                 for v in range(nb_vertices)}
                                 for u in range(nb_vertices)}
 
