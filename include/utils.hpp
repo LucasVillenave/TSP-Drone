@@ -14,7 +14,7 @@ std::vector<std::vector<std::vector<int>>> updateDistMatrix (std::vector<std::ve
                                                                const std::vector<std::vector<Edge>>& adjacencyList, 
                                                                const std::vector<int>& vertices, Instance instance);
 
-//x_t the truck moving between x_t-1 and x_t at time period t. 
+//x_t the truck moving between x_t-1 and x_t at time period t.
 //z_t,d,a binnary of unitary demand d being fullfilled by drones a at time period t
 Solution convertCase01(const Instance& i, const std::vector<int>& x, const std::vector<std::vector<std::vector<int>>>& z);
 

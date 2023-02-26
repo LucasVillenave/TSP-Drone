@@ -1,5 +1,6 @@
 import folium
-from python_propre.TSPDData import *
+from math import ceil
+import python_propre.TSPDData
 from python_propre.TSPDEvent import TSPDEvent
 from python_propre.TSPDModelSPCas1 import TSPDModelSPCas1
 import matplotlib.pyplot as plt
@@ -327,34 +328,69 @@ class TSPDSolution:
         fd.close()
         print(name + ".txt has been saved")
 
-    def to_map(self, verbose=True, name="solution"):
+    def to_map(self, verbose=True, name="solution", road_graph_display=True, truck_tour_display=True, drone_tour_display=[True, True]):
         center = (self.data.df_vertices.lat.mean(), self.data.df_vertices.lon.mean())
         map = folium.Map(location=center, zoom_start=13, control_scale=True)
-        if verbose :
+
+        if road_graph_display:
+            for index, edge in self.data.df_edges.iterrows():
+                location_start = self.data.get_node_location(edge.start_id)
+                location_end = self.data.get_node_location(edge.end_id)
+                folium.PolyLine([location_start, location_end]).add_to(map)
             for index, vertex in self.data.df_vertices.iterrows():
                 location = (vertex["lat"], vertex["lon"])
                 folium.Circle(radius=10, location=location, popup=index, color="#0000FF", fill=False).add_to(map)
-            for index, edge in self.data.df_edges.iterrows():
-                location_start = (self.data.df_vertices.loc[edge.start_id].lat, self.data.df_vertices.loc[edge.start_id].lon)
-                location_end = (self.data.df_vertices.loc[edge.end_id].lat, self.data.df_vertices.loc[edge.end_id].lon)
-                folium.PolyLine([location_start, location_end]).add_to(map)
+
         for index, demand in self.data.df_customers.iterrows():
             location = (demand["lat"], demand["lon"])
-            color = "red"
             if demand["amount"] == 0:
-                color = "blue"
-            if demand["amount"] == 2:
-                color = "orange"
-            folium.Marker(location, popup=index, icon=folium.Icon(color=color)).add_to(map)
-        #truck
-        location = self.data.get_node_location(self.truck_tour[0])
-        for truck in self.truck_tour:
-            location_pred = location
-            location = self.data.get_node_location(truck)
-            folium.Circle(radius=10, location=location, popup=index, color="#FF00FF", fill=False).add_to(map)
-            folium.PolyLine([location_pred, location], color="#FF00FF").add_to(map)
+                folium.Circle(radius=11, location=location, popup=index, color="#00FFFF", fill=False).add_to(map)
+            for i in range(ceil(demand["amount"])):
+                folium.Circle(radius=11+2*i, location=location, popup=index, color="red", fill=False).add_to(map)
+            #folium.Marker(location, popup=index, icon=folium.Icon(color="darkblue")).add_to(map)
+        #folium.Marker(self.data.depot_location, popup=index, icon=folium.Icon(color="lightblue")).add_to(map)
 
-        map.save(name + ".html")
+        color_drone = ["darkgreen", "gray"]
+        color_truck = "purple"
+        demand_amount = self.data.df_customers.amount.tolist()
+        drone_on_truck = [True, True]
+
+        location_drone = [self.data.depot_location, self.data.depot_location]
+        for event in self.list_events:
+            time = event.time
+            location = event.location
+            destination = event.destination
+            droneID = event.droneID
+            demandID = event.demandID
+
+            if location == (-1,-1) and droneID != -1 and demandID != -1:
+                location_drone[droneID] = self.data.get_demand_location(demandID)
+                folium.Circle(radius=10-2*demand_amount[demandID], location=location_drone[droneID], popup=index, color=color_drone[droneID], fill=True).add_to(map)
+                demand_amount[demandID] -= 1
+            if location != (-1,-1) and droneID == -1 and demandID == -1:
+                folium.Circle(radius=10, location=location, popup=index, color=color_truck, fill=False).add_to(map)
+            if location != (-1,-1) and destination != (-1,-1):
+                if drone_tour_display[0] and drone_on_truck[0]:
+                    folium.PolyLine([location, destination], color=color_drone[0]).add_to(map)
+                if drone_tour_display[1] and drone_on_truck[1]:
+                    folium.PolyLine([location, destination], color=color_drone[1]).add_to(map)
+                if truck_tour_display:
+                    folium.PolyLine([location, destination], color=color_truck).add_to(map)
+            if location != (-1,-1) and droneID != -1 and demandID != -1:
+                if drone_tour_display[droneID]:
+                    location_drone[droneID] = self.data.get_demand_location(demandID)
+                    folium.PolyLine([location, location_drone[droneID]], color=color_drone[droneID], dash_array='20', dash_offset='2').add_to(map)
+                    drone_on_truck[droneID] = False
+            if location != (-1,-1) and droneID != -1 and demandID == -1:
+                if drone_tour_display[droneID]:
+                    folium.PolyLine([location_drone[droneID], location], color=color_drone[droneID], dash_array='20', dash_offset='2').add_to(map)
+                    drone_on_truck[droneID] = True
+            if location != (-1,-1) and droneID == -1 and demandID != -1:
+                folium.Circle(radius=10-2*demand_amount[demandID], location=self.data.get_demand_location(demandID), popup=index, color=color_truck, fill=True).add_to(map)
+                demand_amount[demandID] -= 1
+        name += ".html"
+        map.save(name)
+        print(name + " has been saved")
 
     def display(self):
         print("Value = ", self.value, "s")
