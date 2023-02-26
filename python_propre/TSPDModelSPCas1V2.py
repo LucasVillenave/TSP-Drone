@@ -50,9 +50,9 @@ class TSPDModelSPCas1V2:
 
     def get_possible_intersections(self):
         compact_graph_path = self.data.get_shortest_path_graph()
-        #all_possible_intersections = []
-        all_possible_intersections = np.unique(np.concatenate(np.array([np.array(compact_graph_path[depart][arrivee]) for depart in compact_graph_path.keys() for arrivee in compact_graph_path[depart].keys()])))
-        all_possible_intersections = [all_possible_intersections[i] for i in range(0,len(all_possible_intersections),self.ratio_intersections)]
+        all_possible_intersections = []
+        #all_possible_intersections = np.unique(np.concatenate(np.array([np.array(compact_graph_path[depart][arrivee]) for depart in compact_graph_path.keys() for arrivee in compact_graph_path[depart].keys()])))
+        #all_possible_intersections = [all_possible_intersections[i] for i in range(0,len(all_possible_intersections),self.ratio_intersections)]
         for cust in self.list_customers:
             if not cust in all_possible_intersections:
                 all_possible_intersections.append(cust)
@@ -89,7 +89,7 @@ class TSPDModelSPCas1V2:
 
         
 
-        def get_solution(truck_paths, drone_legs, waiting_times, do_print = True):
+        def get_solution(truck_paths, drone_legs, waiting_times, do_print = False):
             df_truck = pd.DataFrame(truck_paths, columns = ['id_depart','id_arrivee','period'])
             df_drones = pd.DataFrame(drone_legs, columns = ['id_drone','id_depart','id_arrivee','period'])
             df_truck.sort_values('period', inplace = True)
@@ -150,7 +150,7 @@ class TSPDModelSPCas1V2:
                     total_time += time_to_add
                         
             if do_print: print('total truck time ', total_truck_time)
-            print('TOCHANGE',to_change)
+            if do_print: print('TOCHANGE',to_change)
             return to_change
 
 
@@ -193,6 +193,11 @@ class TSPDModelSPCas1V2:
         model.addConstr(gp.quicksum([x[0,i,0] for i in range(nb_clients)]) == 1)
         model.addConstr(gp.quicksum([x[i,0,t] for i in range(nb_clients) for t in range(nb_periods)]) == 1)
         model.addConstrs(gp.quicksum(x[i,j,t] for i in range(nb_clients) for j in range(nb_clients)) <= 1 for t in range(nb_periods))
+        model.addConstr(gp.quicksum([x[i,0,nb_periods-1] for i in range(nb_clients)]) == 1)
+        #model.addConstr(gp.quicksum(x[i,i,t] for i in range(1,nb_clients) for t in range(nb_periods)) == 0)
+
+        #model.addConstrs(gp.quicksum(x[i,j,t] for t in range(nb_periods) for j in range(nb_clients)) <= 1 for i in range(nb_clients))
+        #model.addConstrs(x[i,i,t] == 0 for t in range(nb_periods) for i in range(nb_clients))
 
         #model.addConstrs(gp.quicksum(x[i,j,t] for i in range(nb_clients) for j in range(nb_clients)) <= 1 - gp.quicksum(x[i,0,t2] for i in range(nb_clients) for t2 in range(t)) for t in range(nb_periods))
 
@@ -312,7 +317,7 @@ class TSPDModelSPCas1V2:
                 #if vals_u[key] > 0.5:
                 #    print(vals_u[key])
             
-            get_solution(truck_paths, drone_legs, waiting_times, do_print = False)
+            get_solution(truck_paths, drone_legs, waiting_times, do_print = True)
         except:
             print("error")
 

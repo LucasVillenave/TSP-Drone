@@ -27,11 +27,20 @@ def tsp(data, filename="solTSP"):
     solution.export(name="results/"+filename)
 
 if __name__ == "__main__":
-    filename = "30"
+    filename = "100"
+    data = TSPDData("Data/" + filename)
+    solution = TSPDSolution(data)
+    solution.import_H1V1(filename)
+    solution.to_map()
+    filename = "50"
+    data = TSPDData("Data/" + filename)
+    instance = TSPDModelSPCas1V2(data,2, 2, 4, 1)
+    instance.solve()#name_path = "50_1V2.txt", time_max = 30)
+    a
+    filename = "init"
     data = TSPDData("Data/" + filename)
     instance = TSPDModelSPCas1V3(data,2, 2, 2, 1)
-    instance.solve(name_path = "initV3.txt", time_max = 30)
-    a
+    instance.solve()#name_path = "50_1V2.txt", time_max = 30)
     filename = "50"
     data = TSPDData("Data/" + filename)
     instance = TSPDModelSPCas1V2(data,2, 2, 2, 1)

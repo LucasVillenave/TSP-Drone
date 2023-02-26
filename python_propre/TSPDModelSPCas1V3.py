@@ -5,7 +5,7 @@ from math import floor
 from itertools import combinations
 
 class TSPDModelSPCas1V3:
-    def __init__(self, data, f1 = 3, f2 = 2, f3 = 6, f4 = 1):
+    def __init__(self, data, f1 = 3, f2 = 2, f3 = 6, f4 = 5):
         self.data = data
         self.list_customers = self.data.get_demand_nodes()
         self.demands = self.data.df_customers
@@ -64,21 +64,24 @@ class TSPDModelSPCas1V3:
     def solve(self, name_path = False, time_max = 30, do_callbacks = True, do_write = True):
 
         def subtourelim(model, where):
+            is_there_cycle = False
             if where == GRB.Callback.MIPSOL:
                 vals_x = model.cbGetSolution(x)
                 cycles = subtour(vals_x)
+                if len(cycles) != 0: 
+                    is_there_cycle = True
                 for cycle in cycles:
                     # add subtour elimination constr. for every pair of cities in tour
-                    model.cbLazy(gp.quicksum(x[i, j]
-                                            for i, j in combinations(cycle, 2))
-                                <= len(cycle)-1)
+                    model.cbLazy(gp.quicksum(x[i, j] + x[j,i] for i, j in combinations(cycle, 2)) <= len(cycle)-1)
                 
-                if len(cycles) == 0 and model.cbGet(GRB.Callback.MIPSOL_OBJBST) < 4000:
+            if not is_there_cycle and where == GRB.Callback.MIPSOL:
+                if model.cbGet(GRB.Callback.MIPSOL_OBJBST) < 4000:
                     #print(model.cbGet(GRB.Callback.MIPSOL_OBJBST))
                     truck_paths = []
                     drone_legs = []
                     waiting_times = {}
                     
+                    vals_x = model.cbGetSolution(x)
                     vals_w = model.cbGetSolution(w)
                     vals_q = model.cbGetSolution(q)
                     for key in vals_x.keys():
@@ -98,9 +101,7 @@ class TSPDModelSPCas1V3:
 
         def subtour(vals):
             # make a list of edges selected in the solution
-            edges = gp.tuplelist((i, j) for i, j in vals.keys()
-                                if vals[i, j] > 0.5)
-            
+            edges = gp.tuplelist((i, j) for i, j in vals.keys() if vals[i, j] > 0.01)
             unvisited = []
             for e in edges:
                 if not e[0] in unvisited:
@@ -116,16 +117,14 @@ class TSPDModelSPCas1V3:
                     unvisited.remove(current)
                     neighbors = [j for i, j in edges.select(current, '*')
                                 if j in unvisited]
-                if not self.data.depot_id in thiscycle:
+                if not 0 in thiscycle:
                     cycles.append(thiscycle)
+            print(cycles)
             return cycles
 
         def get_solution(truck_paths, drone_legs, waiting_times, do_print = False):
             df_truck = pd.DataFrame(truck_paths, columns = ['id_depart','id_arrivee'])
-            df_drones = pd.DataFrame(drone_legs, columns = ['id_drone','id_depart','id_arrivee','id_truck_depart','id_truck_arrivee'])
-            df_truck.sort_values('period', inplace = True)
-            df_truck = df_truck.reset_index(drop=True)
-            df_drones.sort_values('period', inplace = True)
+            df_drones = pd.DataFrame(drone_legs, columns = ['id_drone','id_depart','id_arrivee','id_truck_depart','id_truck_arrivee','id_demand'])
             df_truck = df_truck.assign(depart = df_truck.id_depart.map(self.dict_customers), arrivee = df_truck.id_arrivee.map(self.dict_customers))
             df_drones = df_drones.assign(depart = df_drones.id_depart.map(self.dict_intersections), arrivee = df_drones.id_arrivee.map(self.dict_customers),truck_depart = df_drones.id_truck_depart.map(self.dict_customers), truck_arrivee = df_drones.id_truck_arrivee.map(self.dict_customers))
 
@@ -137,15 +136,15 @@ class TSPDModelSPCas1V3:
             last_node_used = [[[self.data.depot_id,0],[df_truck.iloc[0]['id_depart'],df_truck.iloc[0]['id_arrivee'],0]],[[self.data.depot_id,0],[df_truck.iloc[0]['id_depart'],df_truck.iloc[0]['id_arrivee'],0]]]
             to_check = self.data.depot_id
             for i in range(len(df_truck.index)):
-                df_truck_move = df_truck.loc(df_truck['depart'] == to_check)
-                to_check = df_truck_move['arrivee']
+                df_truck_move = df_truck.loc[(df_truck['depart'] == to_check)]
+                to_check = int(df_truck_move['arrivee'])
                 if do_print: print("truck_edge_starting")
                 #print('path', self.data.truck_shortest_path[df_truck_move['id_depart']][df_truck_move['id_arrivee']])
-                for id in self.data.truck_shortest_path[df_truck_move['id_depart']][df_truck_move['id_arrivee']]:
+                for id in self.data.truck_shortest_path[int(df_truck_move['id_depart'])][int(df_truck_move['id_arrivee'])]:
                     total_time += self.data.shortest_path_value(time_since_used[1],id)
                     total_truck_time += self.data.shortest_path_value(time_since_used[1],id)
                     if do_print: print(id,self.data.shortest_path_value(time_since_used[1],id),total_time)
-                    df_drone_moves = [df_drones.loc[(df_drones['depart'] == id)] & df_drones.loc[(df_drones['truck_depart'] == df_truck['depart'])] & df_drones.loc[(df_drones['truck_arrivee'] == df_truck_move['arrivee'])] & df_drones.loc[(df_drones['id_drone'] == k)] for k in range(2)]
+                    df_drone_moves = [df_drones.loc[(df_drones['depart'] == id) & (df_drones['id_truck_depart'] == int(df_truck_move['id_depart'])) & (df_drones['id_truck_arrivee'] == int(df_truck_move['id_arrivee'])) & (df_drones['id_drone'] == k)] for k in range(2)]
                     sum_time_drones_used = [max(0,len(df_drone_moves[k].index) - 1)*30 + sum([2*self.data.drone_time[row['depart']][row['arrivee']] for index, row in df_drone_moves[k].iterrows()]) for k in range(2)]
                     time_to_wait = [0,0]
                     
@@ -187,18 +186,22 @@ class TSPDModelSPCas1V3:
             return to_change
 
 
-        compact_graph_path = self.data.truck_shortest_path
+        compact_graph_path_origin = self.data.truck_shortest_path
         compact_graph_values = self.data.truck_shortest_time
-        nb_clients = len(compact_graph_values)
+        nb_clients = len(compact_graph_path_origin)
+        compact_graph_path = {u:{ v: 
+                                [compact_graph_path_origin[u][v][i] for i in range(0,len(compact_graph_path_origin[u][v]),max(3,floor(len(compact_graph_path_origin[u][v])/self.ratio_intersections)))]
+                                for v in range(nb_clients)}
+                                for u in range(nb_clients)}
         drone_graph = self.data.drone_time
         dist_truck = {(i, j):
                 compact_graph_values[i][j]
                 #math.sqrt(sum((instance.positions[instance.indices_customers[i]][k]-instance.positions[instance.indices_customers[j]][k])**2 for k in range(2)))  #remplacer ligne précédente par celle-là pour farie avec dist à vol d'oiseau
                 for i in range(nb_clients) for j in range(nb_clients)}
-        dist_drone = {(a, i, j, l,k):
+        dist_drone = {(a, i, j, l,k,d):
                 1
                 #math.sqrt(sum((instance.positions[instance.indices_customers[i]][k]-instance.positions[instance.indices_customers[j]][k])**2 for k in range(2)))  #remplacer ligne précédente par celle-là pour farie avec dist à vol d'oiseau
-                for a in range(2) for l in range(nb_clients) for k in range(nb_clients) for i in compact_graph_path[l][k] for j in range(nb_clients)}
+                for a in range(2) for l in range(nb_clients) for k in range(nb_clients) for i in compact_graph_path[l][k] for j in range(nb_clients) for d in range(int(self.demands.iloc[j]['amount']))}
         u_v_y_w = {(a, i,l,k):
                 1
                 #math.sqrt(sum((instance.positions[instance.indices_customers[i]][k]-instance.positions[instance.indices_customers[j]][k])**2 for k in range(2)))  #remplacer ligne précédente par celle-là pour farie avec dist à vol d'oiseau
@@ -240,7 +243,7 @@ class TSPDModelSPCas1V3:
         #SATISFACTION CLIENT
 
 
-        model.addConstrs(gp.quicksum(w[a,j,i,l,k] for a in range(2) for l in range(nb_clients) for k in range(nb_clients) for j in compact_graph_path[l][k]) == self.demands.iloc[i]['amount'] for i in range(nb_clients))
+        model.addConstrs(gp.quicksum(w[a,j,i,l,k,d] for a in range(2) for l in range(nb_clients) for k in range(nb_clients) for j in compact_graph_path[l][k]) == 1 for i in range(nb_clients) for d in range(int(self.demands.iloc[i]['amount'])))
         #model.addConstrs(gp.quicksum(x[i,j,t] for j in range(nb_clients)) + gp.quicksum(w[a,j,i,t] for a in range(2) for j in range(nb_intersections)) == 1 for i in range(nb_clients))
 
         print("satisfaction done")
@@ -255,22 +258,23 @@ class TSPDModelSPCas1V3:
         #                                    for j in range(nb_clients)
         #                                    for t in range(nb_clients))
 
-        model.addConstrs(w[a,i,j,l,k] <= x[l,k] for a in range(2) for l in range(nb_clients) for k in range(nb_clients) for i in compact_graph_path[l][k] for j in range(nb_clients))
+        model.addConstrs(w[a,i,j,l,k,d] <= x[l,k] for a in range(2) for l in range(nb_clients) for k in range(nb_clients) for i in compact_graph_path[l][k] for j in range(nb_clients) for d in range(int(self.demands.iloc[j]['amount'])))
+        model.addConstrs(gp.quicksum(w[a,i,j,l,k,d] for a in range(2) for i in compact_graph_path[l][k] for j in range(nb_clients) for d in range(int(self.demands.iloc[j]['amount'])) if i == self.dict_customers[k]) == 0 for l in range(nb_clients) for k in range(nb_clients))
 
         print("depart drone faisabilité done")
 
         #PEUT VISITER SEULEMENT nb_neighbors_to_visit CLIENTS LES PLUS PROCHES DEPUIS UN SOMMET
         model.addConstrs((x[i,j] == 0 for i in range(nb_clients) for j in range(nb_clients) if not j in self.closest_neighbors[i]))
-        model.addConstrs((w[a,i,j,l,k] == 0 for a in range(2) for l in range(nb_clients) for k in range(nb_clients) for i in compact_graph_path[l][k] for j in range(nb_clients) if not self.dict_customers[j] in self.closest_clients_drone[i]))
+        model.addConstrs((w[a,i,j,l,k,d] == 0 for a in range(2) for l in range(nb_clients) for k in range(nb_clients) for i in compact_graph_path[l][k] for j in range(nb_clients) for d in range(int(self.demands.iloc[j]['amount'])) if not self.dict_customers[j] in self.closest_clients_drone[i]))
 
         #DEFINITION DE U V ET MOMMAU
         model.addConstrs(v[a,i,l,k] >= 0 for a in range(2) for l in range(nb_clients) for k in range(nb_clients) for i in compact_graph_path[l][k])
-        model.addConstrs(v[a,i,l,k] >= gp.quicksum(w[a,i,j,l,k] for j in range(nb_clients)) - 1 for a in range(2) for l in range(nb_clients) for k in range(nb_clients) for i in compact_graph_path[l][k])
+        model.addConstrs(v[a,i,l,k] >= gp.quicksum(w[a,i,j,l,k,d] for j in range(nb_clients) for d in range(int(self.demands.iloc[j]['amount']))) - 1 for a in range(2) for l in range(nb_clients) for k in range(nb_clients) for i in compact_graph_path[l][k])
         model.addConstrs(v[a,i,l,k] >= 0 for a in range(2) for l in range(nb_clients) for k in range(nb_clients) for i in compact_graph_path[l][k])
-        model.addConstrs(nb_clients * y[a,i,l,k] >= gp.quicksum(w[a,i,j,l,k] for j in range(nb_clients)) for a in range(2) for l in range(nb_clients) for k in range(nb_clients) for i in compact_graph_path[l][k])
+        model.addConstrs(nb_clients * y[a,i,l,k] >= gp.quicksum(w[a,i,j,l,k,d] for j in range(nb_clients) for d in range(int(self.demands.iloc[j]['amount']))) for a in range(2) for l in range(nb_clients) for k in range(nb_clients) for i in compact_graph_path[l][k])
         model.addConstrs(y[a,i,l,k] >= 0 for a in range(2) for l in range(nb_clients) for k in range(nb_clients) for i in compact_graph_path[l][k])
 
-        model.addConstrs(u[a,i,l,k] >= gp.quicksum(w[a,i,j,l,k]*2*drone_graph[i][self.list_customers[j]] for j in range(nb_clients)) + 30 * v[a,i,l,k] + q[a,i,l,k] for a in range(2) for l in range(nb_clients) for k in range(nb_clients) for i in compact_graph_path[l][k])
+        model.addConstrs(u[a,i,l,k] >= gp.quicksum(w[a,i,j,l,k,d]*2*drone_graph[i][self.list_customers[j]] for j in range(nb_clients) for d in range(int(self.demands.iloc[j]['amount']))) + 30 * v[a,i,l,k] + q[a,i,l,k] for a in range(2) for l in range(nb_clients) for k in range(nb_clients) for i in compact_graph_path[l][k])
         model.addConstrs(mommaU[i,l,k] >= u[a,i,l,k] for a in range(2) for l in range(nb_clients) for k in range(nb_clients) for i in compact_graph_path[l][k])
         model.addConstrs(mommaU[i,l,k] >= 0 for l in range(nb_clients) for k in range(nb_clients) for i in compact_graph_path[l][k])
 
@@ -278,7 +282,7 @@ class TSPDModelSPCas1V3:
 
         #DEFINITION WAZAI OBJECTIF
         model.addConstr(WAZAI == gp.quicksum(x[i,j] * (compact_graph_values[i][j]) for i in range(nb_clients) for j in range(nb_clients)) + gp.quicksum(mommaU[i,l,k] for l in range(nb_clients) for k in range(nb_clients) for i in compact_graph_path[l][k]))
-        model.addConstrs(WAZAI >= gp.quicksum(x[i,j] * (compact_graph_values[i][j]) for i in range(nb_clients) for j in range(nb_clients)) + gp.quicksum(w[a,i,j,l,k] * 2*drone_graph[i][self.list_customers[j]] for l in range(nb_clients) for k in range(nb_clients) for i in compact_graph_path[l][k] for j in range(nb_clients)) for a in range(2))
+        model.addConstrs(WAZAI >= gp.quicksum(x[i,j] * (compact_graph_values[i][j]) for i in range(nb_clients) for j in range(nb_clients)) + gp.quicksum(w[a,i,j,l,k,d] * 2*drone_graph[i][self.list_customers[j]] for l in range(nb_clients) for k in range(nb_clients) for i in compact_graph_path[l][k] for j in range(nb_clients) for d in range(int(self.demands.iloc[j]['amount']))) for a in range(2))
 
         #model.setObjective(WAZAI[nb_periods-1], GRB.MINIMIZE)
 
@@ -320,7 +324,7 @@ class TSPDModelSPCas1V3:
         for key in vals_w.keys():
             if vals_w[key] > 0.5:
                 if name_path != False:
-                    if do_write : f.write(str(key[0]) + " " + str(key[1]) + " " + str(key[2]) + " " + str(key[3]) + " " + str(key[4]) + "\n")
+                    if do_write : f.write(str(key[0]) + " " + str(key[1]) + " " + str(key[2]) + " " + str(key[3]) + " " + str(key[4]) + " " + str(key[5]) + "\n")
                 print(key,2*drone_graph[key[1]][self.list_customers[key[2]]])
                 drone_legs.append(key)
 
@@ -349,7 +353,7 @@ class TSPDModelSPCas1V3:
             #if vals_u[key] > 0.5:
             #    print(vals_u[key])
         
-        get_solution(truck_paths, drone_legs, waiting_times, do_print = True)
+        get_solution(truck_paths, drone_legs, waiting_times, do_print = False)
         
 
 

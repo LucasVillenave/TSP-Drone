@@ -64,7 +64,7 @@ class TSPDModelSPCas1:
 
         def subtourelim(model, where):
             if where == GRB.Callback.MIPSOL:
-                if model.cbGet(GRB.Callback.MIPSOL_OBJBST) < 4000:
+                #if model.cbGet(GRB.Callback.MIPSOL_OBJBST) < 4000:
                     #print(model.cbGet(GRB.Callback.MIPSOL_OBJBST))
                     truck_paths = []
                     drone_legs = []
@@ -252,7 +252,7 @@ class TSPDModelSPCas1:
         #model.addConstrs(WAZAI[t] == WAZAI[t-1] + gp.quicksum(x[i,j,t] * compact_graph_values[i][j] for i in range(nb_clients) for j in range(nb_clients)) + gp.quicksum(mommaU[i,t] for i in range(nb_intersections)) for t in range(1,nb_periods))
         model.addConstrs(WAZAI >= gp.quicksum(x[i,j,t] * (compact_graph_values[i][j]) for i in range(nb_clients) for j in range(nb_clients) for t in range(nb_periods)) + gp.quicksum(w[a,i,j,t] * 2*drone_graph[self.intersections[i]][self.list_customers[j]] for i in range(nb_intersections) for j in range(nb_clients) for t in range(nb_periods)) for a in range(2))
         model.addConstr(WAZAI >= gp.quicksum(x[i,j,t] * (compact_graph_values[i][j]+60) for i in range(nb_clients) for j in range(nb_clients) for t in range(nb_periods)) - 60)
-
+       
         #model.setObjective(WAZAI[nb_periods-1], GRB.MINIMIZE)
 
         model.setParam('TimeLimit', time_max*60)

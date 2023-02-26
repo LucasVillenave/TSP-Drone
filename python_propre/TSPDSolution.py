@@ -1,6 +1,8 @@
 import folium
-import python_propre.TSPDData
+from python_propre.TSPDData import *
 from python_propre.TSPDEvent import TSPDEvent
+from python_propre.TSPDModelSPCas1 import TSPDModelSPCas1
+import matplotlib.pyplot as plt
 
 def get_coordinate_from_file(line):
     line = line.split(':')[1]
@@ -37,7 +39,7 @@ class TSPDSolution:
                 node_id = j
         self.update_from_x_to_event()
 
-    def import_H1(self, x, y):
+    def import_H1V1(self, id_instance):
         """
         DEPLACEMENT VEHICULE
         self.list_events.append(TSPDEvent(time, location, destination))
@@ -57,8 +59,174 @@ class TSPDSolution:
         LIVRAISON DRONE
         self.list_events.append(TSPDEvent(time, droneID, demandID))
         """
-        return None
 
+        truck_paths = []
+        drone_legs = []
+
+        file = open(id_instance+'_2.txt', "r")
+        lines = file.readlines()
+        i = 0
+        while lines[i] != "next\n":
+            line = lines[i].split()
+            truck_paths.append((int(line[0]),int(line[1]),int(line[2])))
+            i+=1
+        i+=1
+        while i < len(lines):
+            lines[i] = lines[i].split()
+            drone_legs.append((int(lines[i][0]),int(lines[i][1]),int(lines[i][2]),int(lines[i][3])))
+            i+=1
+
+        instance = TSPDModelSPCas1(self.data)
+        self.list_customers = self.data.get_demand_nodes()
+        self.dict_customers = {}
+        for i in range(len(self.list_customers)):
+            self.dict_customers[i] = self.list_customers[i]
+
+
+        df_truck = pd.DataFrame(truck_paths, columns = ['id_depart','id_arrivee','period'])
+        df_drones = pd.DataFrame(drone_legs, columns = ['id_drone','id_depart','id_arrivee','period'])
+        df_truck.sort_values('period', inplace = True)
+        df_truck = df_truck.reset_index(drop=True)
+        df_drones.sort_values('period', inplace = True)
+        df_truck = df_truck.assign(depart = df_truck.id_depart.map(instance.dict_customers), arrivee = df_truck.id_arrivee.map(instance.dict_customers))
+        df_drones = df_drones.assign(depart = df_drones.id_depart.map(instance.dict_intersections), arrivee = df_drones.id_arrivee.map(instance.dict_customers))
+        total_time = 0
+        to_change = []           # amount,[depart intersection,periode], [x depart i,j,t], [arrivee intersection,periode], [x arrivee i,j,t] répertorie les intersections, périodes pour lesquelles le temps d'attente de 30sec des drones n'a pas été respecté
+        time_since_used = [[30,30], instance.data.depot_id]
+        last_node_used = [[[instance.data.depot_id,0],[df_truck.iloc[0]['id_depart'],df_truck.iloc[0]['id_arrivee'],0]],[[instance.data.depot_id,0],[df_truck.iloc[0]['id_depart'],df_truck.iloc[0]['id_arrivee'],0]]]
+        for i in range(len(df_truck.index)):
+            df_truck_move = df_truck.iloc[i]
+            for id in instance.data.truck_shortest_path[df_truck_move['id_depart']][df_truck_move['id_arrivee']]:
+                self.list_events.append(TSPDEvent(time=total_time, location=self.data.get_node_location(time_since_used[1]), destination=self.data.get_node_location(id)))
+                plt.plot((self.data.get_node_location(time_since_used[1])[0],self.data.get_node_location(id)[0]),(self.data.get_node_location(time_since_used[1])[1],self.data.get_node_location(id)[1]), color='black')
+                total_time += instance.data.shortest_path_value(time_since_used[1],id)
+                self.list_events.append(TSPDEvent(time=total_time, location=self.data.get_node_location(id)))
+                if id == df_truck_move['arrivee']: self.list_events.append(TSPDEvent(time=total_time, location=self.data.get_node_location(id), demandID=df_truck_move['id_arrivee']))
+                df_drone_moves = [df_drones.loc[(df_drones['depart'] == id) & (df_drones['period'] == i) & (df_drones['id_drone'] == k)] for k in range(2)]
+                sum_time_drones_used = [max(0,len(df_drone_moves[k].index) - 1)*30 + sum([2*instance.data.drone_time[row['depart']][row['arrivee']] for index, row in df_drone_moves[k].iterrows()]) for k in range(2)]
+                time_to_wait = [0,0]
+                
+                if sum_time_drones_used[0] == 0:
+                    time_since_used[0][0] += instance.data.shortest_path_value(time_since_used[1],id) + sum_time_drones_used[1]
+                else:
+                    time_to_wait[0] = max(0, 30 - (time_since_used[0][0] + instance.data.shortest_path_value(time_since_used[1],id) + max(0, sum_time_drones_used[1] - sum_time_drones_used[0])))
+                    if time_to_wait[0] > 0:
+                        to_change.append([time_to_wait[0] + max(0, sum_time_drones_used[1] - sum_time_drones_used[0]),[instance.inv_dict_intersections[id],i],[df_truck_move['id_depart'],df_truck_move['id_arrivee'],i],last_node_used[0][0],last_node_used[0][1]])
+                    time_since_used[0][0] = 0
+                    last_node_used[0][0] = [instance.inv_dict_intersections[id], i]
+                    last_node_used[0][1] = [df_truck_move['id_depart'],df_truck_move['id_arrivee'],i]
+                if sum_time_drones_used[1] == 0:
+                    time_since_used[0][1] += instance.data.shortest_path_value(time_since_used[1],id) + sum_time_drones_used[0]
+                else:
+                    time_to_wait[1] = max(0, 30 - (time_since_used[0][1] + instance.data.shortest_path_value(time_since_used[1],id) + max(0, sum_time_drones_used[0] - sum_time_drones_used[1])))
+                    if time_to_wait[1] > 0:
+                        to_change.append([time_to_wait[1] + max(0, sum_time_drones_used[0] - sum_time_drones_used[1]),[instance.inv_dict_intersections[id],i],[df_truck_move['id_depart'],df_truck_move['id_arrivee'],i],last_node_used[1][0],last_node_used[1][1]])
+                    time_since_used[0][1] = 0
+                    last_node_used[1][0] = [instance.inv_dict_intersections[id], i]
+                    last_node_used[1][1] = [df_truck_move['id_depart'],df_truck_move['id_arrivee'],i]
+                time_since_used[1] = id
+                for a in range(2):
+                    local_time = total_time + time_to_wait[a]
+                    first_livraison = True
+                    for index, row in df_drone_moves[a].iterrows():
+                        if first_livraison == False: local_time += 30
+                        self.list_events.append(TSPDEvent(time=local_time, location=self.data.get_node_location(row['depart']), droneID=a, demandID=row['id_arrivee']))
+                        if a == 0:plt.plot((self.data.get_node_location(row['depart'])[0],self.data.get_node_location(row['arrivee'])[0]),(self.data.get_node_location(row['depart'])[1],self.data.get_node_location(row['arrivee'])[1]), color='red')
+                        else:plt.plot((self.data.get_node_location(row['depart'])[0],self.data.get_node_location(row['arrivee'])[0]),(self.data.get_node_location(row['depart'])[1],self.data.get_node_location(row['arrivee'])[1]), color='green')
+                        local_time += instance.data.drone_time[row['depart']][row['arrivee']]
+                        self.list_events.append(TSPDEvent(time=local_time, droneID=a, demandID=row['id_arrivee']))
+                        local_time += instance.data.drone_time[row['depart']][row['arrivee']]
+                        self.list_events.append(TSPDEvent(time=local_time, location=self.data.get_node_location(row['depart']), droneID=a))
+                        first_livraison = False
+
+                if id != instance.data.truck_shortest_path[df_truck_move['id_depart']][df_truck_move['id_arrivee']][len(instance.data.truck_shortest_path[df_truck_move['id_depart']][df_truck_move['id_arrivee']])-1]:
+                    time_to_add = max(sum_time_drones_used[0] + time_to_wait[0],sum_time_drones_used[1] + time_to_wait[1])
+                    total_time += max(sum_time_drones_used[0] + time_to_wait[0],sum_time_drones_used[1] + time_to_wait[1])
+                    
+                else: 
+                    time_to_add = max(max(0,sum_time_drones_used[0] + time_to_wait[0]-60),max(0,sum_time_drones_used[1] + time_to_wait[1]-60))
+                    total_time += time_to_add
+            total_time += 60
+        total_time -= 60
+        print("BOUILLA", total_time)
+        plt.show()
+
+
+    def import_H1V2(self, instance, truck_paths, drone_legs):
+        """
+        DEPLACEMENT VEHICULE
+        self.list_events.append(TSPDEvent(time, location, destination))
+
+        ARRIVEE VEHICULE
+        self.list_events.append(TSPDEvent(time, location))
+
+        LARGAGE DRONE
+        self.list_events.append(TSPDEvent(time, location, droneID, demandID))
+
+        RECUPERATION DRONE
+        self.list_events.append(TSPDEvent(time, location, droneID))
+
+        LIVRAISON VEHICULE
+        self.list_events.append(TSPDEvent(time, location, demandID))
+
+        LIVRAISON DRONE
+        self.list_events.append(TSPDEvent(time, droneID, demandID))
+        """
+
+        df_truck = pd.DataFrame(truck_paths, columns = ['id_depart','id_arrivee','period'])
+        df_drones = pd.DataFrame(drone_legs, columns = ['id_drone','id_depart','id_arrivee','period'])
+        df_truck.sort_values('period', inplace = True)
+        df_truck = df_truck.reset_index(drop=True)
+        df_drones.sort_values('period', inplace = True)
+        df_truck = df_truck.assign(depart = df_truck.id_depart.map(instance.dict_customers), arrivee = df_truck.id_arrivee.map(instance.dict_customers))
+        df_drones = df_drones.assign(depart = df_drones.id_depart.map(instance.dict_intersections), arrivee = df_drones.id_arrivee.map(instance.dict_customers))
+        total_time = 0
+        to_change = []           # amount,[depart intersection,periode], [x depart i,j,t], [arrivee intersection,periode], [x arrivee i,j,t] répertorie les intersections, périodes pour lesquelles le temps d'attente de 30sec des drones n'a pas été respecté
+        time_since_used = [[30,30], instance.data.depot_id]
+        last_node_used = [[[instance.data.depot_id,0],[df_truck.iloc[0]['id_depart'],df_truck.iloc[0]['id_arrivee'],0]],[[instance.data.depot_id,0],[df_truck.iloc[0]['id_depart'],df_truck.iloc[0]['id_arrivee'],0]]]
+        for i in range(len(df_truck.index)):
+            df_truck_move = df_truck.iloc[i]
+            self.list_events.append(TSPDEvent(total_time, df_truck_move['depart'], df_truck_move['arrivee']))
+            for id in instance.data.truck_shortest_path[df_truck_move['id_depart']][df_truck_move['id_arrivee']]:
+                total_time += instance.data.shortest_path_value(time_since_used[1],id)
+                df_drone_moves = [df_drones.loc[(df_drones['depart'] == id) & (df_drones['period'] == i) & (df_drones['id_drone'] == k)] for k in range(2)]
+                sum_time_drones_used = [max(0,len(df_drone_moves[k].index) - 1)*30 + sum([2*instance.data.drone_time[row['depart']][row['arrivee']] for index, row in df_drone_moves[k].iterrows()]) for k in range(2)]
+                time_to_wait = [0,0]
+                
+                if sum_time_drones_used[0] == 0:
+                    time_since_used[0][0] += instance.data.shortest_path_value(time_since_used[1],id) + sum_time_drones_used[1]
+                else:
+                    time_to_wait[0] = max(0, 30 - (time_since_used[0][0] + instance.data.shortest_path_value(time_since_used[1],id) + max(0, sum_time_drones_used[1] - sum_time_drones_used[0])))
+                    if time_to_wait[0] > 0:
+                        to_change.append([time_to_wait[0] + max(0, sum_time_drones_used[1] - sum_time_drones_used[0]),[instance.inv_dict_intersections[id],i],[df_truck_move['id_depart'],df_truck_move['id_arrivee'],i],last_node_used[0][0],last_node_used[0][1]])
+                    time_since_used[0][0] = 0
+                    last_node_used[0][0] = [instance.inv_dict_intersections[id], i]
+                    last_node_used[0][1] = [df_truck_move['id_depart'],df_truck_move['id_arrivee'],i]
+                if sum_time_drones_used[1] == 0:
+                    time_since_used[0][1] += instance.data.shortest_path_value(time_since_used[1],id) + sum_time_drones_used[0]
+                else:
+                    time_to_wait[1] = max(0, 30 - (time_since_used[0][1] + instance.data.shortest_path_value(time_since_used[1],id) + max(0, sum_time_drones_used[0] - sum_time_drones_used[1])))
+                    if time_to_wait[1] > 0:
+                        to_change.append([time_to_wait[1] + max(0, sum_time_drones_used[0] - sum_time_drones_used[1]),[instance.inv_dict_intersections[id],i],[df_truck_move['id_depart'],df_truck_move['id_arrivee'],i],last_node_used[1][0],last_node_used[1][1]])
+                    time_since_used[0][1] = 0
+                    last_node_used[1][0] = [instance.inv_dict_intersections[id], i]
+                    last_node_used[1][1] = [df_truck_move['id_depart'],df_truck_move['id_arrivee'],i]
+                time_since_used[1] = id
+                for a in range(2):
+                    local_time = total_time + time_to_wait[a]
+                    first_livraison = True
+                    for index, row in df_drone_moves[a].iterrows():
+                        if first_livraison == False: local_time += 30
+                        self.list_events.append(TSPDEvent(local_time, row['depart'], a, row['arrivee']))
+                        local_time += instance.data.drone_time[row['depart']][row['arrivee']]
+                        self.list_events.append(TSPDEvent(local_time, a, row['arrivee']))
+                        local_time += instance.data.drone_time[row['depart']][row['arrivee']]
+                        self.list_events.append(TSPDEvent(local_time, row['depart'], a))
+                        first_livraison = False
+
+                time_to_add = max(sum_time_drones_used[0] + time_to_wait[0],sum_time_drones_used[1] + time_to_wait[1])
+                total_time += time_to_add
+    
     def import_file(self, file):
         with open(file, "r") as fd:
             fd.readline()
