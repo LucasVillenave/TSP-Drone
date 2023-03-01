@@ -47,7 +47,8 @@ Solution Heur_Cas1_leP::solve(Instance t_instance){
 
     try{
         // initialisation des repères
-        if (m_ordre_clients.size()<CardD){
+        if (m_ordre_clients.size()!=CardD){
+            std::cout << "pas de bon ordre" << std::endl;
             m_ordre_clients.resize(CardD);
             for (int d=0; d<CardD; ++d){
                 m_ordre_clients[d] = d;
@@ -94,19 +95,22 @@ Solution Heur_Cas1_leP::solve(Instance t_instance){
 
 
             // actualisations des repères
-            id_node_fin_actuelle = t_instance.getGraph().getDemand(demande_fin_actuelle).getNodeGraphID();
+            id_node_fin_actuelle = t_instance.getGraph().getDemand(m_ordre_clients[demande_fin_actuelle]).getNodeGraphID();
 
             std::cout << id_node_deb_actuelle << " -> " << id_node_fin_actuelle << std::endl;
 
             demandes_actuelles.clear();
             for (int d=0; d<demande_fin_actuelle; ++d){
                 if (!client_satisfait[m_ordre_clients[d]]){
-                    demandes_actuelles.push_back(d);
+                    demandes_actuelles.push_back(m_ordre_clients[d]);
                 }
             }
 
             sommets_actuels.clear();
+            sommets_actuels.push_back(id_node_deb_actuelle);
+            sommets_actuels.push_back(id_node_fin_actuelle);
             for (int d1=0; d1<demandes_actuelles.size(); ++d1){
+                sommets_actuels.push_back(t_instance.getGraph().getDemand(demandes_actuelles[d1]).getNodeGraphID());
                 for (int d2=d1+1; d2<demandes_actuelles.size(); ++d2){
                     for (int i=0; i<t_instance.getGraph().getTSPKernelPath()[t_instance.getGraph().getDemand(demandes_actuelles[d1]).getNodeGraphID()][t_instance.getGraph().getDemand(demandes_actuelles[d2]).getNodeGraphID()].size(); ++i){
                         bool onleprend = true;
@@ -275,6 +279,13 @@ Solution Heur_Cas1_leP::solve(Instance t_instance){
 
             // -> flot
             // std::cout << "                           - flot" << std::endl;
+            GRBLinExpr respect = 0;
+            for (int j=1; j<sommets_actuels.size()+1; ++j){
+                respect += X[1][0][j];
+            }
+            name << "respect";
+            model.addConstr(respect==0,name.str());
+            name.str("");
             // debut
             GRBLinExpr expdu = 0;
             for (int j=1; j<sommets_actuels.size()+1; ++j){
@@ -671,6 +682,14 @@ Solution Heur_Cas1_leP::solve(Instance t_instance){
             // demande_fin_actuelle <- min ( max ( demande_deb_actuelle + 2 ; demande_fin_actuelle ) ; nbr_demandes_unitaires )
             else {
 
+
+                std::vector<double> temps_livraison;
+                temps_livraison.resize(3);
+                temps_livraison[0]=0;
+                temps_livraison[1]=0;
+                temps_livraison[2]=0;
+
+
                 // on cherche le chemin utilisé par le camion
                 int nouveau_sommet = 1;
                 bool continuer = true;
@@ -697,18 +716,18 @@ Solution Heur_Cas1_leP::solve(Instance t_instance){
                 }
 
                 // on actualise la solution de Z
-                for (int a=0; a<=1; ++a){
-                    for (int d=0; d<demandes_actuelles.size(); ++d){
-                        int alt = quantite_client_satisfait[demandes_actuelles[d]];
-                        for (int eps=0; eps<t_instance.getGraph().getDemand(demandes_actuelles[d]).getAmount() - alt; ++eps){
+                for (int d=0; d<demandes_actuelles.size(); ++d){
+                    int alt = quantite_client_satisfait[demandes_actuelles[d]];
+                    for (int eps=0; eps<t_instance.getGraph().getDemand(demandes_actuelles[d]).getAmount() - alt; ++eps){
+                        for (int a=0; a<=1; ++a){
                             if (Z[0][a][d][eps][0].get(GRB_DoubleAttr_X)>0.5){
                                 Z_sol[Z_sol.size()-1][a][demandes_actuelles[d]][quantite_client_satisfait[demandes_actuelles[d]]][id_node_deb_actuelle] = 1;
                                 quantite_client_satisfait[demandes_actuelles[d]] += 1;
                             }
                         }
-                        if (quantite_client_satisfait[demandes_actuelles[d]] == t_instance.getGraph().getDemand(demandes_actuelles[d]).getAmount()){
-                            client_satisfait[demandes_actuelles[d]] = true;
-                        }
+                    }
+                    if (quantite_client_satisfait[demandes_actuelles[d]] == t_instance.getGraph().getDemand(demandes_actuelles[d]).getAmount()){
+                        client_satisfait[demandes_actuelles[d]] = true;
                     }
                 }
 
@@ -734,6 +753,7 @@ Solution Heur_Cas1_leP::solve(Instance t_instance){
                             if (Z[1][a][d][eps][nouveau_sommet].get(GRB_DoubleAttr_X)>0.5){
                                 Z_sol[Z_sol.size()-1][a][demandes_actuelles[d]][quantite_client_satisfait[demandes_actuelles[d]]][sommets_actuels[nouveau_sommet]] = 1;
                                 quantite_client_satisfait[demandes_actuelles[d]] += 1;
+                                temps_livraison[a+1] += 30 + ((2 * distance(t_instance.getGraph().getVertice(sommets_actuels[nouveau_sommet]).getPos(),t_instance.getGraph().getDemand(demandes_actuelles[d]).getPos())) / t_instance.getDroneSpeed());
                             }
                         }
                     }
@@ -759,6 +779,7 @@ Solution Heur_Cas1_leP::solve(Instance t_instance){
                     if (Y[1][d].get(GRB_DoubleAttr_X)>0.5){
                         Y_sol[Y_sol.size()-1][demandes_actuelles[d]] = 1;
                         client_satisfait[demandes_actuelles[d]] = true;
+                        temps_livraison[0] += t_instance.getTruckDeliveryTime();
                     }
                 }
 
@@ -779,20 +800,35 @@ Solution Heur_Cas1_leP::solve(Instance t_instance){
                     }
                 }
 
-                id_node_deb_actuelle = sommets_actuels[nouveau_sommet];
+                for (int a=0; a<=1; ++a){
+                    temps_livraison[1] = temps_livraison[1] - 30; 
+                    if (Zeta[a][0].get(GRB_DoubleAttr_X)>0.5){
+                        if (30-t_instance.getGraph().getTSPKernelTime(id_node_deb_actuelle,sommets_actuels[nouveau_sommet]) > 0){
+                            temps_livraison[a+1] += 30-t_instance.getGraph().getTSPKernelTime(id_node_deb_actuelle,sommets_actuels[nouveau_sommet]);
+                        }
+                    }
+                    else {
+                        if (variation_temps_cam_d[a]-t_instance.getGraph().getTSPKernelTime(id_node_deb_actuelle,sommets_actuels[nouveau_sommet]) > 0){
+                            temps_livraison[a+1] += 30-t_instance.getGraph().getTSPKernelTime(id_node_deb_actuelle,sommets_actuels[nouveau_sommet]);
+                        }
+                    }
+                }
+                // temps_cumulle += std::max( temps_livraison[0] , std::max( temps_livraison[1] - 30, temps_livraison[2] - 30) );
 
-                // int cpt = 0;
-                // for (int d=0; d<demande_fin_actuelle; ++d){
-                //     if (!client_satisfait[m_ordre_clients[d]]){
-                //         ++cpt;
-                //     }
-                // }
-                // if (cpt < 2){
-                    demande_fin_actuelle += 1;
-                // }
+                // temps_cumulle += Omega[1].get(GRB_DoubleAttr_X);
 
-                temps_cumulle += Omega[1].get(GRB_DoubleAttr_X);
+                temps_cumulle += Omega[2].get(GRB_DoubleAttr_X);
+                for (int j=0; j<sommets_actuels.size(); ++j){
+                    if (nouveau_sommet!=j){
+                        temps_cumulle -= X[1][nouveau_sommet][j].get(GRB_DoubleAttr_X) * t_instance.getGraph().getTSPKernelTime(sommets_actuels[nouveau_sommet],sommets_actuels[j]);
+                    }
+                }
+
                 std::cout << std::endl << std::endl << std::endl << "temps cumulle pour l instant : " << temps_cumulle << std::endl;
+
+
+                id_node_deb_actuelle = sommets_actuels[nouveau_sommet];
+                demande_fin_actuelle += 1;
             }
 
         }
@@ -818,12 +854,15 @@ Solution Heur_Cas1_leP::solve(Instance t_instance){
         demandes_actuelles.clear();
         for (int d=0; d<CardD; ++d){
             if (!client_satisfait[m_ordre_clients[d]]){
-                demandes_actuelles.push_back(d);
+                demandes_actuelles.push_back(m_ordre_clients[d]);
             }
         }
 
         sommets_actuels.clear();
+        sommets_actuels.push_back(id_node_deb_actuelle);
+        sommets_actuels.push_back(id_node_fin_actuelle);
         for (int d1=0; d1<demandes_actuelles.size(); ++d1){
+            sommets_actuels.push_back(t_instance.getGraph().getDemand(demandes_actuelles[d1]).getNodeGraphID());
             for (int d2=d1+1; d2<demandes_actuelles.size(); ++d2){
                 for (int i=0; i<t_instance.getGraph().getTSPKernelPath()[t_instance.getGraph().getDemand(demandes_actuelles[d1]).getNodeGraphID()][t_instance.getGraph().getDemand(demandes_actuelles[d2]).getNodeGraphID()].size(); ++i){
                     bool onleprend = true;
@@ -1497,9 +1536,9 @@ Solution Heur_Cas1_leP::solve(Instance t_instance){
             }
 
             if (nouveau_sommet2 == sommets_actuels.size()){
-                if (X_sol[X_sol.size()-1] != 0){
+                // if (X_sol[X_sol.size()-1] != 0){
                     X_sol.push_back(0);
-                }
+                // }
             }
             else {
                 // on actualise la solution de Z
@@ -1549,9 +1588,9 @@ Solution Heur_Cas1_leP::solve(Instance t_instance){
 
 
                 // on oublie pas le retour au dépot
-                if (X_sol[X_sol.size()-1] != 0){
+                // if (X_sol[X_sol.size()-1] != 0){
                     X_sol.push_back(0);
-                }
+                // }
 
             }
 
@@ -1571,7 +1610,7 @@ Solution Heur_Cas1_leP::solve(Instance t_instance){
 
 
         temps_cumulle += Omega[3].get(GRB_DoubleAttr_X);
-        std::cout << "temps cumulle final : " << temps_cumulle << std::endl;
+        // std::cout << std::endl << std::endl << std::endl << "temps cumulle final : " << temps_cumulle << std::endl;
 
         for (int d=0; d<CardD; ++d){
             if (!client_satisfait[d]){
@@ -1660,8 +1699,12 @@ Solution Heur_Cas1_leP::solve(Instance t_instance){
     }
     std::vector<std::vector<int>> Zeta_raf;
     Zeta_raf.resize(2);
-    Zeta_raf[0]={0};
-    Zeta_raf[1]={0};
+    Zeta_raf[0].clear();
+    Zeta_raf[1].clear();
+    std::vector<std::vector<int>> Zeta_verif;
+    Zeta_verif.resize(2);
+    Zeta_verif[0].resize(Z_sol.size());
+    Zeta_verif[1].resize(Z_sol.size());
     std::vector<std::vector<std::vector<int>>> Z_sol_conv;
     Z_sol_conv.resize(T);
     for (int t=0; t<T; ++t){
@@ -1686,13 +1729,21 @@ Solution Heur_Cas1_leP::solve(Instance t_instance){
         }
         for (int a=0; a<=1; ++a){
             cpt = 0;
+            Zeta_verif[a][t] = 0;
             for (int d=0; d<CardD; ++d){
                 for (int eps=0; eps<t_instance.getGraph().getDemand(d).getAmount(); ++eps){
                     if (Z_sol[t][a][d][eps][X_sol[t]] == 1){
                         Z_raf[t][a][cpt] = 1;
                         Z_sol_conv[t][cpt][a] = 1;
-                        if (Zeta_raf[a].back()!=t){
+                        if (!Zeta_raf[a].empty()){
+                            if (Zeta_raf[a].back()!=t){
+                                Zeta_raf[a].push_back(t);
+                                Zeta_verif[a][t] = 1;
+                            }
+                        }
+                        else {
                             Zeta_raf[a].push_back(t);
+                            Zeta_verif[a][t] = 1;
                         }
                     }
                     ++cpt;
@@ -1700,6 +1751,150 @@ Solution Heur_Cas1_leP::solve(Instance t_instance){
             }
         }
     }
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+    // vérification de la solution :
+    std::cout << std::endl << std::endl << std::endl << "vérification de la solution" << std::endl << std::endl;
+    // double temps_deplacement=0;
+    // for (int t=0; t<X_sol.size()-1; ++t){
+    //     temps_deplacement += t_instance.getGraph().getTSPKernelTime(X_sol[t],X_sol[t+1]);
+    // }
+    // std::cout << "temps déplacement : " << temps_deplacement << std::endl;
+    // double temps_livraison_camion=0;
+    // for (int t=0; t<Y_sol.size(); ++t){
+    //     for (int d=0; d<CardD; ++d){
+    //         if (Y_sol[t][d] == 1){
+    //             temps_livraison_camion += t_instance.getTruckDeliveryTime();
+    //         }
+    //     }
+    // }
+    // std::cout << "temps livraison camion : " << temps_livraison_camion << std::endl;
+    // double temps_livraison_drone1=0;
+    // int nbr_livraison_d1=0;
+    // for (int t=0; t<Z_sol.size(); ++t){
+    //     for (int d=0; d<CardD; ++d){
+    //         for (int eps=0; eps<t_instance.getGraph().getDemand(d).getAmount(); ++eps){
+    //             if (Z_sol[t][0][d][eps][X_sol[t]] == 1){
+    //                 temps_livraison_drone1 += (2 * distance(t_instance.getGraph().getVertice(X_sol[t]).getPos(),t_instance.getGraph().getDemand(d).getPos())) / t_instance.getDroneSpeed();
+    //                 nbr_livraison_d1 += 1;
+    //             }
+    //         }
+    //     }
+    // }
+    // std::cout << "temps livraison drone 1 : " << temps_livraison_drone1 << " ( " << nbr_livraison_d1 << " livraisons )" << std::endl;
+    // std::vector<double> temps_rechargement_drone_deplacement={0,0};
+    // for (int a=0; a<=1; ++a){
+    //     for (int t_rep=0; t_rep<Zeta_raf[a].size()-1; ++t_rep){
+    //         double temps_rechargement_avec_deplacement = 30;
+    //         for (int t=Zeta_raf[a][t_rep]; t<Zeta_raf[a][t_rep+1]; ++t){
+    //             temps_rechargement_avec_deplacement -= t_instance.getGraph().getTSPKernelTime(X_sol[t],X_sol[t+1]);
+    //         }
+    //         temps_rechargement_drone_deplacement[a] += std::max(0,temps_rechargement_avec_deplacement);
+    //     }
+    // }
+
+
+    // double temps_livraison_drone2=0;
+    // int nbr_livraison_d2=0;
+    // for (int t=0; t<Z_sol.size(); ++t){
+    //     for (int d=0; d<CardD; ++d){
+    //         for (int eps=0; eps<t_instance.getGraph().getDemand(d).getAmount(); ++eps){
+    //             if (Z_sol[t][1][d][eps][X_sol[t]] == 1){
+    //                 temps_livraison_drone2 += (2 * distance(t_instance.getGraph().getVertice(X_sol[t]).getPos(),t_instance.getGraph().getDemand(d).getPos()))/ t_instance.getDroneSpeed();
+    //                 nbr_livraison_d2 += 1;
+    //             }
+    //         }
+    //     }
+    // }
+    // std::cout << "temps livraison drone 2 : " << temps_livraison_drone2 << " ( " << nbr_livraison_d2 << " livraisons )" << std::endl << std::endl;
+    
+    
+    
+    
+    // std::cout << "temps minimum théorique : " << temps_deplacement + std::max( std::max(temps_livraison_camion , temps_livraison_drone1 ) , temps_livraison_drone2) << std::endl << std::endl;
+    // std::cout << "temps somme : " << temps_deplacement + temps_livraison_camion + temps_livraison_drone1 + temps_livraison_drone2 << std::endl << std::endl;
+    // std::cout << "max temps rechargement = " << (nbr_livraison_d1 + nbr_livraison_d2) * 30 << std::endl;
+    // std::cout << "max temps total : " << temps_deplacement + temps_livraison_camion + temps_livraison_drone1 + temps_livraison_drone2 + (nbr_livraison_d1 + nbr_livraison_d2) * 30 << std::endl << std::endl;
+    
+
+
+
+    double temps_cumule_verif=0;
+    for (int t=0; t<Z_sol.size(); ++t){
+        temps_cumule_verif += t_instance.getGraph().getTSPKernelTime(X_sol[t],X_sol[t+1]);
+
+        double temps_camion=0;
+        for (int d=0; d<CardD; ++d){
+            if (Y_sol[t][d] == 1){
+                temps_camion += t_instance.getTruckDeliveryTime();
+            }
+        }
+
+        std::vector<double> temps_drones={0,0};
+        for (int a=0; a<=1; ++a){
+            if (Zeta_verif[a][t]==1){
+                temps_drones[a] -= 30;
+                int t_rep = t-1;
+                bool continuation = true;
+                while ((t_rep >= 0) && (continuation)){
+                    if (Zeta_verif[a][t_rep]==1){
+                        continuation = false;
+                    }
+                    else {
+                        t_rep -= 1;
+                    }
+                }
+                if (t_rep >= 0){
+                    double temps_rechargement_avec_deplacement = 30;
+                    for (int t_prime=t_rep; t_prime<t; ++t_prime){
+                        temps_rechargement_avec_deplacement -= t_instance.getGraph().getTSPKernelTime(X_sol[t_prime],X_sol[t_prime+1]);
+                    }
+                    if (temps_rechargement_avec_deplacement > 0){
+                        temps_drones[a] += temps_rechargement_avec_deplacement;
+                    }
+                }
+                for (int d=0; d<CardD; ++d){
+                    for (int eps=0; eps<t_instance.getGraph().getDemand(d).getAmount(); ++eps){
+                        if (Z_sol[t][a][d][eps][X_sol[t]] == 1){
+                            temps_drones[a] += (2 * distance(t_instance.getGraph().getVertice(X_sol[t]).getPos(),t_instance.getGraph().getDemand(d).getPos())) / t_instance.getDroneSpeed();
+                            temps_drones[a] += 30;
+                        }
+                    }
+                }
+            }
+        }
+
+        temps_cumule_verif += std::max(temps_camion , std::max(temps_drones[0],temps_drones[1]));
+    }
+
+
+    std::cout << std::endl << std::endl << std::endl << "TEMPS CUMUL VERIF LE P : " << temps_cumule_verif << std::endl << std::endl << std::endl << std::endl;
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
     Graph g = t_instance.getGraph();
     g = g.getUnitDemandGraph();
     Instance I = Instance(g, "std::string t_instanceName");
@@ -1709,7 +1904,41 @@ Solution Heur_Cas1_leP::solve(Instance t_instance){
     // std::cout << std::endl << std::endl << std::endl << "Raffinage " << std::endl << std::endl << std::endl << std::endl;
 
 
-    // std::cout << "--> Creating the Gurobi environment" << std::endl;
+    // std::vector<int> sommets_actuels={};
+    // // for (int i=0; i<CardV; ++i){
+    // //     sommets_actuels.push_back(i);
+    // // }
+    // sommets_actuels.clear();
+    // sommets_actuels.push_back(0);
+    // for (int d1=0; d1<CardD; ++d1){
+    //     for (int d2=d1+1; d2<CardD; ++d2){
+    //         for (int i=0; i<t_instance.getGraph().getTSPKernelPath()[t_instance.getGraph().getDemand(d1).getNodeGraphID()][t_instance.getGraph().getDemand(d2).getNodeGraphID()].size(); ++i){
+    //             bool onleprend = true;
+    //             for (int j=0; j<sommets_actuels.size(); j++){
+    //                 if (t_instance.getGraph().getTSPKernelPath()[t_instance.getGraph().getDemand(d1).getNodeGraphID()][t_instance.getGraph().getDemand(d2).getNodeGraphID()][i] == sommets_actuels[j]){
+    //                     onleprend = false;
+    //                 }
+    //             }
+    //             if (onleprend){
+    //                 sommets_actuels.push_back(t_instance.getGraph().getTSPKernelPath()[t_instance.getGraph().getDemand(d1).getNodeGraphID()][t_instance.getGraph().getDemand(d2).getNodeGraphID()][i]);
+    //             }
+    //         }
+    //     }
+    //     for (int i=0; i<t_instance.getGraph().getTSPKernelPath()[t_instance.getGraph().getDemand(d1).getNodeGraphID()][0].size(); ++i){
+    //         bool onleprend = true;
+    //         for (int j=0; j<sommets_actuels.size(); j++){
+    //             if (t_instance.getGraph().getTSPKernelPath()[t_instance.getGraph().getDemand(d1).getNodeGraphID()][0][i] == sommets_actuels[j]){
+    //                 onleprend = false;
+    //             }
+    //         }
+    //         if (onleprend){
+    //             sommets_actuels.push_back(t_instance.getGraph().getTSPKernelPath()[t_instance.getGraph().getDemand(d1).getNodeGraphID()][0][i]);
+    //         }
+    //     }
+    // }
+
+
+    // std::cout << "--> Creating the Gurobi environment " << std::endl;
     // GRBEnv env(true);
     // env.start();
 
@@ -1739,10 +1968,10 @@ Solution Heur_Cas1_leP::solve(Instance t_instance){
 
     // GRBVar *** X = new GRBVar**[T];
     // for (int t=0; t<T; ++t){
-    //     X[t] = new GRBVar*[CardV];
-    //     for (int i=0; i<CardV; ++i){
-    //         X[t][i] = new GRBVar[CardV];
-    //         for (int j=0; j<CardV; ++j){
+    //     X[t] = new GRBVar*[sommets_actuels.size()];
+    //     for (int i=0; i<sommets_actuels.size(); ++i){
+    //         X[t][i] = new GRBVar[sommets_actuels.size()];
+    //         for (int j=0; j<sommets_actuels.size(); ++j){
     //             name << "X[" << t << "][" << i << "][" << j << "]";
     //             X[t][i][j] = model.addVar(0.0, 1.0, 0.0, GRB_BINARY, name.str());
     //             name.str("");
@@ -1763,8 +1992,8 @@ Solution Heur_Cas1_leP::solve(Instance t_instance){
     // // -> respect
     // std::cout << "                           - respect" << std::endl;
     // GRBLinExpr respect = 0;
-    // for (int i=1; i<CardV; ++i){
-    //     for (int j=0; j<CardV; ++j){
+    // for (int i=1; i<sommets_actuels.size(); ++i){
+    //     for (int j=0; j<sommets_actuels.size(); ++j){
     //         respect += X[0][i][j];
     //         respect += X[T-1][j][i];
     //     }
@@ -1776,16 +2005,16 @@ Solution Heur_Cas1_leP::solve(Instance t_instance){
     // // -> flot
     // std::cout << "                           - flot" << std::endl;
     // GRBLinExpr expdf = 0;
-    // for (int j=0; j<CardV; ++j){
+    // for (int j=0; j<sommets_actuels.size(); ++j){
     //     expdf += X[0][0][j];
     // }
     // name << "flotdf";
     // model.addConstr(expdf==1,name.str());
     // name.str("");
     // for (int t=0; t<T-1; ++t){
-    //     for (int i=0; i<CardV; ++i){
+    //     for (int i=0; i<sommets_actuels.size(); ++i){
     //         GRBLinExpr exp = 0;
-    //         for (int j=0; j<CardV; ++j){
+    //         for (int j=0; j<sommets_actuels.size(); ++j){
     //             exp += X[ t ][j][i];
     //             exp -= X[t+1][i][j];
     //         }
@@ -1795,7 +2024,7 @@ Solution Heur_Cas1_leP::solve(Instance t_instance){
     //     }
     // }
     // GRBLinExpr expff = 0;
-    // for (int j=0; j<CardV; ++j){
+    // for (int j=0; j<sommets_actuels.size(); ++j){
     //     expff += X[T-1][j][0];
     // }
     // name << "flotff";
@@ -1807,9 +2036,18 @@ Solution Heur_Cas1_leP::solve(Instance t_instance){
     // for (int t=1; t<T; ++t){
     //     for (int d=0; d<CardDU; ++d){
     //         if (Y_raf[t][d]==1){
+    //             bool bon = false;
     //             GRBLinExpr exp = 0;
-    //             for (int j=0; j<CardV; ++j){
-    //                 exp += X[t-1][j][g.getDemand(d).getNodeGraphID()];
+    //             for (int i=0; i<sommets_actuels.size(); ++i){
+    //                 if (sommets_actuels[i] == g.getDemand(d).getNodeGraphID()){
+    //                     for (int j=0; j<sommets_actuels.size(); ++j){
+    //                         exp += X[t-1][j][i];
+    //                         bon = true;
+    //                     }
+    //                 }
+    //             }
+    //             if (!bon){
+    //                 std::cout << "ERROR : pas le sommet " <<  g.getDemand(d).getNodeGraphID() << " ( demande : " << d << " ) dans les sommets actuels" << std::endl;
     //             }
     //             name << "X / Y " << t << " , " << d;
     //             model.addConstr(exp>=1,name.str());
@@ -1824,9 +2062,9 @@ Solution Heur_Cas1_leP::solve(Instance t_instance){
     //     GRBLinExpr exp = 0;
     //     exp += Omega[t];
     //     exp -= Omega[t+1];
-    //     for (int i=0; i<CardV; ++i){
-    //         for (int j=0; j<CardV; ++j){
-    //             exp += X[t][i][j] * I.getGraph().getTSPKernelTime(i,j);
+    //     for (int i=0; i<sommets_actuels.size(); ++i){
+    //         for (int j=0; j<sommets_actuels.size(); ++j){
+    //             exp += X[t][i][j] * I.getGraph().getTSPKernelTime(sommets_actuels[i],sommets_actuels[j]);
     //         }
     //     }
     //     for (int d=0; d<CardDU; ++d){
@@ -1844,12 +2082,12 @@ Solution Heur_Cas1_leP::solve(Instance t_instance){
     //         GRBLinExpr exp = 0;
     //         exp += Omega[t];
     //         exp -= Omega[t+1];
-    //         for (int i=0; i<CardV; ++i){
-    //             for (int j=0; j<CardV; ++j){
-    //                 exp += X[t][i][j] * I.getGraph().getTSPKernelTime(i,j);
+    //         for (int i=0; i<sommets_actuels.size(); ++i){
+    //             for (int j=0; j<sommets_actuels.size(); ++j){
+    //                 exp += X[t][i][j] * I.getGraph().getTSPKernelTime(sommets_actuels[i],sommets_actuels[j]);
     //                 for (int d=0; d<CardDU; ++d){
-    //                     if (Z_raf[t][a][d] == 1){  
-    //                         X[t][i][j] * (2 * distance(I.getGraph().getVertice(i).getPos(),I.getGraph().getDemand(d).getPos()));
+    //                     if (Z_raf[t][a][d] == 1){
+    //                         X[t][i][j] * (2 * distance(I.getGraph().getVertice(sommets_actuels[i]).getPos(),I.getGraph().getDemand(d).getPos()));
     //                     }
     //                 }
     //             }
@@ -1873,13 +2111,13 @@ Solution Heur_Cas1_leP::solve(Instance t_instance){
     //         GRBLinExpr exp = 30;
     //         exp -= Delta[t_rep][a];
     //         for (int t=Zeta_raf[a][t_rep]; t<Zeta_raf[a][t_rep+1]; ++t){
-    //             for (int i=0; i<CardV; ++i){
-    //                 for (int j=0; j<CardV; ++j){
-    //                     exp -= X[t][i][j] * I.getGraph().getTSPKernelTime(i,j);
+    //             for (int i=0; i<sommets_actuels.size(); ++i){
+    //                 for (int j=0; j<sommets_actuels.size(); ++j){
+    //                     exp -= X[t][i][j] * I.getGraph().getTSPKernelTime(sommets_actuels[i],sommets_actuels[j]);
     //                 }
     //             }
     //         }
-    //         name << "Delta / X " << t_rep << " , " << a;
+    //         name << "Delta / X " << a << " , " << t_rep;
     //         model.addConstr(exp<=0,name.str());
     //         name.str("");
     //     }
@@ -1890,25 +2128,27 @@ Solution Heur_Cas1_leP::solve(Instance t_instance){
     // model.optimize();
 
 
-    // std::cout << std::endl << std::endl << std::endl << "nouveau chemin :" << std::endl;
+    // std::cout << std::endl << std::endl << std::endl << "nouvelle valeur objectif : " << Omega[T].get(GRB_DoubleAttr_X) << std::endl << "nouveau chemin :" << std::endl;
     // std::vector<int> X_conv={0};
     // int t_act=0;
+    // int sommets_act=0;
     // while (t_act<T){
     //     int nouveau_sommet = 0;
     //     bool continuer = true;
-    //     while ((nouveau_sommet<CardV) && (continuer)){
-    //         if (X[t_act][X_conv[X_conv.size()-1]][nouveau_sommet].get(GRB_DoubleAttr_X)>0.5){
-    //             X_conv.push_back(nouveau_sommet);
+    //     while ((nouveau_sommet<sommets_actuels.size()) && (continuer)){
+    //         if (X[t_act][sommets_act][nouveau_sommet].get(GRB_DoubleAttr_X)>0.5){
+    //             X_conv.push_back(sommets_actuels[nouveau_sommet]);
+    //             sommets_act = nouveau_sommet;
     //             continuer = false;
     //         }
     //         else {
     //             ++nouveau_sommet;
     //         }
     //     }
-    //     if (nouveau_sommet==CardV){
+    //     if (nouveau_sommet==sommets_actuels.size()){
     //         std::cout << "eeeeeeeeeeerrrrrrrrrrroooooorrrrrr X raffinage" << std::endl;
     //     }
-    //     std::cout << t_act << "  :  " << nouveau_sommet << std::endl;
+    //     std::cout << t_act << "  :  " << sommets_actuels[sommets_act] << std::endl;
     //     ++t_act;
     // }
     // std::cout << std::endl << std::endl << std::endl;
