@@ -51,8 +51,8 @@ class TSPDModelSPCas1V2:
     def get_possible_intersections(self):
         compact_graph_path = self.data.get_shortest_path_graph()
         all_possible_intersections = []
-        #all_possible_intersections = np.unique(np.concatenate(np.array([np.array(compact_graph_path[depart][arrivee]) for depart in compact_graph_path.keys() for arrivee in compact_graph_path[depart].keys()])))
-        #all_possible_intersections = [all_possible_intersections[i] for i in range(0,len(all_possible_intersections),self.ratio_intersections)]
+        all_possible_intersections = np.unique(np.concatenate(np.array([np.array(compact_graph_path[depart][arrivee]) for depart in compact_graph_path.keys() for arrivee in compact_graph_path[depart].keys()])))
+        all_possible_intersections = [all_possible_intersections[i] for i in range(0,len(all_possible_intersections),self.ratio_intersections)]
         for cust in self.list_customers:
             if not cust in all_possible_intersections:
                 all_possible_intersections.append(cust)
@@ -148,9 +148,10 @@ class TSPDModelSPCas1V2:
                     time_to_add = max(sum_time_drones_used[0] + time_to_wait[0],sum_time_drones_used[1] + time_to_wait[1])
                     if do_print and time_to_add != 0:print("   time to add: ",time_to_add)
                     total_time += time_to_add
-                        
+            print("total_time",total_time)
             if do_print: print('total truck time ', total_truck_time)
             if do_print: print('TOCHANGE',to_change)
+            if do_write: f.write(str(total_time)+"\n")
             return to_change
 
 
@@ -272,7 +273,8 @@ class TSPDModelSPCas1V2:
             total_truck_time = 0
 
             if do_write : f = open(name_path, "a")
-            if do_write : f.write(str(model.ObjVal))
+            if do_write : f.write(str(model.ObjVal)+"\n")
+            if do_write : f.write(str(model.MIPGap)+"\n")
 
             print("truck:")
             for key in vals_x.keys():

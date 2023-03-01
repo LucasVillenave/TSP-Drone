@@ -1,6 +1,6 @@
 import folium
 from math import ceil
-import python_propre.TSPDData
+from python_propre.TSPDData import *
 from python_propre.TSPDEvent import TSPDEvent
 from python_propre.TSPDModelSPCas1 import TSPDModelSPCas1
 import matplotlib.pyplot as plt
@@ -64,7 +64,7 @@ class TSPDSolution:
         truck_paths = []
         drone_legs = []
 
-        file = open(id_instance+'_2.txt', "r")
+        file = open(id_instance+'_1.txt', "r")
         lines = file.readlines()
         i = 0
         while lines[i] != "next\n":

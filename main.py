@@ -27,53 +27,41 @@ def tsp(data, filename="solTSP"):
     solution.export(name="results/"+filename)
 
 if __name__ == "__main__":
+    filename = "init"
+    data = TSPDData("Data/" + filename)
+    instance = TSPDModelSPCas1V3(data,2,2,2,2)
+    instance.solve(do_callbacks = True,name_path = "init_3V2.txt", time_max = 30)
+    a
+    filename = "30"
+    data = TSPDData("Data/" + filename)
+    instance = TSPDModelSPCas1V2(data,2, 2, 3, 1)
+    instance.solve(do_callbacks = False,name_path = "30_3V2.txt", time_max = 30)
+    filename = "50"
+    data = TSPDData("Data/" + filename)
+    instance = TSPDModelSPCas1V2(data,2, 2, 4, 1)
+    instance.solve(do_callbacks = False,name_path = "503_V2.txt", time_max = 30)
+    filename = "80"
+    data = TSPDData("Data/" + filename)
+    instance = TSPDModelSPCas1V2(data)
+    instance.solve(name_path = "80_3V2.txt", time_max = 60, do_callbacks = False)
+    filename = "100"
+    data = TSPDData("Data/" + filename)
+    instance = TSPDModelSPCas1V2(data)
+    instance.solve(name_path = "100_3V2.txt", time_max = 60, do_callbacks = False)
+    
+    a
     filename = "100"
     data = TSPDData("Data/" + filename)
     solution = TSPDSolution(data)
     solution.import_H1V1(filename)
-    solution.to_map()
-    filename = "50"
-    data = TSPDData("Data/" + filename)
-    instance = TSPDModelSPCas1V2(data,2, 2, 4, 1)
-    instance.solve()#name_path = "50_1V2.txt", time_max = 30)
+    solution.to_map(road_graph_display=False)
     a
-    filename = "init"
-    data = TSPDData("Data/" + filename)
-    instance = TSPDModelSPCas1V3(data,2, 2, 2, 1)
-    instance.solve()#name_path = "50_1V2.txt", time_max = 30)
-    filename = "50"
-    data = TSPDData("Data/" + filename)
-    instance = TSPDModelSPCas1V2(data,2, 2, 2, 1)
-    instance.solve(name_path = "50_1V2.txt", time_max = 30)
-    filename = "30"
-    data = TSPDData("Data/" + filename)
-    instance = TSPDModelSPCas1V2(data,2, 2, 2, 1)
-    instance.solve(name_path = "30_1V2.txt", time_max = 30)
-    filename = "80"
-    data = TSPDData("Data/" + filename)
-    instance = TSPDModelSPCas1V2(data)
-    instance.solve(name_path = "80_1V2.txt", time_max = 30, do_callbacks = False)
     filename = "100"
     data = TSPDData("Data/" + filename)
-    instance = TSPDModelSPCas1V2(data)
-    instance.solve(name_path = "100_1V2.txt", time_max = 30, do_callbacks = False)
-    
-    filename = "30"
-    data = TSPDData("Data/" + filename)
-    instance = TSPDModelSPCas1V2(data,2, 2, 4, 1)
-    instance.solve(name_path = "30_2V2.txt", time_max = 30)
-    filename = "50"
-    data = TSPDData("Data/" + filename)
-    instance = TSPDModelSPCas1V2(data,2, 2, 5, 1)
-    instance.solve(name_path = "50_2V2.txt", time_max = 30)
-    filename = "80"
-    data = TSPDData("Data/" + filename)
-    instance = TSPDModelSPCas1V2(data)
-    instance.solve(name_path = "80_2V2.txt", time_max = 60)
-    filename = "100"
-    data = TSPDData("Data/" + filename)
-    instance = TSPDModelSPCas1V2(data)
-    instance.solve(name_path = "100_2V2.txt", time_max = 60)
+    solution = TSPDSolution(data)
+    solution.import_H1V1(filename)
+    solution.to_map(road_graph_display=False)
+    a
     #data.draw_graph()
     #print(data.df_edges.loc[(data.df_edges['start_id']==2) | (data.df_edges['end_id']==2)])
 
